@@ -1,0 +1,65 @@
+{
+    "name": "loopback-acl-extension",
+    "version": "0.1.0",
+    "description": "Loopback ACL generic implementation based on RBAC",
+    "keywords": [
+        "loopback-extension",
+        "loopback"
+    ],
+    "main": "index.js",
+    "engines": {
+        "node": ">=8.9"
+    },
+    "scripts": {
+        "build": "lb-tsc --outDir build",
+        "build:watch": "lb-tsc --watch --outDir build",
+        "clean": "lb-clean build *.tsbuildinfo",
+        "pretest": "npm run clean && npm run build",
+        "test": "lb-mocha --allow-console-logs \"build/__tests__\"",
+        "test:dev": "lb-mocha --allow-console-logs build/__tests__/**/*.js",
+        "prepublishOnly": "npm run test"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/koliberr136a1/loopback-acl-extension"
+    },
+    "author": "KoLiBer",
+    "license": "MIT",
+    "files": [
+        "README.md",
+        "index.js",
+        "index.d.ts",
+        "build",
+        "src",
+        "!*/__tests__"
+    ],
+    "dependencies": {
+        "@loopback/authentication": "^3.2.3",
+        "@loopback/boot": "^1.5.12",
+        "@loopback/context": "^1.24.0",
+        "@loopback/core": "^1.11.0",
+        "@loopback/openapi-v3": "^1.10.2",
+        "@loopback/repository": "^1.15.5",
+        "@loopback/rest": "^1.24.0",
+        "@loopback/rest-explorer": "^1.4.3",
+        "@loopback/security": "^0.1.8",
+        "@types/graphql": "^14.5.0",
+        "apollo-server": "^2.9.12",
+        "graphql": "^14.5.8",
+        "loopback-authorization-extension": "latest",
+        "loopback-history-extension": "latest",
+        "module-alias": "^2.2.2",
+        "openapi-to-graphql": "^1.6.3",
+        "randomatic": "^3.1.1"
+    },
+    "devDependencies": {
+        "@loopback/build": "^2.1.0",
+        "source-map-support": "^0.5.16",
+        "@loopback/testlab": "^1.9.5",
+        "@types/node": "^10.17.5",
+        "typescript": "~3.7.2"
+    },
+    "_moduleAliases": {
+        "@acl": "./build"
+    }
+}
