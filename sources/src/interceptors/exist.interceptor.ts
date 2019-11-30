@@ -4,13 +4,9 @@ import {
     InvocationResult,
     ValueOrPromise
 } from "@loopback/context";
-import { DefaultCrudRepository, Entity } from "@loopback/repository";
+import { RepositoryGetter } from "@acl/types";
 
-import { DMSController } from "@dms/servers/rest/controller";
-
-export type RepositoryGetter<Model extends Entity> = (
-    controller: DMSController
-) => DefaultCrudRepository<Model, any, any>;
+import { Controller } from "@acl/servers/rest/controller";
 
 export const exist = (repositoryGetter: RepositoryGetter<any>): Interceptor => {
     return async (
@@ -18,7 +14,7 @@ export const exist = (repositoryGetter: RepositoryGetter<any>): Interceptor => {
         next: () => ValueOrPromise<InvocationResult>
     ) => {
         const isExists = await repositoryGetter(
-            invocationCtx.target as DMSController
+            invocationCtx.target as Controller
         ).exists(invocationCtx.args[0]);
 
         if (!isExists) {

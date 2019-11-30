@@ -1,20 +1,16 @@
 import { BootMixin } from "@loopback/boot";
 import { ServiceMixin } from "@loopback/service-proxy";
 import { RepositoryMixin } from "@loopback/repository";
-import {
-    Application as LBApplication,
-    ApplicationConfig,
-    CoreBindings
-} from "@loopback/core";
+import { Application, ApplicationConfig, CoreBindings } from "@loopback/core";
 import { AuthorizationMixin } from "loopback-authorization-extension";
 
 import { Permissions } from "@acl/permissions";
 
-import { RestServer } from "@acl/servers/rest/server";
-import { GQLServer } from "@acl/servers/graphql/server";
+import { ACLRestServer } from "@acl/servers/rest/server";
+import { ACLGQLServer } from "@acl/servers/graphql/server";
 
-export class Application extends AuthorizationMixin(
-    BootMixin(ServiceMixin(RepositoryMixin(LBApplication))),
+export class ACLApplication extends AuthorizationMixin(
+    BootMixin(ServiceMixin(RepositoryMixin(Application))),
     {
         permissions: Permissions
     }
@@ -39,7 +35,7 @@ export class Application extends AuthorizationMixin(
         });
 
         // Servers binding
-        this.server(DMSRestServer);
-        this.server(DMSGQLServer);
+        this.server(ACLRestServer);
+        this.server(ACLGQLServer);
     }
 }

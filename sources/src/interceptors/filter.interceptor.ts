@@ -4,12 +4,7 @@ import {
     InvocationResult,
     ValueOrPromise
 } from "@loopback/context";
-import { Entity, Filter } from "@loopback/repository";
-
-export type FilterMethod<Model extends Entity> = (
-    context: InvocationContext,
-    filter: Filter<Model>
-) => Filter<Model>;
+import { FilterMethod } from "@acl/types";
 
 export const filter = (
     argIndex: number,

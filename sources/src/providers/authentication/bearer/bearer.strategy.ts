@@ -3,13 +3,13 @@ import { HttpErrors, Request } from "@loopback/rest";
 import { AuthenticationStrategy, TokenService } from "@loopback/authentication";
 import { UserProfile } from "@loopback/security";
 
-import { DMSBindings } from "@dms/keys";
+import { ACLBindings } from "@acl/keys";
 
 export class BearerAuthenticationStrategy implements AuthenticationStrategy {
     name: string = "bearer";
 
     constructor(
-        @inject(DMSBindings.TOKEN_SERVICE)
+        @inject(ACLBindings.TOKEN_SERVICE)
         public tokenService: TokenService
     ) {}
 

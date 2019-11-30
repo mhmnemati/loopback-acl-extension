@@ -25,15 +25,10 @@ import { authenticate } from "@loopback/authentication";
 import { authorize, Condition } from "loopback-authorization-extension";
 import { Permissions } from "@acl/permissions";
 import { intercept } from "@loopback/core";
-import {
-    exist,
-    filter,
-    unique,
-    RepositoryGetter,
-    FilterMethod
-} from "@acl/interceptors";
+import { exist, filter, unique } from "@acl/interceptors";
+import { RepositoryGetter, FilterMethod } from "@acl/types";
 
-export function DMSControllerMixin<Model extends Entity>(
+export function ACLControllerMixin<Model extends Entity>(
     ctor: typeof Entity & { prototype: Model },
     basePath: string,
     repositoryGetter: RepositoryGetter<Model>,

@@ -1,5 +1,5 @@
-import { DMSController } from "@dms/servers/rest/controller";
-import { Code, User } from "@dms/models";
+import { ACLController } from "@acl/servers/rest/controller";
+import { Code, User } from "@acl/models";
 
 import {
     get,
@@ -11,7 +11,7 @@ import {
 
 const randomize = require("randomatic");
 
-export class UsersPasswordController extends DMSController {
+export class UsersPasswordController extends ACLController {
     @get("/users/password/{code}", {
         responses: {
             "204": {

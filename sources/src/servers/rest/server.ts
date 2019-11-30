@@ -22,13 +22,13 @@ import {
     BearerTokenService,
     BearerAuthenticationStrategy
 } from "@acl/providers";
-import { Bindings } from "@acl/keys";
+import { ACLBindings } from "@acl/keys";
 
 /** Authorization binding imports */
 import { AuthorizationComponent } from "loopback-authorization-extension";
 
 @lifeCycleObserver("server-rest")
-export class RestServer extends RestServer {
+export class ACLRestServer extends RestServer {
     constructor(
         @inject(CoreBindings.APPLICATION_INSTANCE)
         app: Application,
@@ -52,7 +52,7 @@ export class RestServer extends RestServer {
     }
 
     private bindAuthentication(app: Application) {
-        app.bind(DMSBindings.TOKEN_SERVICE).toClass(BearerTokenService);
+        app.bind(ACLBindings.TOKEN_SERVICE).toClass(BearerTokenService);
         registerAuthenticationStrategy(app, BearerAuthenticationStrategy);
         app.component(AuthenticationComponent);
     }

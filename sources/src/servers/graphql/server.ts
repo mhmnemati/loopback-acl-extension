@@ -6,14 +6,14 @@ import {
     CoreBindings
 } from "@loopback/core";
 
-import { Application } from "@acl/application";
-import { RestServer } from "@acl/servers/rest/server";
+import { ACLApplication } from "@acl/application";
+import { ACLRestServer } from "@acl/servers/rest/server";
 
 import { ApolloServer } from "apollo-server";
 import { createGraphQlSchema } from "openapi-to-graphql";
 
 @lifeCycleObserver("server-graphql")
-export class GQLServer extends Context implements Server {
+export class ACLGQLServer extends Context implements Server {
     private _listening: boolean = false;
     private _server: ApolloServer;
 
@@ -28,7 +28,7 @@ export class GQLServer extends Context implements Server {
         return this._listening;
     }
     async start() {
-        const restServer = this.getSync<RestServer>("servers.RestServer");
+        const restServer = this.getSync<ACLRestServer>("servers.ACLRestServer");
 
         // Fix: openapi default servers not added
         let openApiSpec: any = restServer.getApiSpec();

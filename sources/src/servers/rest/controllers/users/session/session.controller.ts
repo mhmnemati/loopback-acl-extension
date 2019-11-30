@@ -1,10 +1,10 @@
-import { DMSController } from "@dms/servers/rest/controller";
-import { Session, Token, User } from "@dms/models";
+import { ACLController } from "@acl/servers/rest/controller";
+import { Session, Token, User } from "@acl/models";
 
 import { post, get, del, requestBody, getModelSchemaRef } from "@loopback/rest";
 import { authenticate } from "@loopback/authentication";
 
-export class UsersSessionController extends DMSController {
+export class UsersSessionController extends ACLController {
     @post("/users/session", {
         responses: {
             "200": {

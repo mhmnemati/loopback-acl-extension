@@ -1,14 +1,14 @@
-import { DMSController } from "@dms/servers/rest/controller";
-import { User } from "@dms/models";
+import { ACLController } from "@acl/servers/rest/controller";
+import { User } from "@acl/models";
 
 import { get, put, requestBody, getModelSchemaRef } from "@loopback/rest";
 import { authenticate } from "@loopback/authentication";
 import { authorize } from "loopback-authorization-extension";
-import { Permissions } from "@dms/permissions";
+import { Permissions } from "@acl/permissions";
 import { intercept } from "@loopback/core";
-import { unique } from "@dms/interceptors";
+import { unique } from "@acl/interceptors";
 
-export class UsersSelfController extends DMSController {
+export class UsersSelfController extends ACLController {
     @authorize<Permissions>("USERS_READ_SELF")
     @authenticate("bearer")
     @get("/users/self", {

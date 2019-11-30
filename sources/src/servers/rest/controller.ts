@@ -23,7 +23,7 @@ import {
     RolePermissionRepository
 } from "loopback-authorization-extension";
 
-export class Controller {
+export class ACLController {
     constructor(
         @inject(RestBindings.Http.REQUEST)
         public request: Request,

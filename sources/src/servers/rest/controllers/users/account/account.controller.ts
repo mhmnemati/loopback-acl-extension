@@ -1,5 +1,5 @@
-import { DMSController } from "@dms/servers/rest/controller";
-import { Code, User } from "@dms/models";
+import { ACLController } from "@acl/servers/rest/controller";
+import { Code, User } from "@acl/models";
 
 import {
     post,
@@ -11,11 +11,11 @@ import {
     getModelSchemaRef
 } from "@loopback/rest";
 import { intercept } from "@loopback/core";
-import { unique } from "@dms/interceptors";
+import { unique } from "@acl/interceptors";
 
 const randomize = require("randomatic");
 
-export class UsersAccountController extends DMSController {
+export class UsersAccountController extends ACLController {
     @intercept(unique<User>(controller => controller.userRepository, User, 0))
     @post("/users/account", {
         responses: {

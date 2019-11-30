@@ -3,15 +3,15 @@ import { HttpErrors, Request } from "@loopback/rest";
 import { repository } from "@loopback/repository";
 import { TokenService } from "@loopback/authentication";
 
-import { Session, User } from "@dms/models";
-import { SessionRepository, UserRepository } from "@dms/repositories";
+import { Session, User } from "@acl/models";
+import { SessionRepository, UserRepository } from "@acl/repositories";
 
 import {
     AuthorizationBindings,
     GetUserPermissionsFn
 } from "loopback-authorization-extension";
 
-import { Permissions } from "@dms/permissions";
+import { Permissions } from "@acl/permissions";
 
 import { randomBytes } from "crypto";
 

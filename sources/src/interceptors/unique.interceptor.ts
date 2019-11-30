@@ -4,13 +4,10 @@ import {
     InvocationResult,
     ValueOrPromise
 } from "@loopback/context";
-import { DefaultCrudRepository, Entity } from "@loopback/repository";
+import { Entity } from "@loopback/repository";
+import { RepositoryGetter } from "@acl/types";
 
-import { DMSController } from "@dms/servers/rest/controller";
-
-type RepositoryGetter<Model extends Entity> = (
-    controller: DMSController
-) => DefaultCrudRepository<Model, any, any>;
+import { Controller } from "@acl/servers/rest/controller";
 
 export function unique<Model extends Entity>(
     repositoryGetter: RepositoryGetter<any>,
@@ -23,7 +20,7 @@ export function unique<Model extends Entity>(
     ) => {
         /** Get repository */
         const repository = await repositoryGetter(
-            invocationCtx.target as DMSController
+            invocationCtx.target as Controller
         );
 
         /** Get model from arguments by arg index number */

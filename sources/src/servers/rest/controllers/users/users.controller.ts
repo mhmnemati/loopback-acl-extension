@@ -1,7 +1,7 @@
-import { DMSControllerMixin } from "@dms/servers/rest/crud.mixin";
-import { User } from "@dms/models";
+import { ACLControllerMixin } from "@acl/servers/rest/crud.mixin";
+import { User } from "@acl/models";
 
-export class UsersController extends DMSControllerMixin<User>(
+export class UsersController extends ACLControllerMixin<User>(
     User,
     "/users",
     controller => controller.userRepository,
