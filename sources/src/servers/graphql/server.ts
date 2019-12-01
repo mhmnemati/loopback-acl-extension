@@ -3,10 +3,10 @@ import {
     lifeCycleObserver,
     Context,
     Server,
-    CoreBindings
+    CoreBindings,
+    Application
 } from "@loopback/core";
 
-import { ACLApplication } from "@acl/application";
 import { ACLRestServer } from "@acl/servers/rest/server";
 
 import { ApolloServer } from "apollo-server";
@@ -19,7 +19,7 @@ export class ACLGQLServer extends Context implements Server {
 
     constructor(
         @inject(CoreBindings.APPLICATION_INSTANCE)
-        app: ACLApplication
+        app: Application
     ) {
         super(app);
     }

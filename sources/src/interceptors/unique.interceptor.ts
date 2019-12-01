@@ -7,7 +7,7 @@ import {
 import { Entity } from "@loopback/repository";
 import { RepositoryGetter } from "@acl/types";
 
-import { Controller } from "@acl/servers/rest/controller";
+import { ACLController } from "@acl/servers/rest/controller";
 
 export function unique<Model extends Entity>(
     repositoryGetter: RepositoryGetter<any>,
@@ -20,7 +20,7 @@ export function unique<Model extends Entity>(
     ) => {
         /** Get repository */
         const repository = await repositoryGetter(
-            invocationCtx.target as Controller
+            invocationCtx.target as ACLController
         );
 
         /** Get model from arguments by arg index number */

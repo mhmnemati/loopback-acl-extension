@@ -1,4 +1,4 @@
-import { Controller } from "@acl/servers/rest/controller";
+import { ACLController } from "@acl/servers/rest/controller";
 import {
     Entity,
     Count,
@@ -39,8 +39,8 @@ export function ACLControllerMixin<Model extends Entity>(
         delete: Condition<Permissions>;
     },
     filterMethod: FilterMethod<Model>
-): Class<Controller> {
-    class CRUDController extends Controller {
+): Class<ACLController> {
+    class CRUDController extends ACLController {
         @intercept(unique<Model>(repositoryGetter, ctor, 0))
         @authorize<Permissions>(userPermission.create)
         @authenticate("bearer")

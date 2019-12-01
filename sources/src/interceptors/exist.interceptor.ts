@@ -6,7 +6,7 @@ import {
 } from "@loopback/context";
 import { RepositoryGetter } from "@acl/types";
 
-import { Controller } from "@acl/servers/rest/controller";
+import { ACLController } from "@acl/servers/rest/controller";
 
 export const exist = (repositoryGetter: RepositoryGetter<any>): Interceptor => {
     return async (
@@ -14,7 +14,7 @@ export const exist = (repositoryGetter: RepositoryGetter<any>): Interceptor => {
         next: () => ValueOrPromise<InvocationResult>
     ) => {
         const isExists = await repositoryGetter(
-            invocationCtx.target as Controller
+            invocationCtx.target as ACLController
         ).exists(invocationCtx.args[0]);
 
         if (!isExists) {

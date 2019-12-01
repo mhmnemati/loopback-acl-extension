@@ -1,24 +1,33 @@
 import {
-    repository,
     DefaultKeyValueRepository,
-    BelongsToAccessor
+    BelongsToAccessor,
+    juggler
 } from "@loopback/repository";
-import { inject } from "@loopback/core";
 
 import { Session, User } from "@acl/models";
 import { UserRepository } from "@acl/repositories";
+import {
+    bindSessionRepository,
+    injectSessionModel,
+    injectCDBMSDataSource,
+    injectUserRepository
+} from "@acl/keys";
 
+@bindSessionRepository()
 export class SessionRepository extends DefaultKeyValueRepository<Session> {
     public readonly user: BelongsToAccessor<User, string>;
 
     constructor(
-        @inject("datasources.Redis") dataSource: RedisDataSource,
-        @repository(UserRepository)
-        protected userRepository: UserRepository
+        @injectSessionModel()
+        ctor: (typeof Session & { prototype: Session })[],
+        @injectCDBMSDataSource()
+        dataSource: juggler.DataSource[],
+        @injectUserRepository()
+        userRepository: UserRepository[]
     ) {
-        super(Session, dataSource);
+        super(ctor[0], dataSource[0]);
 
         this.user = ((sourceId: string) =>
-            userRepository.findById(sourceId)) as any;
+            userRepository[0].findById(sourceId)) as any;
     }
 }

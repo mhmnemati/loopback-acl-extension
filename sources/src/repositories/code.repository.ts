@@ -1,24 +1,33 @@
 import {
-    repository,
     DefaultKeyValueRepository,
-    BelongsToAccessor
+    BelongsToAccessor,
+    juggler
 } from "@loopback/repository";
-import { inject } from "@loopback/core";
 
 import { Code, User } from "@acl/models";
 import { UserRepository } from "@acl/repositories";
+import {
+    bindCodeRepository,
+    injectCodeModel,
+    injectCDBMSDataSource,
+    injectUserRepository
+} from "@acl/keys";
 
+@bindCodeRepository()
 export class CodeRepository extends DefaultKeyValueRepository<Code> {
     public readonly user: BelongsToAccessor<User, string>;
 
     constructor(
-        @inject("datasources.Redis") dataSource: RedisDataSource,
-        @repository(UserRepository)
-        protected userRepository: UserRepository
+        @injectCodeModel()
+        ctor: (typeof Code & { prototype: Code })[],
+        @injectCDBMSDataSource()
+        dataSource: juggler.DataSource[],
+        @injectUserRepository()
+        userRepository: UserRepository[]
     ) {
-        super(Code, dataSource);
+        super(ctor[0], dataSource[0]);
 
         this.user = ((sourceId: string) =>
-            userRepository.findById(sourceId)) as any;
+            userRepository[0].findById(sourceId)) as any;
     }
 }

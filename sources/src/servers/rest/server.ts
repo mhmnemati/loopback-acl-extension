@@ -1,6 +1,10 @@
-import { inject, lifeCycleObserver, CoreBindings } from "@loopback/core";
+import {
+    inject,
+    lifeCycleObserver,
+    CoreBindings,
+    Application
+} from "@loopback/core";
 
-import { Application } from "@acl/application";
 import { Sequence } from "@acl/servers/rest/sequence";
 import * as path from "path";
 
