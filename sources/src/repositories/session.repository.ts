@@ -1,33 +1,31 @@
+import { inject } from "@loopback/context";
 import {
-    DefaultKeyValueRepository,
+    juggler,
     BelongsToAccessor,
-    juggler
+    DefaultKeyValueRepository
 } from "@loopback/repository";
+import { Ctor } from "loopback-history-extension";
+import { UserRepository } from "loopback-authorization-extension";
 
-import { Session, User } from "@acl/models";
-import { UserRepository } from "@acl/repositories";
-import {
-    bindSessionRepository,
-    injectSessionModel,
-    injectCDBMSDataSource,
-    injectUserRepository
-} from "@acl/keys";
+import { PrivateACLBindings, ACLBindings } from "../keys";
+import { Session, User, UserRelations } from "../models";
 
-@bindSessionRepository()
-export class SessionRepository extends DefaultKeyValueRepository<Session> {
+export class SessionRepository<
+    Model extends Session
+> extends DefaultKeyValueRepository<Model> {
     public readonly user: BelongsToAccessor<User, string>;
 
     constructor(
-        @injectSessionModel()
-        ctor: (typeof Session & { prototype: Session })[],
-        @injectCDBMSDataSource()
-        dataSource: juggler.DataSource[],
-        @injectUserRepository()
-        userRepository: UserRepository[]
+        @inject(PrivateACLBindings.SESSION_MODEL)
+        ctor: Ctor<Model>,
+        @inject(PrivateACLBindings.DATASOURCE_CACHE)
+        dataSource: juggler.DataSource,
+        @inject(ACLBindings.USER_REPOSITORY)
+        userRepository: UserRepository<User, UserRelations>
     ) {
-        super(ctor[0], dataSource[0]);
+        super(ctor, dataSource);
 
         this.user = ((sourceId: string) =>
-            userRepository[0].findById(sourceId)) as any;
+            userRepository.findById(sourceId)) as any;
     }
 }

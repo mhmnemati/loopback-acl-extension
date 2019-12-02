@@ -2,12 +2,25 @@ import { Context, BindingKey, bind } from "@loopback/context";
 import { Ctor } from "loopback-history-extension";
 import { juggler } from "@loopback/repository";
 
-import { User, Group, Role, Permission } from "./models";
+import {
+    User,
+    UserRelations,
+    Group,
+    GroupRelations,
+    Role,
+    RoleRelations,
+    Permission,
+    PermissionRelations,
+    Session,
+    Code
+} from "./models";
 import {
     UserRepository,
     GroupRepository,
     RoleRepository,
-    PermissionRepository
+    PermissionRepository,
+    SessionRepository,
+    CodeRepository
 } from "./repositories";
 
 import {
@@ -28,6 +41,9 @@ export namespace PrivateACLBindings {
      * 2. GroupModel
      * 3. RoleModel
      * 4. PermissionModel
+     *
+     * 5. SessionModel
+     * 6. CodeModel
      */
     export const USER_MODEL = BindingKey.create<Ctor<User>>(
         "private.acl.models.user"
@@ -40,6 +56,13 @@ export namespace PrivateACLBindings {
     );
     export const PERMISSION_MODEL = BindingKey.create<Ctor<Permission>>(
         "private.acl.models.permission"
+    );
+
+    export const SESSION_MODEL = BindingKey.create<Ctor<Session>>(
+        "private.acl.models.session"
+    );
+    export const CODE_MODEL = BindingKey.create<Ctor<Code>>(
+        "private.acl.models.code"
     );
 
     /**
@@ -67,19 +90,29 @@ export namespace ACLBindings {
      * 2. GroupRepository
      * 3. RoleRepository
      * 4. PermissionRepository
+     *
+     * 5. SessionRepository
+     * 6. CodeRepository
      */
-    export const USER_REPOSITORY = BindingKey.create<UserRepository>(
-        "acl.repositories.user"
-    );
-    export const GROUP_REPOSITORY = BindingKey.create<GroupRepository>(
-        "acl.repositories.group"
-    );
-    export const ROLE_REPOSITORY = BindingKey.create<RoleRepository>(
-        "acl.repositories.role"
-    );
+    export const USER_REPOSITORY = BindingKey.create<
+        UserRepository<User, UserRelations>
+    >("acl.repositories.user");
+    export const GROUP_REPOSITORY = BindingKey.create<
+        GroupRepository<Group, GroupRelations>
+    >("acl.repositories.group");
+    export const ROLE_REPOSITORY = BindingKey.create<
+        RoleRepository<Role, RoleRelations>
+    >("acl.repositories.role");
     export const PERMISSION_REPOSITORY = BindingKey.create<
-        PermissionRepository
+        PermissionRepository<Permission, PermissionRelations>
     >("acl.repositories.permission");
+
+    export const SESSION_REPOSITORY = BindingKey.create<
+        SessionRepository<Session>
+    >("acl.repositories.session");
+    export const CODE_REPOSITORY = BindingKey.create<CodeRepository<Code>>(
+        "acl.repositories.code"
+    );
 
     /**
      * Relation Repository key:
@@ -117,6 +150,9 @@ export namespace ACLBindings {
  * 4. GroupRepository
  * 5. RoleRepository
  * 6. PermissionRepository
+ *
+ * 7. SessionRepository
+ * 8. CodeRepository
  */
 export type BindACLKey =
     | "DataSourceRelational"
@@ -124,7 +160,9 @@ export type BindACLKey =
     | "UserRepository"
     | "GroupRepository"
     | "RoleRepository"
-    | "PermissionRepository";
+    | "PermissionRepository"
+    | "SessionRepository"
+    | "CodeRepository";
 export function bindAuthorization(key: BindACLKey) {
     return bind(binding => {
         binding.tag({
