@@ -1,10 +1,4 @@
-import {
-    Entity,
-    Model,
-    model,
-    property,
-    belongsTo
-} from "@loopback/repository";
+import { Entity, model, property, belongsTo } from "@loopback/repository";
 import { User, UserWithRelations } from "@acl/models";
 
 @model({ settings: {} })
@@ -54,16 +48,3 @@ export interface SessionRelations {
 }
 
 export type SessionWithRelations = Session & SessionRelations;
-
-@model({ settings: {} })
-export class Token extends Model {
-    @property({
-        type: "string",
-        required: true
-    })
-    token: string;
-
-    constructor(data?: Partial<Token>) {
-        super(data);
-    }
-}
