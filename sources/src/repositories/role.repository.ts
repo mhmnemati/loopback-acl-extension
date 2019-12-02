@@ -1,21 +1,21 @@
+import { inject } from "@loopback/context";
 import { juggler } from "@loopback/repository";
+import { Ctor } from "loopback-history-extension";
 import { RoleRepository as RoleModelRepository } from "loopback-authorization-extension";
 
-import { Role, RoleRelations } from "@acl/models";
-import {
-    bindRoleRepository,
-    injectRoleModel,
-    injectRDBMSDataSource
-} from "@acl/keys";
+import { PrivateACLBindings } from "../keys";
+import { Role, RoleRelations } from "../models";
 
-@bindRoleRepository()
-export class RoleRepository extends RoleModelRepository<Role, RoleRelations> {
+export class RoleRepository<
+    Model extends Role,
+    ModelRelations extends RoleRelations
+> extends RoleModelRepository<Model, ModelRelations> {
     constructor(
-        @injectRoleModel()
-        ctor: typeof Role & { prototype: Role },
-        @injectRDBMSDataSource()
-        dataSource: juggler.DataSource[]
+        @inject(PrivateACLBindings.ROLE_MODEL)
+        ctor: Ctor<Model>,
+        @inject(PrivateACLBindings.DATASOURCE_RELATIONAL)
+        dataSource: juggler.DataSource
     ) {
-        super(ctor, dataSource[0]);
+        super(ctor, dataSource);
     }
 }

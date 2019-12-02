@@ -1,24 +1,21 @@
+import { inject } from "@loopback/context";
 import { juggler } from "@loopback/repository";
+import { Ctor } from "loopback-history-extension";
 import { PermissionRepository as PermissionModelRepository } from "loopback-authorization-extension";
 
-import { Permission, PermissionRelations } from "@acl/models";
-import {
-    bindPermissionRepository,
-    injectPermissionModel,
-    injectRDBMSDataSource
-} from "@acl/keys";
+import { PrivateACLBindings } from "../keys";
+import { Permission, PermissionRelations } from "../models";
 
-@bindPermissionRepository()
-export class PermissionRepository extends PermissionModelRepository<
-    Permission,
-    PermissionRelations
-> {
+export class PermissionRepository<
+    Model extends Permission,
+    ModelRelations extends PermissionRelations
+> extends PermissionModelRepository<Model, ModelRelations> {
     constructor(
-        @injectPermissionModel()
-        ctor: typeof Permission & { prototype: Permission },
-        @injectRDBMSDataSource()
-        dataSource: juggler.DataSource[]
+        @inject(PrivateACLBindings.PERMISSION_MODEL)
+        ctor: Ctor<Model>,
+        @inject(PrivateACLBindings.DATASOURCE_RELATIONAL)
+        dataSource: juggler.DataSource
     ) {
-        super(ctor, dataSource[0]);
+        super(ctor, dataSource);
     }
 }

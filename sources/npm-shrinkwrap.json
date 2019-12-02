@@ -3198,9 +3198,9 @@
             "integrity": "sha512-XsP+KhQif4bjX1kbuSiySJFNAehNxgLb6hPRGJ9QsUr8ajHkuXGdrHmFUTUUXhDwVX2R5bY4JNZEwbUiMhV+MA=="
         },
         "loopback-authorization-extension": {
-            "version": "2.1.0",
-            "resolved": "https://registry.npmjs.org/loopback-authorization-extension/-/loopback-authorization-extension-2.1.0.tgz",
-            "integrity": "sha512-Gz6SmSxn6lKwFnMhstES4S/Buj25tyXJVzuBPWXr8CBLZM+F2jPuzUpyNQSpbz40eao4DP22BjhflMAPqAyHIA==",
+            "version": "3.2.0",
+            "resolved": "https://registry.npmjs.org/loopback-authorization-extension/-/loopback-authorization-extension-3.2.0.tgz",
+            "integrity": "sha512-4ILvVs6TnkeobtjIYH1F+3/kbw6/iQdkoJ+tlZO70EAqCupIFogOQuDCPZ/xezshTgDLd2WZFLwfYOneu/lz7Q==",
             "requires": {
                 "@loopback/boot": "^1.5.10",
                 "@loopback/context": "^1.23.4",
@@ -3208,7 +3208,7 @@
                 "@loopback/repository": "^1.15.3",
                 "@loopback/rest": "^1.22.0",
                 "loopback-connector-mysql": "^5.4.2",
-                "loopback-history-extension": "^1.0.0"
+                "loopback-history-extension": "^1.1.0"
             }
         },
         "loopback-connector": {
@@ -3289,9 +3289,9 @@
             }
         },
         "loopback-history-extension": {
-            "version": "1.0.0",
-            "resolved": "https://registry.npmjs.org/loopback-history-extension/-/loopback-history-extension-1.0.0.tgz",
-            "integrity": "sha512-fPMluNS7sO2YWjfdhy9T1EGn36aBSuIydx6txvKqutB+TGkd8zJBLH+7kRxgTZ/jKNqTxlGdT+f0F8Y9oApzfg==",
+            "version": "1.1.0",
+            "resolved": "https://registry.npmjs.org/loopback-history-extension/-/loopback-history-extension-1.1.0.tgz",
+            "integrity": "sha512-MU92Z1uLSaZZ1/2IkEEMl+35u+keYxqJbnAnhmXnvgAtM1SEKrPdC/fMBShU1dkKeEvnTgGQjXEVFrOTj2vpEQ==",
             "requires": {
                 "@loopback/boot": "^1.5.9",
                 "@loopback/context": "^1.23.3",

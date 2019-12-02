@@ -1,24 +1,21 @@
+import { inject } from "@loopback/context";
 import { juggler } from "@loopback/repository";
+import { Ctor } from "loopback-history-extension";
 import { GroupRepository as GroupModelRepository } from "loopback-authorization-extension";
 
-import { Group, GroupRelations } from "@acl/models";
-import {
-    bindGroupRepository,
-    injectGroupModel,
-    injectRDBMSDataSource
-} from "@acl/keys";
+import { PrivateACLBindings } from "../keys";
+import { Group, GroupRelations } from "../models";
 
-@bindGroupRepository()
-export class GroupRepository extends GroupModelRepository<
-    Group,
-    GroupRelations
-> {
+export class GroupRepository<
+    Model extends Group,
+    ModelRelations extends GroupRelations
+> extends GroupModelRepository<Model, ModelRelations> {
     constructor(
-        @injectGroupModel()
-        ctor: typeof Group & { prototype: Group },
-        @injectRDBMSDataSource()
-        dataSource: juggler.DataSource[]
+        @inject(PrivateACLBindings.GROUP_MODEL)
+        ctor: Ctor<Model>,
+        @inject(PrivateACLBindings.DATASOURCE_RELATIONAL)
+        dataSource: juggler.DataSource
     ) {
-        super(ctor, dataSource[0]);
+        super(ctor, dataSource);
     }
 }

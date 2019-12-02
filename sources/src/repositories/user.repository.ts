@@ -1,21 +1,21 @@
+import { inject } from "@loopback/context";
 import { juggler } from "@loopback/repository";
+import { Ctor } from "loopback-history-extension";
 import { UserRepository as UserModelRepository } from "loopback-authorization-extension";
 
-import { User, UserRelations } from "@acl/models";
-import {
-    bindUserRepository,
-    injectUserModel,
-    injectRDBMSDataSource
-} from "@acl/keys";
+import { PrivateACLBindings } from "../keys";
+import { User, UserRelations } from "../models";
 
-@bindUserRepository()
-export class UserRepository extends UserModelRepository<User, UserRelations> {
+export class UserRepository<
+    Model extends User,
+    ModelRelations extends UserRelations
+> extends UserModelRepository<Model, ModelRelations> {
     constructor(
-        @injectUserModel()
-        ctor: typeof User & { prototype: User },
-        @injectRDBMSDataSource()
-        dataSource: juggler.DataSource[]
+        @inject(PrivateACLBindings.USER_MODEL)
+        ctor: Ctor<Model>,
+        @inject(PrivateACLBindings.DATASOURCE_RELATIONAL)
+        dataSource: juggler.DataSource
     ) {
-        super(ctor, dataSource[0]);
+        super(ctor, dataSource);
     }
 }
