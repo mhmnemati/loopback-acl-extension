@@ -36,7 +36,7 @@ export class ACLController {
     constructor(
         @inject(RestBindings.Http.REQUEST)
         public request: Request,
-        @inject(PrivateACLBindings.AUTHENTICATION_TOKEN_PROVIDER)
+        @inject(PrivateACLBindings.TOKEN_PROVIDER)
         public tokenService: TokenService,
         @inject(AuthenticationBindings.CURRENT_USER, { optional: true })
         public session: Session,

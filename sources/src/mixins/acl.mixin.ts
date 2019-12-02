@@ -2,6 +2,8 @@ import { Context } from "@loopback/context";
 import { Class } from "@loopback/repository";
 import { Ctor } from "loopback-history-extension";
 
+import { registerAuthenticationStrategy } from "@loopback/authentication";
+
 import { PrivateACLBindings, ACLBindings, findACL } from "@acl/keys";
 import { ACLPermissions } from "@acl/types";
 
@@ -71,36 +73,19 @@ export function AuthorizationMixin<T extends Class<any>>(
         /**
          * Find, Bind Authentication Token Provider
          */
-        let authenticationTokenProvider = findACL(
-            ctx,
-            "AuthenticationTokenProvider"
-        );
-        if (authenticationTokenProvider) {
-            ctx.bind(PrivateACLBindings.AUTHENTICATION_TOKEN_PROVIDER).to(
-                authenticationTokenProvider
-            );
+        let tokenProvider = findACL(ctx, "TokenProvider");
+        if (tokenProvider) {
+            ctx.bind(PrivateACLBindings.TOKEN_PROVIDER).to(tokenProvider);
         } else {
-            ctx.bind(PrivateACLBindings.AUTHENTICATION_TOKEN_PROVIDER).toClass(
+            ctx.bind(PrivateACLBindings.TOKEN_PROVIDER).toClass(
                 BearerTokenService
             );
         }
 
         /**
-         * Find, Bind Authentication Strategy Provider
+         * Bind Authentication Strategy Provider
          */
-        let authenticationStrategyProvider = findACL(
-            ctx,
-            "AuthenticationStrategyProvider"
-        );
-        if (authenticationStrategyProvider) {
-            ctx.bind(PrivateACLBindings.AUTHENTICATION_STRATEGY_PROVIDER).to(
-                authenticationStrategyProvider
-            );
-        } else {
-            ctx.bind(
-                PrivateACLBindings.AUTHENTICATION_STRATEGY_PROVIDER
-            ).toClass(BearerAuthenticationStrategy);
-        }
+        registerAuthenticationStrategy(ctx, BearerAuthenticationStrategy);
     };
 
     const bootRepositories = (ctx: Context) => {

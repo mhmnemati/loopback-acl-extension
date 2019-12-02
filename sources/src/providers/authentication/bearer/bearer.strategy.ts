@@ -9,7 +9,7 @@ export class BearerAuthenticationStrategy implements AuthenticationStrategy {
     name: string = "bearer";
 
     constructor(
-        @inject(PrivateACLBindings.AUTHENTICATION_TOKEN_PROVIDER)
+        @inject(PrivateACLBindings.TOKEN_PROVIDER)
         public tokenService: TokenService
     ) {}
 

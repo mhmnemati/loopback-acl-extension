@@ -18,10 +18,7 @@ import {
 import { RestExplorerComponent } from "@loopback/rest-explorer";
 
 /** Authentication binding imports */
-import {
-    AuthenticationComponent,
-    registerAuthenticationStrategy
-} from "@loopback/authentication";
+import { AuthenticationComponent } from "@loopback/authentication";
 
 /** Authorization binding imports */
 import { AuthorizationComponent } from "loopback-authorization-extension";
@@ -51,7 +48,6 @@ export class ACLRestServer extends RestServer {
     }
 
     private bindAuthentication(app: Application) {
-        // registerAuthenticationStrategy(app, BearerAuthenticationStrategy);
         app.component(AuthenticationComponent);
     }
 

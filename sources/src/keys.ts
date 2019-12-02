@@ -2,7 +2,7 @@ import { Context, BindingKey, bind } from "@loopback/context";
 import { Ctor } from "loopback-history-extension";
 import { juggler } from "@loopback/repository";
 
-import { TokenService, AuthenticationStrategy } from "@loopback/authentication";
+import { TokenService } from "@loopback/authentication";
 
 import {
     User,
@@ -83,15 +83,11 @@ export namespace PrivateACLBindings {
     /**
      * Provider key
      *
-     * 1. AuthenticationTokenProvider
-     * 2. AuthenticationStrategyProvider
+     * 1. TokenProvider
      */
-    export const AUTHENTICATION_TOKEN_PROVIDER = BindingKey.create<
-        TokenService
-    >("private.acl.providers.token");
-    export const AUTHENTICATION_STRATEGY_PROVIDER = BindingKey.create<
-        AuthenticationStrategy
-    >("private.acl.providers.strategy");
+    export const TOKEN_PROVIDER = BindingKey.create<TokenService>(
+        "private.acl.providers.token"
+    );
 }
 
 /**
@@ -157,8 +153,7 @@ export namespace ACLBindings {
  * 1. DataSourceRelational
  * 2. DataSourceCache
  *
- * 3. AuthenticationTokenProvider
- * 4. AuthenticationStrategyProvider
+ * 3. TokenProvider
  *
  * 5. UserRepository
  * 6. GroupRepository
@@ -171,8 +166,7 @@ export namespace ACLBindings {
 export type BindACLKey =
     | "RelationalDataSource"
     | "CacheDataSource"
-    | "AuthenticationTokenProvider"
-    | "AuthenticationStrategyProvider"
+    | "TokenProvider"
     | "UserRepository"
     | "GroupRepository"
     | "RoleRepository"
