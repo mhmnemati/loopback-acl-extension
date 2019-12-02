@@ -2,6 +2,7 @@ import { Entity, DefaultCrudRepository, Filter } from "@loopback/repository";
 import { PermissionsList } from "loopback-authorization-extension";
 import { ACLController } from "@acl/servers/rest/controller";
 import { InvocationContext } from "@loopback/context";
+import { Ctor } from "loopback-history-extension";
 
 /**
  * Default Permissions
@@ -50,7 +51,7 @@ export type RepositoryGetter<Model extends Entity> = (
 /** Get Model Ctor From Controller */
 export type ModelGetter<Model extends Entity> = (
     controller: ACLController
-) => typeof Entity & { prototype: Model };
+) => Ctor<Model>;
 
 /** Filter Handler */
 export type FilterMethod<Model extends Entity> = (

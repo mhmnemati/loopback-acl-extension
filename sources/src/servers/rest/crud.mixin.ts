@@ -19,6 +19,7 @@ import {
     getWhereSchemaFor,
     getFilterSchemaFor
 } from "@loopback/rest";
+import { Ctor } from "loopback-history-extension";
 // import { getFilterSchemaFor } from "@acl/servers/rest/controller";
 
 import { authenticate } from "@loopback/authentication";
@@ -28,7 +29,7 @@ import { exist, filter, unique } from "@acl/interceptors";
 import { ACLPermissions, RepositoryGetter, FilterMethod } from "@acl/types";
 
 export function ACLControllerMixin<Model extends Entity>(
-    ctor: typeof Entity & { prototype: Model },
+    ctor: Ctor<Model>,
     basePath: string,
     repositoryGetter: RepositoryGetter<Model>,
     userPermission: {

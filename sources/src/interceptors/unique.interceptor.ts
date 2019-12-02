@@ -5,6 +5,7 @@ import {
     ValueOrPromise
 } from "@loopback/context";
 import { Entity } from "@loopback/repository";
+import { Ctor } from "loopback-history-extension";
 
 import { RepositoryGetter } from "@acl/types";
 
@@ -12,7 +13,7 @@ import { ACLController } from "@acl/servers/rest/controller";
 
 export function unique<Model extends Entity>(
     repositoryGetter: RepositoryGetter<any>,
-    ctor: typeof Entity & { prototype: Model },
+    ctor: Ctor<Model>,
     argIndex: number
 ): Interceptor {
     return async (
