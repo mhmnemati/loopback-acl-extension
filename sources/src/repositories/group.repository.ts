@@ -13,7 +13,7 @@ export class GroupRepository<
     constructor(
         @inject(PrivateACLBindings.GROUP_MODEL)
         ctor: Ctor<Model>,
-        @inject(PrivateACLBindings.DATASOURCE_RELATIONAL)
+        @inject(PrivateACLBindings.RELATIONAL_DATASOURCE)
         dataSource: juggler.DataSource
     ) {
         super(ctor, dataSource);

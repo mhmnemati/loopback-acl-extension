@@ -1,28 +1,28 @@
 import { inject } from "@loopback/context";
 import { HttpErrors, Request } from "@loopback/rest";
-import { repository } from "@loopback/repository";
 import { TokenService } from "@loopback/authentication";
-
-import { Session, User } from "@acl/models";
-import { SessionRepository, UserRepository } from "@acl/repositories";
 
 import {
     AuthorizationBindings,
     GetUserPermissionsFn
 } from "loopback-authorization-extension";
 
-import { Permissions } from "@acl/permissions";
+import { ACLBindings } from "@acl/keys";
+import { ACLPermissions } from "@acl/types";
+
+import { Session, User, UserRelations } from "@acl/models";
+import { SessionRepository, UserRepository } from "@acl/repositories";
 
 import { randomBytes } from "crypto";
 
 export class BearerTokenService implements TokenService {
     constructor(
-        @repository(SessionRepository)
-        protected sessionRepository: SessionRepository,
-        @repository(UserRepository)
-        protected userRepository: UserRepository,
+        @inject(ACLBindings.SESSION_REPOSITORY)
+        protected sessionRepository: SessionRepository<Session>,
+        @inject(ACLBindings.USER_REPOSITORY)
+        protected userRepository: UserRepository<User, UserRelations>,
         @inject(AuthorizationBindings.GET_USER_PERMISSIONS_ACTION)
-        protected getUserPermissions: GetUserPermissionsFn<Permissions>
+        protected getUserPermissions: GetUserPermissionsFn<ACLPermissions>
     ) {}
 
     async verifyToken(token: string): Promise<Session | any> {

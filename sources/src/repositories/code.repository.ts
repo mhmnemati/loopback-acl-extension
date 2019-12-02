@@ -18,7 +18,7 @@ export class CodeRepository<
     constructor(
         @inject(PrivateACLBindings.CODE_MODEL)
         ctor: Ctor<Model>,
-        @inject(PrivateACLBindings.DATASOURCE_CACHE)
+        @inject(PrivateACLBindings.CACHE_DATASOURCE)
         dataSource: juggler.DataSource,
         @inject(ACLBindings.USER_REPOSITORY)
         userRepository: UserRepository<User, UserRelations>

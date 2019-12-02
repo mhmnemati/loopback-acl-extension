@@ -2,6 +2,8 @@ import { Context, BindingKey, bind } from "@loopback/context";
 import { Ctor } from "loopback-history-extension";
 import { juggler } from "@loopback/repository";
 
+import { TokenService, AuthenticationStrategy } from "@loopback/authentication";
+
 import {
     User,
     UserRelations,
@@ -71,12 +73,25 @@ export namespace PrivateACLBindings {
      * 1. DataSourceRelational: RDBMS
      * 2. DataSourceCache: CDBMS
      */
-    export const DATASOURCE_RELATIONAL = BindingKey.create<juggler.DataSource>(
+    export const RELATIONAL_DATASOURCE = BindingKey.create<juggler.DataSource>(
         "private.acl.dataSources.relational"
     );
-    export const DATASOURCE_CACHE = BindingKey.create<juggler.DataSource>(
+    export const CACHE_DATASOURCE = BindingKey.create<juggler.DataSource>(
         "private.acl.dataSources.cache"
     );
+
+    /**
+     * Provider key
+     *
+     * 1. AuthenticationTokenProvider
+     * 2. AuthenticationStrategyProvider
+     */
+    export const AUTHENTICATION_TOKEN_PROVIDER = BindingKey.create<
+        TokenService
+    >("private.acl.providers.token");
+    export const AUTHENTICATION_STRATEGY_PROVIDER = BindingKey.create<
+        AuthenticationStrategy
+    >("private.acl.providers.strategy");
 }
 
 /**
@@ -134,10 +149,6 @@ export namespace ACLBindings {
     export const ROLE_PERMISSION_REPOSITORY = BindingKey.create<
         RolePermissionRepository
     >("acl.repositories.rolePermission");
-
-    //   export const TOKEN_SERVICE = BindingKey.create<TokenService>(
-    //     "authentication.bearer.tokenService"
-    //   );
 }
 
 /**
@@ -146,24 +157,29 @@ export namespace ACLBindings {
  * 1. DataSourceRelational
  * 2. DataSourceCache
  *
- * 3. UserRepository
- * 4. GroupRepository
- * 5. RoleRepository
- * 6. PermissionRepository
+ * 3. AuthenticationTokenProvider
+ * 4. AuthenticationStrategyProvider
  *
- * 7. SessionRepository
- * 8. CodeRepository
+ * 5. UserRepository
+ * 6. GroupRepository
+ * 7. RoleRepository
+ * 8. PermissionRepository
+ *
+ * 9. SessionRepository
+ * 10. CodeRepository
  */
 export type BindACLKey =
-    | "DataSourceRelational"
-    | "DataSourceCache"
+    | "RelationalDataSource"
+    | "CacheDataSource"
+    | "AuthenticationTokenProvider"
+    | "AuthenticationStrategyProvider"
     | "UserRepository"
     | "GroupRepository"
     | "RoleRepository"
     | "PermissionRepository"
     | "SessionRepository"
     | "CodeRepository";
-export function bindAuthorization(key: BindACLKey) {
+export function bindACL(key: BindACLKey) {
     return bind(binding => {
         binding.tag({
             acl: true,
@@ -173,7 +189,7 @@ export function bindAuthorization(key: BindACLKey) {
         return binding;
     });
 }
-export function findAuthorization(ctx: Context, key: BindACLKey) {
+export function findACL(ctx: Context, key: BindACLKey) {
     const binding = ctx.findByTag({
         acl: true,
         aclKey: key

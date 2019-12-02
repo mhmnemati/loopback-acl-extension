@@ -1,10 +1,11 @@
-import { Entity, Class } from "@loopback/repository";
+import { Class } from "@loopback/repository";
+import { Ctor } from "loopback-history-extension";
 import { ACLControllerMixin } from "@acl/servers/rest/crud.mixin";
 import { ACLController } from "@acl/servers/rest/controller";
 import { User } from "@acl/models";
 
-export function GenerateUsersController<UserModel extends User>(
-    ctor: typeof Entity & { prototype: UserModel }
+export function GenerateUsersController<Model extends User>(
+    ctor: Ctor<Model>
 ): Class<ACLController> {
     class UsersController extends ACLControllerMixin<User>(
         ctor,

@@ -4,7 +4,7 @@
 // import { get, put, requestBody, getModelSchemaRef } from "@loopback/rest";
 // import { authenticate } from "@loopback/authentication";
 // import { authorize } from "loopback-authorization-extension";
-// import { Permissions } from "@acl/permissions";
+// import { ACLPermissions } from "@acl/types";
 // import { intercept } from "@loopback/core";
 // import { unique } from "@acl/interceptors";
 

@@ -22,11 +22,6 @@ import {
     AuthenticationComponent,
     registerAuthenticationStrategy
 } from "@loopback/authentication";
-import {
-    BearerTokenService,
-    BearerAuthenticationStrategy
-} from "@acl/providers";
-import { ACLBindings } from "@acl/keys";
 
 /** Authorization binding imports */
 import { AuthorizationComponent } from "loopback-authorization-extension";
@@ -56,8 +51,7 @@ export class ACLRestServer extends RestServer {
     }
 
     private bindAuthentication(app: Application) {
-        app.bind(ACLBindings.TOKEN_SERVICE).toClass(BearerTokenService);
-        registerAuthenticationStrategy(app, BearerAuthenticationStrategy);
+        // registerAuthenticationStrategy(app, BearerAuthenticationStrategy);
         app.component(AuthenticationComponent);
     }
 

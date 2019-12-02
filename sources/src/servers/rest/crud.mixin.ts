@@ -23,26 +23,25 @@ import {
 
 import { authenticate } from "@loopback/authentication";
 import { authorize, Condition } from "loopback-authorization-extension";
-import { Permissions } from "@acl/permissions";
 import { intercept } from "@loopback/core";
 import { exist, filter, unique } from "@acl/interceptors";
-import { RepositoryGetter, FilterMethod } from "@acl/types";
+import { ACLPermissions, RepositoryGetter, FilterMethod } from "@acl/types";
 
 export function ACLControllerMixin<Model extends Entity>(
     ctor: typeof Entity & { prototype: Model },
     basePath: string,
     repositoryGetter: RepositoryGetter<Model>,
     userPermission: {
-        create: Condition<Permissions>;
-        read: Condition<Permissions>;
-        update: Condition<Permissions>;
-        delete: Condition<Permissions>;
+        create: Condition<ACLPermissions>;
+        read: Condition<ACLPermissions>;
+        update: Condition<ACLPermissions>;
+        delete: Condition<ACLPermissions>;
     },
     filterMethod: FilterMethod<Model>
 ): Class<ACLController> {
     class CRUDController extends ACLController {
         @intercept(unique<Model>(repositoryGetter, ctor, 0))
-        @authorize<Permissions>(userPermission.create)
+        @authorize<ACLPermissions>(userPermission.create)
         @authenticate("bearer")
         @post(`${basePath}`, {
             responses: {
@@ -79,7 +78,7 @@ export function ACLControllerMixin<Model extends Entity>(
         }
 
         @intercept(filter(0, "where", "where", filterMethod))
-        @authorize<Permissions>(userPermission.read)
+        @authorize<ACLPermissions>(userPermission.read)
         @authenticate("bearer")
         @get(`${basePath}/count`, {
             responses: {
@@ -103,7 +102,7 @@ export function ACLControllerMixin<Model extends Entity>(
         }
 
         @intercept(filter(0, "filter", "filter", filterMethod))
-        @authorize<Permissions>(userPermission.read)
+        @authorize<ACLPermissions>(userPermission.read)
         @authenticate("bearer")
         @get(`${basePath}`, {
             responses: {
@@ -133,7 +132,7 @@ export function ACLControllerMixin<Model extends Entity>(
 
         @intercept(unique<Model>(repositoryGetter, ctor, 0))
         @intercept(filter(0, "where", "where", filterMethod))
-        @authorize<Permissions>(userPermission.update)
+        @authorize<ACLPermissions>(userPermission.update)
         @authenticate("bearer")
         @patch(`${basePath}`, {
             responses: {
@@ -161,7 +160,7 @@ export function ACLControllerMixin<Model extends Entity>(
         }
 
         @intercept(filter(0, "where", "where", filterMethod))
-        @authorize<Permissions>(userPermission.delete)
+        @authorize<ACLPermissions>(userPermission.delete)
         @authenticate("bearer")
         @del(`${basePath}`, {
             responses: {
@@ -181,7 +180,7 @@ export function ACLControllerMixin<Model extends Entity>(
         }
 
         @intercept(exist(repositoryGetter))
-        @authorize<Permissions>(userPermission.read)
+        @authorize<ACLPermissions>(userPermission.read)
         @authenticate("bearer")
         @get(`${basePath}/{id}`, {
             responses: {
@@ -203,7 +202,7 @@ export function ACLControllerMixin<Model extends Entity>(
 
         @intercept(unique<Model>(repositoryGetter, ctor, 1))
         @intercept(exist(repositoryGetter))
-        @authorize<Permissions>(userPermission.update)
+        @authorize<ACLPermissions>(userPermission.update)
         @authenticate("bearer")
         @put(`${basePath}/{id}`, {
             responses: {
@@ -227,7 +226,7 @@ export function ACLControllerMixin<Model extends Entity>(
         }
 
         @intercept(exist(repositoryGetter))
-        @authorize<Permissions>(userPermission.delete)
+        @authorize<ACLPermissions>(userPermission.delete)
         @authenticate("bearer")
         @del(`${basePath}/{id}`, {
             responses: {

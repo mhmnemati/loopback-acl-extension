@@ -1,13 +1,15 @@
 import { inject } from "@loopback/context";
-import { repository } from "@loopback/repository";
 import { Request, RestBindings, SchemaObject } from "@loopback/rest";
+import { AuthenticationBindings, TokenService } from "@loopback/authentication";
+import {
+    UserGroupRepository,
+    UserRoleRepository,
+    GroupRoleRepository,
+    RolePermissionRepository
+} from "loopback-authorization-extension";
 
-import { AuthenticationBindings } from "@loopback/authentication";
+import { PrivateACLBindings, ACLBindings } from "@acl/keys";
 
-import { ACLBindings } from "@acl/keys";
-
-import { BearerTokenService } from "@acl/providers";
-import { Session } from "@acl/models";
 import {
     UserRepository,
     GroupRepository,
@@ -16,40 +18,52 @@ import {
     SessionRepository,
     CodeRepository
 } from "@acl/repositories";
+
 import {
-    UserGroupRepository,
-    UserRoleRepository,
-    GroupRoleRepository,
-    RolePermissionRepository
-} from "loopback-authorization-extension";
+    User,
+    UserRelations,
+    Group,
+    GroupRelations,
+    Role,
+    RoleRelations,
+    Permission,
+    PermissionRelations,
+    Session,
+    Code
+} from "@acl/models";
 
 export class ACLController {
     constructor(
         @inject(RestBindings.Http.REQUEST)
         public request: Request,
-        @inject(ACLBindings.TOKEN_SERVICE)
-        public tokenService: BearerTokenService,
+        @inject(PrivateACLBindings.AUTHENTICATION_TOKEN_PROVIDER)
+        public tokenService: TokenService,
         @inject(AuthenticationBindings.CURRENT_USER, { optional: true })
         public session: Session,
-        @repository(UserRepository)
-        public userRepository: UserRepository,
-        @repository(GroupRepository)
-        public groupRepository: GroupRepository,
-        @repository(RoleRepository)
-        public roleRepository: RoleRepository,
-        @repository(PermissionRepository)
-        public permissionRepository: PermissionRepository,
-        @repository(SessionRepository)
-        public sessionRepository: SessionRepository,
-        @repository(CodeRepository)
-        public codeRepository: CodeRepository,
-        @repository(UserGroupRepository)
+
+        @inject(ACLBindings.USER_REPOSITORY)
+        public userRepository: UserRepository<User, UserRelations>,
+        @inject(ACLBindings.GROUP_REPOSITORY)
+        public groupRepository: GroupRepository<Group, GroupRelations>,
+        @inject(ACLBindings.ROLE_REPOSITORY)
+        public roleRepository: RoleRepository<Role, RoleRelations>,
+        @inject(ACLBindings.PERMISSION_REPOSITORY)
+        public permissionRepository: PermissionRepository<
+            Permission,
+            PermissionRelations
+        >,
+        @inject(ACLBindings.SESSION_REPOSITORY)
+        public sessionRepository: SessionRepository<Session>,
+        @inject(ACLBindings.CODE_REPOSITORY)
+        public codeRepository: CodeRepository<Code>,
+
+        @inject(ACLBindings.USER_GROUP_REPOSITORY)
         public userGroupRepository: UserGroupRepository,
-        @repository(UserRoleRepository)
+        @inject(ACLBindings.USER_ROLE_REPOSITORY)
         public userRoleRepository: UserRoleRepository,
-        @repository(GroupRoleRepository)
+        @inject(ACLBindings.GROUP_ROLE_REPOSITORY)
         public groupRoleRepository: GroupRoleRepository,
-        @repository(RolePermissionRepository)
+        @inject(ACLBindings.ROLE_PERMISSION_REPOSITORY)
         public rolePermissionRepository: RolePermissionRepository
     ) {}
 }

@@ -13,7 +13,7 @@ export class RoleRepository<
     constructor(
         @inject(PrivateACLBindings.ROLE_MODEL)
         ctor: Ctor<Model>,
-        @inject(PrivateACLBindings.DATASOURCE_RELATIONAL)
+        @inject(PrivateACLBindings.RELATIONAL_DATASOURCE)
         dataSource: juggler.DataSource
     ) {
         super(ctor, dataSource);

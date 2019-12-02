@@ -13,7 +13,7 @@ export class UserRepository<
     constructor(
         @inject(PrivateACLBindings.USER_MODEL)
         ctor: Ctor<Model>,
-        @inject(PrivateACLBindings.DATASOURCE_RELATIONAL)
+        @inject(PrivateACLBindings.RELATIONAL_DATASOURCE)
         dataSource: juggler.DataSource
     ) {
         super(ctor, dataSource);
