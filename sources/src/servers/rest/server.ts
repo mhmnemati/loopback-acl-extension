@@ -15,14 +15,14 @@ import { RestExplorerComponent } from "@loopback/rest-explorer";
 /** Authentication binding imports */
 import { AuthenticationComponent } from "@loopback/authentication";
 
-import { PrivateACLBindings, ACLBindings } from "@acl/keys";
-import { ACLApplicationConfig } from "@acl/types";
+import { PrivateACLBindings, ACLBindings } from "../../keys";
+import { ACLApplicationConfig } from "../../types";
 
-import { User, Group, Role, Permission, Session, Code } from "@acl/models";
+import { User, Group, Role, Permission, Session, Code } from "../../models";
 
-import { Sequence } from "@acl/servers/rest/sequence";
+import { Sequence } from "./sequence";
 
-import { GenerateUsersController } from "@acl/servers/rest/controllers";
+import { GenerateUsersController } from "./controllers";
 
 @lifeCycleObserver("servers.REST")
 export class ACLRestServer extends RestServer {

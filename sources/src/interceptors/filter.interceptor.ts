@@ -5,7 +5,7 @@ import {
     ValueOrPromise
 } from "@loopback/context";
 
-import { FilterMethod } from "@acl/types";
+import { FilterMethod } from "../types";
 
 export const filter = (
     argIndex: number,

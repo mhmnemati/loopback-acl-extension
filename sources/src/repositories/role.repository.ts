@@ -3,8 +3,8 @@ import { juggler } from "@loopback/repository";
 import { Ctor } from "loopback-history-extension";
 import { RoleRepository as RoleModelRepository } from "loopback-authorization-extension";
 
-import { PrivateACLBindings } from "@acl/keys";
-import { Role, RoleRelations } from "@acl/models";
+import { PrivateACLBindings } from "../keys";
+import { Role, RoleRelations } from "../models";
 
 export class RoleRepository<
     Model extends Role,
