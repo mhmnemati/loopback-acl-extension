@@ -7,8 +7,8 @@ import {
 import { Ctor } from "loopback-history-extension";
 import { UserRepository } from "loopback-authorization-extension";
 
-import { PrivateACLBindings, ACLBindings } from "../keys";
-import { Code, User, UserRelations } from "../models";
+import { PrivateACLBindings, ACLBindings } from "@acl/keys";
+import { Code, User, UserRelations } from "@acl/models";
 
 export class CodeRepository<
     Model extends Code

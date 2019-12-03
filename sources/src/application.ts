@@ -24,6 +24,9 @@ import {
 export class ACLApplication extends AuthorizationApplication {
     constructor(public options: ACLApplicationConfig = {}) {
         super(options);
+
+        this.bind(ACLBindings.REST_SERVER_CONFIG).to(options.rest);
+        this.bind(ACLBindings.GRAPHQL_SERVER_CONFIG).to(options.graphql);
     }
 
     async boot() {

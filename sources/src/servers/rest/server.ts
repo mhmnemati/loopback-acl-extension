@@ -5,30 +5,29 @@ import {
     Application
 } from "@loopback/core";
 
-import { Sequence } from "@acl/servers/rest/sequence";
 import * as path from "path";
 
 /** Swagger binding imports */
-import {
-    RestServer,
-    RestComponent,
-    RestBindings,
-    RestServerConfig
-} from "@loopback/rest";
+import { RestServer, RestComponent } from "@loopback/rest";
 import { RestExplorerComponent } from "@loopback/rest-explorer";
 
 /** Authentication binding imports */
 import { AuthenticationComponent } from "@loopback/authentication";
+
+import { ACLBindings } from "@acl/keys";
+import { ACLRestServerConfig } from "@acl/types";
+
+import { Sequence } from "@acl/servers/rest/sequence";
 
 @lifeCycleObserver("servers.REST")
 export class ACLRestServer extends RestServer {
     constructor(
         @inject(CoreBindings.APPLICATION_INSTANCE)
         app: Application,
-        @inject(RestBindings.CONFIG)
-        config: RestServerConfig = {}
+        @inject(ACLBindings.REST_SERVER_CONFIG)
+        options: ACLRestServerConfig = {}
     ) {
-        super(app, config);
+        super(app, options);
 
         // Set up the custom sequence
         this.sequence(Sequence);

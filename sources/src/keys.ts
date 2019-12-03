@@ -4,6 +4,8 @@ import { juggler } from "@loopback/repository";
 
 import { TokenService } from "@loopback/authentication";
 
+import { ACLRestServerConfig, ACLGraphQLServerConfig } from "@acl/types";
+
 import {
     User,
     UserRelations,
@@ -15,7 +17,7 @@ import {
     PermissionRelations,
     Session,
     Code
-} from "./models";
+} from "@acl/models";
 import {
     UserRepository,
     GroupRepository,
@@ -23,7 +25,7 @@ import {
     PermissionRepository,
     SessionRepository,
     CodeRepository
-} from "./repositories";
+} from "@acl/repositories";
 
 import {
     UserGroupRepository,
@@ -145,6 +147,19 @@ export namespace ACLBindings {
     export const ROLE_PERMISSION_REPOSITORY = BindingKey.create<
         RolePermissionRepository
     >("acl.repositories.rolePermission");
+
+    /**
+     * Server Config key:
+     *
+     * 1. ACLRestServerConfig
+     * 2. ACLGraphQLServerConfig
+     */
+    export const REST_SERVER_CONFIG = BindingKey.create<ACLRestServerConfig>(
+        "acl.configs.restServer"
+    );
+    export const GRAPHQL_SERVER_CONFIG = BindingKey.create<
+        ACLGraphQLServerConfig
+    >("acl.configs.graphqlServer");
 }
 
 /**
