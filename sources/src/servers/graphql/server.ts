@@ -12,7 +12,7 @@ import { ACLRestServer } from "@acl/servers/rest/server";
 import { ApolloServer } from "apollo-server";
 import { createGraphQlSchema } from "openapi-to-graphql";
 
-@lifeCycleObserver("server-graphql")
+@lifeCycleObserver("servers.GraphQL")
 export class ACLGQLServer extends Context implements Server {
     private _listening: boolean = false;
     private _server: ApolloServer;

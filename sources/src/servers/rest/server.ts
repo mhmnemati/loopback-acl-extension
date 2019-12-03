@@ -20,10 +20,7 @@ import { RestExplorerComponent } from "@loopback/rest-explorer";
 /** Authentication binding imports */
 import { AuthenticationComponent } from "@loopback/authentication";
 
-/** Authorization binding imports */
-import { AuthorizationComponent } from "loopback-authorization-extension";
-
-@lifeCycleObserver("server-rest")
+@lifeCycleObserver("servers.REST")
 export class ACLRestServer extends RestServer {
     constructor(
         @inject(CoreBindings.APPLICATION_INSTANCE)
@@ -43,16 +40,11 @@ export class ACLRestServer extends RestServer {
         (this as any).restServer = this;
 
         this.bindAuthentication(app);
-        this.bindAuthorization(app);
         this.bindSwagger(app);
     }
 
     private bindAuthentication(app: Application) {
         app.component(AuthenticationComponent);
-    }
-
-    private bindAuthorization(app: Application) {
-        app.component(AuthorizationComponent);
     }
 
     private bindSwagger(app: Application) {
