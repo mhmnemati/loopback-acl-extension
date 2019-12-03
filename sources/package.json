@@ -1,6 +1,6 @@
 {
     "name": "loopback-acl-extension",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "description": "Loopback ACL generic implementation based on RBAC",
     "keywords": [
         "loopback-extension",
@@ -48,7 +48,6 @@
         "graphql": "^14.5.8",
         "loopback-authorization-extension": "latest",
         "loopback-history-extension": "latest",
-        "module-alias": "^2.2.2",
         "openapi-to-graphql": "^1.6.3",
         "randomatic": "^3.1.1"
     },
@@ -58,8 +57,5 @@
         "@loopback/testlab": "^1.9.5",
         "@types/node": "^10.17.5",
         "typescript": "~3.7.2"
-    },
-    "_moduleAliases": {
-        "@acl": "./build"
     }
 }

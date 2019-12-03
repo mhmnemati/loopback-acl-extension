@@ -3,8 +3,8 @@ import { juggler } from "@loopback/repository";
 import { Ctor } from "loopback-history-extension";
 import { PermissionRepository as PermissionModelRepository } from "loopback-authorization-extension";
 
-import { PrivateACLBindings } from "@acl/keys";
-import { Permission, PermissionRelations } from "@acl/models";
+import { PrivateACLBindings } from "../keys";
+import { Permission, PermissionRelations } from "../models";
 
 export class PermissionRepository<
     Model extends Permission,

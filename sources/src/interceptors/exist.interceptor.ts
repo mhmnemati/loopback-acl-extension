@@ -5,9 +5,9 @@ import {
     ValueOrPromise
 } from "@loopback/context";
 
-import { RepositoryGetter } from "@acl/types";
+import { RepositoryGetter } from "../types";
 
-import { ACLController } from "@acl/servers/rest/controller";
+import { ACLController } from "../servers";
 
 export const exist = (repositoryGetter: RepositoryGetter<any>): Interceptor => {
     return async (

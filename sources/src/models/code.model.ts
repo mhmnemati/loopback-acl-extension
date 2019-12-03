@@ -1,5 +1,5 @@
 import { Entity, model, property, belongsTo } from "@loopback/repository";
-import { User, UserWithRelations } from "@acl/models";
+import { User, UserWithRelations } from "../models";
 
 @model({ settings: {} })
 export class Code extends Entity {

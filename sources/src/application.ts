@@ -3,10 +3,10 @@ import { AuthorizationApplication } from "loopback-authorization-extension";
 
 import { registerAuthenticationStrategy } from "@loopback/authentication";
 
-import { PrivateACLBindings, ACLBindings, findACL } from "@acl/keys";
-import { ACLApplicationConfig } from "@acl/types";
+import { PrivateACLBindings, ACLBindings, findACL } from "./keys";
+import { ACLApplicationConfig } from "./types";
 
-import { User, Group, Role, Permission, Session, Code } from "@acl/models";
+import { User, Group, Role, Permission, Session, Code } from "./models";
 import {
     UserRepository,
     GroupRepository,
@@ -14,12 +14,9 @@ import {
     PermissionRepository,
     SessionRepository,
     CodeRepository
-} from "@acl/repositories";
+} from "./repositories";
 
-import {
-    BearerTokenService,
-    BearerAuthenticationStrategy
-} from "@acl/providers";
+import { BearerTokenService, BearerAuthenticationStrategy } from "./providers";
 
 export class ACLApplication extends AuthorizationApplication {
     constructor(public config: ACLApplicationConfig = {}) {

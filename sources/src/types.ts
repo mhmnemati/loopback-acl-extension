@@ -8,14 +8,14 @@ import {
     AuthorizationApplicationConfig,
     PermissionsList
 } from "loopback-authorization-extension";
-import { ACLController } from "@acl/servers/rest/controller";
+import { ACLController } from "./servers";
 import { InvocationContext } from "@loopback/context";
 import { Ctor } from "loopback-history-extension";
 
 import { RestServerConfig } from "@loopback/rest";
 import { HttpServerOptions } from "@loopback/http-server";
 
-import { User, Group, Role, Permission, Session, Code } from "@acl/models";
+import { User, Group, Role, Permission, Session, Code } from "./models";
 
 /**
  * Default Permissions

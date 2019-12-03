@@ -4,7 +4,7 @@ import { juggler } from "@loopback/repository";
 
 import { TokenService } from "@loopback/authentication";
 
-import { ACLApplicationConfig } from "@acl/types";
+import { ACLApplicationConfig } from "./types";
 
 import {
     User,
@@ -17,7 +17,7 @@ import {
     PermissionRelations,
     Session,
     Code
-} from "@acl/models";
+} from "./models";
 import {
     UserRepository,
     GroupRepository,
@@ -25,7 +25,7 @@ import {
     PermissionRepository,
     SessionRepository,
     CodeRepository
-} from "@acl/repositories";
+} from "./repositories";
 
 import {
     UserGroupRepository,
