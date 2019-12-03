@@ -73,13 +73,11 @@ export type FilterMethod<Model extends Entity> = (
 ) => Filter<Model>;
 
 /**
- * ACLApplication configs for RestServer, GraphQLServer
+ * ACLApplication configs
  */
-export type ACLRestServerConfig = RestServerConfig;
-export type ACLGraphQLServerConfig = HttpServerOptions;
 export interface ACLApplicationConfig extends AuthorizationApplicationConfig {
-    rest?: ACLRestServerConfig;
-    graphql?: ACLGraphQLServerConfig;
+    rest?: RestServerConfig;
+    graphql?: HttpServerOptions;
     permissions?: Class<ACLPermissions>;
     userModel?: Ctor<User>;
     groupModel?: Ctor<Group>;

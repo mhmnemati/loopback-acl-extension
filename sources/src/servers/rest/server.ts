@@ -15,7 +15,7 @@ import { RestExplorerComponent } from "@loopback/rest-explorer";
 import { AuthenticationComponent } from "@loopback/authentication";
 
 import { ACLBindings } from "@acl/keys";
-import { ACLRestServerConfig } from "@acl/types";
+import { ACLApplicationConfig } from "@acl/types";
 
 import { Sequence } from "@acl/servers/rest/sequence";
 
@@ -24,10 +24,10 @@ export class ACLRestServer extends RestServer {
     constructor(
         @inject(CoreBindings.APPLICATION_INSTANCE)
         app: Application,
-        @inject(ACLBindings.REST_SERVER_CONFIG)
-        options: ACLRestServerConfig = {}
+        @inject(ACLBindings.APPLICATION_CONFIG)
+        config: ACLApplicationConfig = {}
     ) {
-        super(app, options);
+        super(app, config.rest);
 
         // Set up the custom sequence
         this.sequence(Sequence);
@@ -40,6 +40,7 @@ export class ACLRestServer extends RestServer {
 
         this.bindAuthentication(app);
         this.bindSwagger(app);
+        this.bindControllers(app);
     }
 
     private bindAuthentication(app: Application) {
@@ -53,6 +54,10 @@ export class ACLRestServer extends RestServer {
                 path: "/explorer"
             })
         );
+    }
+
+    private bindControllers(app: Application) {
+        // this.controller();
     }
 
     async start() {

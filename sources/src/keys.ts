@@ -4,7 +4,7 @@ import { juggler } from "@loopback/repository";
 
 import { TokenService } from "@loopback/authentication";
 
-import { ACLRestServerConfig, ACLGraphQLServerConfig } from "@acl/types";
+import { ACLApplicationConfig } from "@acl/types";
 
 import {
     User,
@@ -149,17 +149,13 @@ export namespace ACLBindings {
     >("acl.repositories.rolePermission");
 
     /**
-     * Server Config key:
+     * Config key:
      *
-     * 1. ACLRestServerConfig
-     * 2. ACLGraphQLServerConfig
+     * 1. ACLApplicationConfig
      */
-    export const REST_SERVER_CONFIG = BindingKey.create<ACLRestServerConfig>(
-        "acl.configs.restServer"
+    export const APPLICATION_CONFIG = BindingKey.create<ACLApplicationConfig>(
+        "acl.configs.application"
     );
-    export const GRAPHQL_SERVER_CONFIG = BindingKey.create<
-        ACLGraphQLServerConfig
-    >("acl.configs.graphqlServer");
 }
 
 /**

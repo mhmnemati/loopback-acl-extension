@@ -22,11 +22,10 @@ import {
 } from "@acl/providers";
 
 export class ACLApplication extends AuthorizationApplication {
-    constructor(public options: ACLApplicationConfig = {}) {
-        super(options);
+    constructor(public config: ACLApplicationConfig = {}) {
+        super(config);
 
-        this.bind(ACLBindings.REST_SERVER_CONFIG).to(options.rest);
-        this.bind(ACLBindings.GRAPHQL_SERVER_CONFIG).to(options.graphql);
+        this.bind(ACLBindings.APPLICATION_CONFIG).to(config);
     }
 
     async boot() {
@@ -51,22 +50,22 @@ export class ACLApplication extends AuthorizationApplication {
 
     private bootACLModels() {
         this.bind(PrivateACLBindings.USER_MODEL).to(
-            this.options.userModel || User
+            this.config.userModel || User
         );
         this.bind(PrivateACLBindings.GROUP_MODEL).to(
-            this.options.groupModel || Group
+            this.config.groupModel || Group
         );
         this.bind(PrivateACLBindings.ROLE_MODEL).to(
-            this.options.roleModel || Role
+            this.config.roleModel || Role
         );
         this.bind(PrivateACLBindings.PERMISSION_MODEL).to(
-            this.options.permissionModel || Permission
+            this.config.permissionModel || Permission
         );
         this.bind(PrivateACLBindings.SESSION_MODEL).to(
-            this.options.sessionModel || Session
+            this.config.sessionModel || Session
         );
         this.bind(PrivateACLBindings.CODE_MODEL).to(
-            this.options.codeModel || Code
+            this.config.codeModel || Code
         );
     }
 
