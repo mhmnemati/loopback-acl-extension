@@ -3193,9 +3193,9 @@
             "integrity": "sha512-XsP+KhQif4bjX1kbuSiySJFNAehNxgLb6hPRGJ9QsUr8ajHkuXGdrHmFUTUUXhDwVX2R5bY4JNZEwbUiMhV+MA=="
         },
         "loopback-authorization-extension": {
-            "version": "4.1.0",
-            "resolved": "https://registry.npmjs.org/loopback-authorization-extension/-/loopback-authorization-extension-4.1.0.tgz",
-            "integrity": "sha512-XWJYKt1tPg7k1+9XywNWziMEbtPlrDsDHBDgOjGaqz0CC4XFEZT4eIfYLesruP4JRNas7Ac22OBUqzAIt2vzuw==",
+            "version": "5.1.0",
+            "resolved": "https://registry.npmjs.org/loopback-authorization-extension/-/loopback-authorization-extension-5.1.0.tgz",
+            "integrity": "sha512-L/JK0/X6s7z27itBOm2TOQKz3AzlCTeUEmLUlLblyPa3jSaTiHd6nZ+2j/UMqZRUN64x1pAE4kTpK67Q9bwJIw==",
             "requires": {
                 "@loopback/boot": "^1.5.10",
                 "@loopback/context": "^1.23.4",
@@ -3203,8 +3203,7 @@
                 "@loopback/repository": "^1.15.3",
                 "@loopback/rest": "^1.22.0",
                 "@loopback/service-proxy": "^1.3.12",
-                "loopback-history-extension": "^1.1.0",
-                "module-alias": "^2.2.2"
+                "loopback-history-extension": "^1.1.0"
             }
         },
         "loopback-connector": {
@@ -3477,11 +3476,6 @@
                     }
                 }
             }
-        },
-        "module-alias": {
-            "version": "2.2.2",
-            "resolved": "https://registry.npmjs.org/module-alias/-/module-alias-2.2.2.tgz",
-            "integrity": "sha512-A/78XjoX2EmNvppVWEhM2oGk3x4lLxnkEA4jTbaK97QKSDjkIoOsKQlfylt/d3kKKi596Qy3NP5XrXJ6fZIC9Q=="
         },
         "ms": {
             "version": "2.1.2",
