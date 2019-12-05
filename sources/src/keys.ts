@@ -15,7 +15,7 @@ import {
     PermissionRelations,
     Session,
     Code
-} from "./models";
+} from "~/models";
 import {
     UserRepository,
     GroupRepository,
@@ -23,7 +23,7 @@ import {
     PermissionRepository,
     SessionRepository,
     CodeRepository
-} from "./repositories";
+} from "~/repositories";
 
 import {
     UserGroupRepository,

@@ -1,5 +1,5 @@
-// import { ACLController } from "@acl/servers/rest/controller";
-// import { Code, User } from "@acl/models";
+// import { ACLController } from "~/servers/rest/controller";
+// import { Code, User } from "~/models";
 
 // import {
 //     get,

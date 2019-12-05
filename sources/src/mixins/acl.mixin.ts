@@ -4,10 +4,10 @@ import { Ctor } from "loopback-history-extension";
 
 import { registerAuthenticationStrategy } from "@loopback/authentication";
 
-import { PrivateACLBindings, ACLBindings, findACL } from "@acl/keys";
-import { ACLPermissions } from "@acl/types";
+import { PrivateACLBindings, ACLBindings, findACL } from "~/keys";
+import { ACLPermissions } from "~/types";
 
-import { User, Group, Role, Permission, Session, Code } from "@acl/models";
+import { User, Group, Role, Permission, Session, Code } from "~/models";
 import {
     UserRepository,
     GroupRepository,
@@ -15,12 +15,12 @@ import {
     PermissionRepository,
     SessionRepository,
     CodeRepository
-} from "@acl/repositories";
+} from "~/repositories";
 
 import {
     BearerTokenService,
     BearerAuthenticationStrategy
-} from "@acl/providers";
+} from "~/providers";
 
 export interface AuthorizationMixinConfigs {
     permissions?: Class<ACLPermissions>;

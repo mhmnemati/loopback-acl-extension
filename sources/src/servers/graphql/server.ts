@@ -7,7 +7,7 @@ import {
     Application
 } from "@loopback/core";
 
-import { ACLRestServer } from "@acl/servers/rest/server";
+import { ACLRestServer } from "~/servers/rest/server";
 
 import { ApolloServer } from "apollo-server";
 import { createGraphQlSchema } from "openapi-to-graphql";

@@ -1,6 +1,6 @@
 import { Entity, DefaultCrudRepository, Filter } from "@loopback/repository";
 import { PermissionsList } from "loopback-authorization-extension";
-import { ACLController } from "@acl/servers/rest/controller";
+import { ACLController } from "~/servers/rest/controller";
 import { InvocationContext } from "@loopback/context";
 import { Ctor } from "loopback-history-extension";
 

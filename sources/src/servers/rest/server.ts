@@ -5,7 +5,7 @@ import {
     Application
 } from "@loopback/core";
 
-import { Sequence } from "@acl/servers/rest/sequence";
+import { Sequence } from "~/servers/rest/sequence";
 import * as path from "path";
 
 /** Swagger binding imports */

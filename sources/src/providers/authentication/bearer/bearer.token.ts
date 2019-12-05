@@ -7,11 +7,11 @@ import {
     GetUserPermissionsFn
 } from "loopback-authorization-extension";
 
-import { ACLBindings } from "@acl/keys";
-import { ACLPermissions } from "@acl/types";
+import { ACLBindings } from "~/keys";
+import { ACLPermissions } from "~/types";
 
-import { Session, User, UserRelations } from "@acl/models";
-import { SessionRepository, UserRepository } from "@acl/repositories";
+import { Session, User, UserRelations } from "~/models";
+import { SessionRepository, UserRepository } from "~/repositories";
 
 import { randomBytes } from "crypto";
 

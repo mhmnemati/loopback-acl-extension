@@ -1,5 +1,5 @@
-// import { ACLController } from "@acl/servers/rest/controller";
-// import { Session, Token, User } from "@acl/models";
+// import { ACLController } from "~/servers/rest/controller";
+// import { Session, Token, User } from "~/models";
 
 // import { post, get, del, requestBody, getModelSchemaRef } from "@loopback/rest";
 // import { authenticate } from "@loopback/authentication";

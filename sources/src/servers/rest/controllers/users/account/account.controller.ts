@@ -1,5 +1,5 @@
-// import { ACLController } from "@acl/servers/rest/controller";
-// import { Code, User } from "@acl/models";
+// import { ACLController } from "~/servers/rest/controller";
+// import { Code, User } from "~/models";
 
 // import {
 //     post,
@@ -11,7 +11,7 @@
 //     getModelSchemaRef
 // } from "@loopback/rest";
 // import { intercept } from "@loopback/core";
-// import { unique } from "@acl/interceptors";
+// import { unique } from "~/interceptors";
 
 // const randomize = require("randomatic");
 

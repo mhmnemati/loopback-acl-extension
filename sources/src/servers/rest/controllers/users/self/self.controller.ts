@@ -1,12 +1,12 @@
-// import { ACLController } from "@acl/servers/rest/controller";
-// import { User } from "@acl/models";
+// import { ACLController } from "~/servers/rest/controller";
+// import { User } from "~/models";
 
 // import { get, put, requestBody, getModelSchemaRef } from "@loopback/rest";
 // import { authenticate } from "@loopback/authentication";
 // import { authorize } from "loopback-authorization-extension";
-// import { ACLPermissions } from "@acl/types";
+// import { ACLPermissions } from "~/types";
 // import { intercept } from "@loopback/core";
-// import { unique } from "@acl/interceptors";
+// import { unique } from "~/interceptors";
 
 // export class UsersSelfController extends ACLController {
 //     @authorize<Permissions>("USERS_READ_SELF")
