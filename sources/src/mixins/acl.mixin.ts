@@ -17,25 +17,9 @@ import {
     CodeRepository
 } from "~/repositories";
 
-import {
-    BearerTokenService,
-    BearerAuthenticationStrategy
-} from "~/providers";
+import { BearerTokenService, BearerAuthenticationStrategy } from "~/providers";
 
-export interface AuthorizationMixinConfigs {
-    permissions?: Class<ACLPermissions>;
-    userModel?: Ctor<User>;
-    groupModel?: Ctor<Group>;
-    roleModel?: Ctor<Role>;
-    permissionModel?: Ctor<Permission>;
-    sessionModel?: Ctor<Session>;
-    codeModel?: Ctor<Code>;
-}
-
-export function AuthorizationMixin<T extends Class<any>>(
-    baseClass: T,
-    configs: AuthorizationMixinConfigs = {}
-) {
+export function AuthorizationMixin<T extends Class<any>>(baseClass: T) {
     const bootModels = (ctx: Context, configs: AuthorizationMixinConfigs) => {
         ctx.bind(PrivateACLBindings.USER_MODEL).to(configs.userModel || User);
         ctx.bind(PrivateACLBindings.GROUP_MODEL).to(

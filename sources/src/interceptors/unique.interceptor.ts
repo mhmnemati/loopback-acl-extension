@@ -9,7 +9,7 @@ import { Ctor } from "loopback-history-extension";
 
 import { RepositoryGetter } from "~/types";
 
-import { ACLController } from "~/servers/rest/controller";
+import { ACLController } from "~/servers";
 
 export function unique<Model extends Entity>(
     repositoryGetter: RepositoryGetter<any>,

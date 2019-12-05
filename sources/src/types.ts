@@ -1,8 +1,15 @@
-import { Entity, DefaultCrudRepository, Filter } from "@loopback/repository";
+import {
+    Entity,
+    DefaultCrudRepository,
+    Filter,
+    Class
+} from "@loopback/repository";
 import { PermissionsList } from "loopback-authorization-extension";
-import { ACLController } from "~/servers/rest/controller";
+import { ACLController } from "~/servers";
 import { InvocationContext } from "@loopback/context";
 import { Ctor } from "loopback-history-extension";
+
+import { User, Group, Role, Permission, Session, Code } from "~/models";
 
 /**
  * Default Permissions
@@ -58,3 +65,16 @@ export type FilterMethod<Model extends Entity> = (
     context: InvocationContext,
     filter: Filter<Model>
 ) => Filter<Model>;
+
+/**
+ * ACLMixin configs
+ */
+export interface ACLMixinConfig {
+    permissions?: Class<ACLPermissions>;
+    userModel?: Ctor<User>;
+    groupModel?: Ctor<Group>;
+    roleModel?: Ctor<Role>;
+    permissionModel?: Ctor<Permission>;
+    sessionModel?: Ctor<Session>;
+    codeModel?: Ctor<Code>;
+}

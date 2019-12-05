@@ -7,7 +7,7 @@ import {
 
 import { RepositoryGetter } from "~/types";
 
-import { ACLController } from "~/servers/rest/controller";
+import { ACLController } from "~/servers";
 
 export const exist = (repositoryGetter: RepositoryGetter<any>): Interceptor => {
     return async (

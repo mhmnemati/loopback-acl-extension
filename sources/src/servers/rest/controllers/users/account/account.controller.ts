@@ -1,4 +1,4 @@
-// import { ACLController } from "~/servers/rest/controller";
+// import { ACLController } from "~/servers";
 // import { Code, User } from "~/models";
 
 // import {
