@@ -1,12 +1,12 @@
 import { Context } from "@loopback/context";
 import { Class } from "@loopback/repository";
-import { Ctor } from "loopback-history-extension";
 
 import { registerAuthenticationStrategy } from "@loopback/authentication";
 
 import { PrivateACLBindings, ACLBindings, findACL } from "~/keys";
-import { ACLPermissions } from "~/types";
+import { ACLMixinConfig } from "~/types";
 
+import { BearerTokenService, BearerAuthenticationStrategy } from "~/providers";
 import { User, Group, Role, Permission, Session, Code } from "~/models";
 import {
     UserRepository,
@@ -17,10 +17,8 @@ import {
     CodeRepository
 } from "~/repositories";
 
-import { BearerTokenService, BearerAuthenticationStrategy } from "~/providers";
-
-export function AuthorizationMixin<T extends Class<any>>(baseClass: T) {
-    const bootModels = (ctx: Context, configs: AuthorizationMixinConfigs) => {
+export function ACLMixin<T extends Class<any>>(superClass: T) {
+    const bootModels = (ctx: Context, configs: ACLMixinConfig) => {
         ctx.bind(PrivateACLBindings.USER_MODEL).to(configs.userModel || User);
         ctx.bind(PrivateACLBindings.GROUP_MODEL).to(
             configs.groupModel || Group
@@ -33,24 +31,6 @@ export function AuthorizationMixin<T extends Class<any>>(baseClass: T) {
             configs.sessionModel || Session
         );
         ctx.bind(PrivateACLBindings.CODE_MODEL).to(configs.codeModel || Code);
-    };
-
-    const bootDataSources = (ctx: Context) => {
-        let relationalDataSource = findACL(ctx, "RelationalDataSource");
-        if (relationalDataSource) {
-            ctx.bind(PrivateACLBindings.RELATIONAL_DATASOURCE).to(
-                relationalDataSource
-            );
-        } else {
-            throw new Error("ACLComponent: Relational dataSource not found!");
-        }
-
-        let cacheDataSource = findACL(ctx, "CacheDataSource");
-        if (cacheDataSource) {
-            ctx.bind(PrivateACLBindings.CACHE_DATASOURCE).to(cacheDataSource);
-        } else {
-            throw new Error("ACLComponent: Cache dataSource not found!");
-        }
     };
 
     const bootProviders = (ctx: Context) => {
@@ -70,6 +50,24 @@ export function AuthorizationMixin<T extends Class<any>>(baseClass: T) {
          * Bind Authentication Strategy Provider
          */
         registerAuthenticationStrategy(ctx, BearerAuthenticationStrategy);
+    };
+
+    const bootDataSources = (ctx: Context) => {
+        let relationalDataSource = findACL(ctx, "RelationalDataSource");
+        if (relationalDataSource) {
+            ctx.bind(PrivateACLBindings.RELATIONAL_DATASOURCE).to(
+                relationalDataSource
+            );
+        } else {
+            throw new Error("ACLComponent: Relational dataSource not found!");
+        }
+
+        let cacheDataSource = findACL(ctx, "CacheDataSource");
+        if (cacheDataSource) {
+            ctx.bind(PrivateACLBindings.CACHE_DATASOURCE).to(cacheDataSource);
+        } else {
+            throw new Error("ACLComponent: Cache dataSource not found!");
+        }
     };
 
     const bootRepositories = (ctx: Context) => {
@@ -138,13 +136,15 @@ export function AuthorizationMixin<T extends Class<any>>(baseClass: T) {
         }
     };
 
-    return class extends baseClass {
+    return class extends superClass {
+        public aclConfigs: ACLMixinConfig = {};
+
         async boot() {
             await super.boot();
 
-            bootModels(this as any, configs);
-            bootDataSources(this as any);
+            bootModels(this as any, this.aclConfigs);
             bootProviders(this as any);
+            bootDataSources(this as any);
             bootRepositories(this as any);
         }
     };
