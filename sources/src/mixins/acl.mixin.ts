@@ -1,5 +1,6 @@
 import { Context } from "@loopback/context";
 import { Class } from "@loopback/repository";
+import { CoreBindings } from "@loopback/core";
 
 import { registerAuthenticationStrategy } from "@loopback/authentication";
 
@@ -18,6 +19,15 @@ import {
 } from "~/repositories";
 
 export function ACLMixin<T extends Class<any>>(superClass: T) {
+    const bootObservers = (ctx: Context) => {
+        /**
+         * Fix: servers start dependency bug
+         */
+        ctx.bind(CoreBindings.LIFE_CYCLE_OBSERVER_OPTIONS).to({
+            orderedGroups: ["servers.REST", "servers.GraphQL"]
+        });
+    };
+
     const bootModels = (ctx: Context, configs: ACLMixinConfig) => {
         ctx.bind(PrivateACLBindings.USER_MODEL).to(configs.userModel || User);
         ctx.bind(PrivateACLBindings.GROUP_MODEL).to(
@@ -140,6 +150,8 @@ export function ACLMixin<T extends Class<any>>(superClass: T) {
         public aclConfigs: ACLMixinConfig = {};
 
         async boot() {
+            bootObservers(this as any);
+
             await super.boot();
 
             bootModels(this as any, this.aclConfigs);

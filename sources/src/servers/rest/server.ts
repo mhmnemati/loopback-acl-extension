@@ -7,20 +7,16 @@ import {
 import { Ctor } from "loopback-history-extension";
 
 /** Swagger binding imports */
-import {
-    RestServer,
-    RestComponent,
-    RestBindings,
-    RestServerConfig
-} from "@loopback/rest";
+import { RestServer, RestComponent } from "@loopback/rest";
 import { RestExplorerComponent } from "@loopback/rest-explorer";
 
 /** Authentication binding imports */
 import { AuthenticationComponent } from "@loopback/authentication";
 
+import { ACLBindings, PrivateACLBindings } from "~/keys";
+import { ACLRestServerConfig } from "~/types";
 import { Sequence } from "~/servers";
 
-import { PrivateACLBindings } from "~/keys";
 import { User, Group, Role, Permission, Session, Code } from "~/models";
 
 import {
@@ -43,8 +39,8 @@ export class ACLRestServer extends RestServer {
     constructor(
         @inject(CoreBindings.APPLICATION_INSTANCE)
         app: Application,
-        @inject(RestBindings.CONFIG)
-        config: RestServerConfig = {},
+        @inject(ACLBindings.REST_SERVER_CONFIG)
+        config: ACLRestServerConfig = {},
         @inject(PrivateACLBindings.USER_MODEL)
         userCtor: Ctor<User>,
         @inject(PrivateACLBindings.GROUP_MODEL)
@@ -63,6 +59,11 @@ export class ACLRestServer extends RestServer {
         /** Fix rest application to rest server bug */
         (this as any).restServer = this;
 
+        /** Set up default home page */
+        if (config.homePath) {
+            this.static("/", config.homePath);
+        }
+
         /** Bind authentication component */
         app.component(AuthenticationComponent);
 
@@ -78,32 +79,32 @@ export class ACLRestServer extends RestServer {
         this.sequence(Sequence);
 
         /** Bind users controllers */
-        this.controller(GenerateUsersController<User>(userCtor));
-        this.controller(GenerateUsersSelfController<User>(userCtor));
-        this.controller(
+        app.controller(GenerateUsersController<User>(userCtor));
+        app.controller(GenerateUsersSelfController<User>(userCtor));
+        app.controller(
             GenerateUsersSessionController<Session, User>(sessionCtor, userCtor)
         );
-        this.controller(
+        app.controller(
             GenerateUsersAccountController<Code, User>(codeCtor, userCtor)
         );
-        this.controller(
+        app.controller(
             GenerateUsersPasswordController<Code, User>(codeCtor, userCtor)
         );
 
         /** Bind groups controllers */
-        this.controller(GenerateGroupsController<Group>(groupCtor));
-        this.controller(GenerateGroupsUsersController<User>(userCtor));
+        app.controller(GenerateGroupsController<Group>(groupCtor));
+        app.controller(GenerateGroupsUsersController<User>(userCtor));
 
         /** Bind roles controllers */
-        this.controller(GenerateRolesController<Role>(roleCtor));
-        this.controller(GenerateRolesUsersController<User>(userCtor));
-        this.controller(GenerateRolesGroupsController<Group>(groupCtor));
-        this.controller(
+        app.controller(GenerateRolesController<Role>(roleCtor));
+        app.controller(GenerateRolesUsersController<User>(userCtor));
+        app.controller(GenerateRolesGroupsController<Group>(groupCtor));
+        app.controller(
             GenerateRolesPermissionsController<Permission>(permissionCtor)
         );
 
         /** Bind permissions controllers */
-        this.controller(
+        app.controller(
             GeneratePermissionsController<Permission>(permissionCtor)
         );
     }
