@@ -3,7 +3,7 @@ import { HttpErrors, Request } from "@loopback/rest";
 import { AuthenticationStrategy, TokenService } from "@loopback/authentication";
 import { UserProfile } from "@loopback/security";
 
-import { PrivateACLBindings } from "../../../keys";
+import { PrivateACLBindings } from "~/keys";
 
 export class BearerAuthenticationStrategy implements AuthenticationStrategy {
     name: string = "bearer";

@@ -4,8 +4,6 @@ import { juggler } from "@loopback/repository";
 
 import { TokenService } from "@loopback/authentication";
 
-import { ACLApplicationConfig } from "./types";
-
 import {
     User,
     UserRelations,
@@ -17,7 +15,7 @@ import {
     PermissionRelations,
     Session,
     Code
-} from "./models";
+} from "~/models";
 import {
     UserRepository,
     GroupRepository,
@@ -25,7 +23,7 @@ import {
     PermissionRepository,
     SessionRepository,
     CodeRepository
-} from "./repositories";
+} from "~/repositories";
 
 import {
     UserGroupRepository,
@@ -147,15 +145,6 @@ export namespace ACLBindings {
     export const ROLE_PERMISSION_REPOSITORY = BindingKey.create<
         RolePermissionRepository
     >("acl.repositories.rolePermission");
-
-    /**
-     * Config key:
-     *
-     * 1. ACLApplicationConfig
-     */
-    export const APPLICATION_CONFIG = BindingKey.create<ACLApplicationConfig>(
-        "acl.configs.application"
-    );
 }
 
 /**

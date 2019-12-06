@@ -7,10 +7,7 @@ import {
     Application
 } from "@loopback/core";
 
-import { ACLBindings } from "../../keys";
-import { ACLApplicationConfig } from "../../types";
-
-import { ACLRestServer } from "../../servers";
+import { ACLRestServer } from "~/servers";
 
 import { ApolloServer } from "apollo-server";
 import { createGraphQlSchema } from "openapi-to-graphql";
@@ -22,9 +19,7 @@ export class ACLGQLServer extends Context implements Server {
 
     constructor(
         @inject(CoreBindings.APPLICATION_INSTANCE)
-        app: Application,
-        @inject(ACLBindings.APPLICATION_CONFIG)
-        public config: ACLApplicationConfig = {}
+        app: Application
     ) {
         super(app);
     }
@@ -46,7 +41,12 @@ export class ACLGQLServer extends Context implements Server {
 
         this._server = new ApolloServer({ schema });
 
-        const url = (await this._server.listen(this.config.graphql)).url;
+        const url = (
+            await this._server.listen({
+                host: process.env.HTTP_LOCAL_HOST,
+                port: process.env.HTTP_GQL_PORT
+            })
+        ).url;
         this._listening = true;
 
         console.log(`GraphQL Server is running on url ${url}`);

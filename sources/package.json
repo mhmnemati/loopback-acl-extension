@@ -1,6 +1,6 @@
 {
     "name": "loopback-acl-extension",
-    "version": "0.2.0",
+    "version": "0.5.0",
     "description": "Loopback ACL generic implementation based on RBAC",
     "keywords": [
         "loopback-extension",
@@ -11,13 +11,15 @@
         "node": ">=8.9"
     },
     "scripts": {
-        "build": "lb-tsc --outDir build",
-        "build:watch": "lb-tsc --watch --outDir build",
-        "clean": "lb-clean build *.tsbuildinfo",
-        "pretest": "npm run clean && npm run build",
-        "test": "lb-mocha --allow-console-logs \"build/__tests__\"",
-        "test:dev": "lb-mocha --allow-console-logs build/__tests__/**/*.js",
-        "prepublishOnly": "npm run test"
+        "clean": "lb-clean dist build *.tsbuildinfo",
+        "prebuild": "npm run clean",
+        "build": "lb-tsc --outDir dist",
+        "postbuild": "parcel build --out-dir build --cache-dir build/cache --target node dist/index.js",
+        "build:watch": "lb-tsc --watch --outDir dist",
+        "start": "node .",
+        "start:watch": "nodemon .",
+        "test": "lb-mocha --allow-console-logs \"test/**/*.test.ts\"",
+        "prepublishOnly": "npm run build"
     },
     "repository": {
         "type": "git",
@@ -29,9 +31,7 @@
         "README.md",
         "index.js",
         "index.d.ts",
-        "build",
-        "src",
-        "!*/__tests__"
+        "dist"
     ],
     "dependencies": {
         "@loopback/authentication": "^3.2.3",
@@ -45,6 +45,7 @@
         "@loopback/security": "^0.1.8",
         "@types/graphql": "^14.5.0",
         "apollo-server": "^2.9.12",
+        "better-module-alias": "^1.0.4",
         "graphql": "^14.5.8",
         "loopback-authorization-extension": "latest",
         "loopback-history-extension": "latest",
@@ -53,9 +54,14 @@
     },
     "devDependencies": {
         "@loopback/build": "^2.1.0",
-        "source-map-support": "^0.5.16",
         "@loopback/testlab": "^1.9.5",
         "@types/node": "^10.17.5",
+        "nodemon": "^2.0.1",
+        "parcel-bundler": "^1.12.4",
+        "source-map-support": "^0.5.16",
         "typescript": "~3.7.2"
+    },
+    "_moduleAliases": {
+        "~": "./dist"
     }
 }

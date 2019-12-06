@@ -7,8 +7,9 @@ import {
 import { Ctor } from "loopback-history-extension";
 import { UserRepository } from "loopback-authorization-extension";
 
-import { PrivateACLBindings, ACLBindings } from "../keys";
-import { Session, User, UserRelations } from "../models";
+import { PrivateACLBindings, ACLBindings } from "~/keys";
+
+import { Session, User, UserRelations } from "~/models";
 
 export class SessionRepository<
     Model extends Session

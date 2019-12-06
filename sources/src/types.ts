@@ -4,18 +4,12 @@ import {
     Filter,
     Class
 } from "@loopback/repository";
-import {
-    AuthorizationApplicationConfig,
-    PermissionsList
-} from "loopback-authorization-extension";
-import { ACLController } from "./servers";
+import { PermissionsList } from "loopback-authorization-extension";
+import { ACLController } from "~/servers";
 import { InvocationContext } from "@loopback/context";
 import { Ctor } from "loopback-history-extension";
 
-import { RestServerConfig } from "@loopback/rest";
-import { HttpServerOptions } from "@loopback/http-server";
-
-import { User, Group, Role, Permission, Session, Code } from "./models";
+import { User, Group, Role, Permission, Session, Code } from "~/models";
 
 /**
  * Default Permissions
@@ -73,11 +67,9 @@ export type FilterMethod<Model extends Entity> = (
 ) => Filter<Model>;
 
 /**
- * ACLApplication configs
+ * ACLMixin configs
  */
-export interface ACLApplicationConfig extends AuthorizationApplicationConfig {
-    rest?: RestServerConfig;
-    graphql?: HttpServerOptions;
+export interface ACLMixinConfig {
     permissions?: Class<ACLPermissions>;
     userModel?: Ctor<User>;
     groupModel?: Ctor<Group>;

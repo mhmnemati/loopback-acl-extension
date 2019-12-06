@@ -1,4 +1,4 @@
-import { ACLController } from "../../servers";
+import { ACLController } from "~/servers";
 import {
     Entity,
     Count,
@@ -20,15 +20,15 @@ import {
     getFilterSchemaFor
 } from "@loopback/rest";
 import { Ctor } from "loopback-history-extension";
-// import { getFilterSchemaFor } from "src/servers";
+// import { getFilterSchemaFor } from "~/servers";
 
 import { authenticate } from "@loopback/authentication";
 import { authorize, Condition } from "loopback-authorization-extension";
 import { intercept } from "@loopback/core";
-import { exist, filter, unique } from "../../interceptors";
-import { ACLPermissions, RepositoryGetter, FilterMethod } from "../../types";
+import { exist, filter, unique } from "~/interceptors";
+import { ACLPermissions, RepositoryGetter, FilterMethod } from "~/types";
 
-export function ACLControllerMixin<Model extends Entity>(
+export function ACLCRUDControllerMixin<Model extends Entity>(
     ctor: Ctor<Model>,
     basePath: string,
     repositoryGetter: RepositoryGetter<Model>,

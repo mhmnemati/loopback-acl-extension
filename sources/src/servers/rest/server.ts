@@ -6,69 +6,67 @@ import {
 } from "@loopback/core";
 import { Ctor } from "loopback-history-extension";
 
-import * as path from "path";
-
 /** Swagger binding imports */
-import { RestServer, RestComponent } from "@loopback/rest";
+import {
+    RestServer,
+    RestComponent,
+    RestBindings,
+    RestServerConfig
+} from "@loopback/rest";
 import { RestExplorerComponent } from "@loopback/rest-explorer";
 
 /** Authentication binding imports */
 import { AuthenticationComponent } from "@loopback/authentication";
 
-import { PrivateACLBindings, ACLBindings } from "../../keys";
-import { ACLApplicationConfig } from "../../types";
+import { Sequence } from "~/servers";
 
-import { User, Group, Role, Permission, Session, Code } from "../../models";
+import { PrivateACLBindings } from "~/keys";
+import { User, Group, Role, Permission, Session, Code } from "~/models";
 
-import { Sequence } from "./sequence";
-
-import { GenerateUsersController } from "./controllers";
+import {
+    GenerateUsersController,
+    GenerateUsersSelfController,
+    GenerateUsersSessionController,
+    GenerateUsersAccountController,
+    GenerateUsersPasswordController,
+    GenerateGroupsController,
+    GenerateGroupsUsersController,
+    GenerateRolesController,
+    GenerateRolesUsersController,
+    GenerateRolesGroupsController,
+    GenerateRolesPermissionsController,
+    GeneratePermissionsController
+} from "~/servers/rest/controllers";
 
 @lifeCycleObserver("servers.REST")
 export class ACLRestServer extends RestServer {
     constructor(
         @inject(CoreBindings.APPLICATION_INSTANCE)
         app: Application,
-        @inject(ACLBindings.APPLICATION_CONFIG)
-        config: ACLApplicationConfig = {},
+        @inject(RestBindings.CONFIG)
+        config: RestServerConfig = {},
         @inject(PrivateACLBindings.USER_MODEL)
-        userModel: Ctor<User>,
+        userCtor: Ctor<User>,
         @inject(PrivateACLBindings.GROUP_MODEL)
-        groupModel: Ctor<Group>,
+        groupCtor: Ctor<Group>,
         @inject(PrivateACLBindings.ROLE_MODEL)
-        roleModel: Ctor<Role>,
+        roleCtor: Ctor<Role>,
         @inject(PrivateACLBindings.PERMISSION_MODEL)
-        permissionModel: Ctor<Permission>,
+        permissionCtor: Ctor<Permission>,
         @inject(PrivateACLBindings.SESSION_MODEL)
-        sessionModel: Ctor<Session>,
+        sessionCtor: Ctor<Session>,
         @inject(PrivateACLBindings.CODE_MODEL)
-        codeModel: Ctor<Code>
+        codeCtor: Ctor<Code>
     ) {
-        super(app, config.rest);
+        super(app, config);
 
-        /**
-         * Set up the custom sequence
-         */
-        this.sequence(Sequence);
-
-        /**
-         * Set up default home page
-         */
-        this.static("/", path.join(__dirname, "../../../public"));
-
-        /**
-         * Fix rest application to rest server bug
-         */
+        /** Fix rest application to rest server bug */
         (this as any).restServer = this;
 
-        /**
-         * Set up authentication
-         */
+        /** Bind authentication component */
         app.component(AuthenticationComponent);
 
-        /**
-         * Set up swagger
-         */
+        /** Bind swagger component */
         app.component(RestComponent);
         app.bind("RestExplorerComponent.KEY").to(
             new RestExplorerComponent(this as any, {
@@ -76,10 +74,38 @@ export class ACLRestServer extends RestServer {
             })
         );
 
-        /**
-         * Bind controllers
-         */
-        this.controller(GenerateUsersController(userModel));
+        /** Set up the custom sequence */
+        this.sequence(Sequence);
+
+        /** Bind users controllers */
+        this.controller(GenerateUsersController<User>(userCtor));
+        this.controller(GenerateUsersSelfController<User>(userCtor));
+        this.controller(
+            GenerateUsersSessionController<Session, User>(sessionCtor, userCtor)
+        );
+        this.controller(
+            GenerateUsersAccountController<Code, User>(codeCtor, userCtor)
+        );
+        this.controller(
+            GenerateUsersPasswordController<Code, User>(codeCtor, userCtor)
+        );
+
+        /** Bind groups controllers */
+        this.controller(GenerateGroupsController<Group>(groupCtor));
+        this.controller(GenerateGroupsUsersController<User>(userCtor));
+
+        /** Bind roles controllers */
+        this.controller(GenerateRolesController<Role>(roleCtor));
+        this.controller(GenerateRolesUsersController<User>(userCtor));
+        this.controller(GenerateRolesGroupsController<Group>(groupCtor));
+        this.controller(
+            GenerateRolesPermissionsController<Permission>(permissionCtor)
+        );
+
+        /** Bind permissions controllers */
+        this.controller(
+            GeneratePermissionsController<Permission>(permissionCtor)
+        );
     }
 
     async start() {
