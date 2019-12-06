@@ -74,32 +74,32 @@ export class ACLRestServer extends RestServer {
         this.sequence(Sequence);
 
         /** Bind users controllers */
-        this.controller(GenerateUsersController<User>(userCtor));
-        this.controller(GenerateUsersSelfController<User>(userCtor));
-        this.controller(
+        app.controller(GenerateUsersController<User>(userCtor));
+        app.controller(GenerateUsersSelfController<User>(userCtor));
+        app.controller(
             GenerateUsersSessionController<Session, User>(sessionCtor, userCtor)
         );
-        this.controller(
+        app.controller(
             GenerateUsersAccountController<Code, User>(codeCtor, userCtor)
         );
-        this.controller(
+        app.controller(
             GenerateUsersPasswordController<Code, User>(codeCtor, userCtor)
         );
 
         /** Bind groups controllers */
-        this.controller(GenerateGroupsController<Group>(groupCtor));
-        this.controller(GenerateGroupsUsersController<User>(userCtor));
+        app.controller(GenerateGroupsController<Group>(groupCtor));
+        app.controller(GenerateGroupsUsersController<User>(userCtor));
 
         /** Bind roles controllers */
-        this.controller(GenerateRolesController<Role>(roleCtor));
-        this.controller(GenerateRolesUsersController<User>(userCtor));
-        this.controller(GenerateRolesGroupsController<Group>(groupCtor));
-        this.controller(
+        app.controller(GenerateRolesController<Role>(roleCtor));
+        app.controller(GenerateRolesUsersController<User>(userCtor));
+        app.controller(GenerateRolesGroupsController<Group>(groupCtor));
+        app.controller(
             GenerateRolesPermissionsController<Permission>(permissionCtor)
         );
 
         /** Bind permissions controllers */
-        this.controller(
+        app.controller(
             GeneratePermissionsController<Permission>(permissionCtor)
         );
     }
