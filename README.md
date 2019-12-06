@@ -25,3 +25,7 @@ npm run test
 ```
 
 ---
+
+For more information read [this](sources/README.md) document.
+
+---
