@@ -7177,16 +7177,17 @@
             "integrity": "sha512-XsP+KhQif4bjX1kbuSiySJFNAehNxgLb6hPRGJ9QsUr8ajHkuXGdrHmFUTUUXhDwVX2R5bY4JNZEwbUiMhV+MA=="
         },
         "loopback-authorization-extension": {
-            "version": "3.3.0",
-            "resolved": "https://registry.npmjs.org/loopback-authorization-extension/-/loopback-authorization-extension-3.3.0.tgz",
-            "integrity": "sha512-Z/RIKoXRfHW7dxT2hKBlPvN2+248J9xow5NcYkkpcJDl/+rWE+1arKQ4LBkv6H53Mrqj5ZiNnRun6k/Naaax3A==",
+            "version": "6.1.0",
+            "resolved": "https://registry.npmjs.org/loopback-authorization-extension/-/loopback-authorization-extension-6.1.0.tgz",
+            "integrity": "sha512-boMOPMX+V+ckj5UksyORQXpMUlNMvJnNmS1JIGNn75S2RIADcbFF1K0scFrRnDig23bSYlxbxKkzdqT+0h45zQ==",
             "requires": {
-                "@loopback/boot": "^1.5.10",
-                "@loopback/context": "^1.23.4",
-                "@loopback/core": "^1.10.6",
-                "@loopback/repository": "^1.15.3",
-                "@loopback/rest": "^1.22.0",
-                "loopback-history-extension": "^1.1.0"
+                "@loopback/boot": "^1.5.12",
+                "@loopback/context": "^1.24.0",
+                "@loopback/core": "^1.11.0",
+                "@loopback/repository": "^1.15.5",
+                "@loopback/rest": "^1.24.0",
+                "loopback-history-extension": "^3.1.0",
+                "module-alias": "^2.2.2"
             }
         },
         "loopback-connector": {
@@ -7244,14 +7245,15 @@
             }
         },
         "loopback-history-extension": {
-            "version": "1.1.0",
-            "resolved": "https://registry.npmjs.org/loopback-history-extension/-/loopback-history-extension-1.1.0.tgz",
-            "integrity": "sha512-MU92Z1uLSaZZ1/2IkEEMl+35u+keYxqJbnAnhmXnvgAtM1SEKrPdC/fMBShU1dkKeEvnTgGQjXEVFrOTj2vpEQ==",
+            "version": "3.1.0",
+            "resolved": "https://registry.npmjs.org/loopback-history-extension/-/loopback-history-extension-3.1.0.tgz",
+            "integrity": "sha512-yDvb4oSVj+1hvc6KR0O9A75MzxccswKM+l4cq9QMrrZKYHWbRU5hJ8Yd4HPudDIHp86ckAxAyFgwwuAC7kCHLQ==",
             "requires": {
-                "@loopback/boot": "^1.5.9",
-                "@loopback/context": "^1.23.3",
-                "@loopback/core": "^1.10.5",
-                "@loopback/repository": "^1.15.2"
+                "@loopback/boot": "^1.5.12",
+                "@loopback/context": "^1.24.0",
+                "@loopback/core": "^1.11.0",
+                "@loopback/repository": "^1.15.5",
+                "module-alias": "^2.2.2"
             }
         },
         "loose-envify": {
