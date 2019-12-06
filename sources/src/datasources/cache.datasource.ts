@@ -11,6 +11,9 @@ export class CacheDataSource extends juggler.DataSource {
             optional: true
         })
         settings?: Options,
+        @inject("private.acl.dataSources.cache.modelBuilder", {
+            optional: true
+        })
         modelBuilder?: ModelBuilder
     ) {
         super(settings, modelBuilder);

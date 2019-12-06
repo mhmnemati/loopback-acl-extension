@@ -11,6 +11,9 @@ export class RelationalDataSource extends DataSource {
             optional: true
         })
         settings?: Options,
+        @inject("private.acl.dataSources.relational.modelBuilder", {
+            optional: true
+        })
         modelBuilder?: ModelBuilder
     ) {
         super(settings, modelBuilder);
