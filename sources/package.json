@@ -45,10 +45,10 @@
         "@loopback/security": "^0.1.8",
         "@types/graphql": "^14.5.0",
         "apollo-server": "^2.9.12",
+        "better-module-alias": "^1.0.4",
         "graphql": "^14.5.8",
         "loopback-authorization-extension": "latest",
         "loopback-history-extension": "latest",
-        "module-alias": "^2.2.2",
         "openapi-to-graphql": "^1.6.3",
         "randomatic": "^3.1.1"
     },
