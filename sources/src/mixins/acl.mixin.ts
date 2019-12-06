@@ -88,7 +88,9 @@ export function ACLMixin<T extends Class<any>>(superClass: T) {
         if (userRepository) {
             ctx.bind(ACLBindings.USER_REPOSITORY).to(userRepository);
         } else {
-            ctx.bind(ACLBindings.USER_REPOSITORY).toClass(UserRepository);
+            ctx.bind(ACLBindings.USER_REPOSITORY)
+                .toClass(UserRepository)
+                .tag("repository");
         }
 
         /**
@@ -98,7 +100,9 @@ export function ACLMixin<T extends Class<any>>(superClass: T) {
         if (groupRepository) {
             ctx.bind(ACLBindings.GROUP_REPOSITORY).to(groupRepository);
         } else {
-            ctx.bind(ACLBindings.GROUP_REPOSITORY).toClass(GroupRepository);
+            ctx.bind(ACLBindings.GROUP_REPOSITORY)
+                .toClass(GroupRepository)
+                .tag("repository");
         }
 
         /**
@@ -108,7 +112,9 @@ export function ACLMixin<T extends Class<any>>(superClass: T) {
         if (roleRepository) {
             ctx.bind(ACLBindings.ROLE_REPOSITORY).to(roleRepository);
         } else {
-            ctx.bind(ACLBindings.ROLE_REPOSITORY).toClass(RoleRepository);
+            ctx.bind(ACLBindings.ROLE_REPOSITORY)
+                .toClass(RoleRepository)
+                .tag("repository");
         }
 
         /**
@@ -120,9 +126,9 @@ export function ACLMixin<T extends Class<any>>(superClass: T) {
                 permissionRepository
             );
         } else {
-            ctx.bind(ACLBindings.PERMISSION_REPOSITORY).toClass(
-                PermissionRepository
-            );
+            ctx.bind(ACLBindings.PERMISSION_REPOSITORY)
+                .toClass(PermissionRepository)
+                .tag("repository");
         }
 
         /**
@@ -132,7 +138,9 @@ export function ACLMixin<T extends Class<any>>(superClass: T) {
         if (sessionRepository) {
             ctx.bind(ACLBindings.SESSION_REPOSITORY).to(sessionRepository);
         } else {
-            ctx.bind(ACLBindings.SESSION_REPOSITORY).toClass(SessionRepository);
+            ctx.bind(ACLBindings.SESSION_REPOSITORY)
+                .toClass(SessionRepository)
+                .tag("repository");
         }
 
         /**
@@ -142,7 +150,9 @@ export function ACLMixin<T extends Class<any>>(superClass: T) {
         if (codeRepository) {
             ctx.bind(ACLBindings.CODE_REPOSITORY).to(codeRepository);
         } else {
-            ctx.bind(ACLBindings.CODE_REPOSITORY).toClass(CodeRepository);
+            ctx.bind(ACLBindings.CODE_REPOSITORY)
+                .toClass(CodeRepository)
+                .tag("repository");
         }
     };
 
