@@ -82,8 +82,8 @@ Edit your `application.ts` file:
 import { AuthorizationMixin } from "loopback-authorization-extension";
 import { ACLMixin, ACLRestServer, ACLGQLServer } from "loopback-acl-extension";
 
-export class TestApplication extends ACLMixin(
-    AuthorizationMixin(BootMixin(ServiceMixin(RepositoryMixin(Application))))
+export class TestApplication extends AuthorizationMixin(
+    ACLMixin(BootMixin(ServiceMixin(RepositoryMixin(Application))))
 ) {
     constructor(options: ApplicationConfig = {}) {
         super(options);
