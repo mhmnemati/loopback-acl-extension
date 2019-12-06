@@ -25,7 +25,7 @@ Now, let's try:
 
 ### Step 1 (Define DataSource)
 
-Bind your dataSources you want to use for acl tables using extending to `RelationalDataSource` or `CacheDataSource`
+Bind your dataSources you want to use for acl tables using `bindACL`
 
 We need two dataSource, one for relational models, and one for cache models
 
