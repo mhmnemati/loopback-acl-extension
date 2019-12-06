@@ -1,11 +1,18 @@
 import { juggler } from "@loopback/repository";
+import { inject } from "@loopback/context";
 import { Options, ModelBuilder } from "loopback-datasource-juggler";
 
 import { bindACL } from "~/keys";
 
 @bindACL("CacheDataSource")
 export class CacheDataSource extends juggler.DataSource {
-    constructor(settings?: Options, modelBuilder?: ModelBuilder) {
+    constructor(
+        @inject("private.acl.dataSources.cache.settings", {
+            optional: true
+        })
+        settings?: Options,
+        modelBuilder?: ModelBuilder
+    ) {
         super(settings, modelBuilder);
     }
 }
