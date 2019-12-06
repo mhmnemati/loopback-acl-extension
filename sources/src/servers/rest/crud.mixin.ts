@@ -28,7 +28,7 @@ import { intercept } from "@loopback/core";
 import { exist, filter, unique } from "~/interceptors";
 import { ACLPermissions, RepositoryGetter, FilterMethod } from "~/types";
 
-export function ACLControllerMixin<Model extends Entity>(
+export function ACLCRUDControllerMixin<Model extends Entity>(
     ctor: Ctor<Model>,
     basePath: string,
     repositoryGetter: RepositoryGetter<Model>,

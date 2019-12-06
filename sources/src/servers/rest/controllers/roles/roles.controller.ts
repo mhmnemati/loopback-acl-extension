@@ -1,13 +1,13 @@
 import { Class } from "@loopback/repository";
 import { Ctor } from "loopback-history-extension";
 
-import { ACLController, ACLControllerMixin } from "~/servers";
+import { ACLController, ACLCRUDControllerMixin } from "~/servers";
 import { Role } from "~/models";
 
 export function GenerateRolesController<Model extends Role>(
     ctor: Ctor<Model>
 ): Class<ACLController> {
-    class RolesController extends ACLControllerMixin<Role>(
+    class RolesController extends ACLCRUDControllerMixin<Role>(
         ctor,
         "/roles",
         controller => controller.roleRepository,
