@@ -1,6 +1,7 @@
 import { Context, BindingKey, bind } from "@loopback/context";
 import { Ctor } from "loopback-history-extension";
 import { juggler } from "@loopback/repository";
+import { CoreBindings } from "@loopback/core";
 
 import { TokenService } from "@loopback/authentication";
 
@@ -145,6 +146,19 @@ export namespace ACLBindings {
     export const ROLE_PERMISSION_REPOSITORY = BindingKey.create<
         RolePermissionRepository
     >("acl.repositories.rolePermission");
+
+    /**
+     * Server Config key:
+     *
+     * 1. RestServerConfig
+     * 2. GraphQLServerConfig
+     */
+    export const REST_SERVER_CONFIG = CoreBindings.APPLICATION_CONFIG.deepProperty(
+        "rest"
+    );
+    export const GRAPHQL_SERVER_CONFIG = CoreBindings.APPLICATION_CONFIG.deepProperty(
+        "graphql"
+    );
 }
 
 /**

@@ -7,20 +7,16 @@ import {
 import { Ctor } from "loopback-history-extension";
 
 /** Swagger binding imports */
-import {
-    RestServer,
-    RestComponent,
-    RestBindings,
-    RestServerConfig
-} from "@loopback/rest";
+import { RestServer, RestComponent } from "@loopback/rest";
 import { RestExplorerComponent } from "@loopback/rest-explorer";
 
 /** Authentication binding imports */
 import { AuthenticationComponent } from "@loopback/authentication";
 
+import { ACLBindings, PrivateACLBindings } from "~/keys";
+import { ACLRestServerConfig } from "~/types";
 import { Sequence } from "~/servers";
 
-import { PrivateACLBindings } from "~/keys";
 import { User, Group, Role, Permission, Session, Code } from "~/models";
 
 import {
@@ -43,8 +39,8 @@ export class ACLRestServer extends RestServer {
     constructor(
         @inject(CoreBindings.APPLICATION_INSTANCE)
         app: Application,
-        @inject(RestBindings.CONFIG)
-        config: RestServerConfig = {},
+        @inject(ACLBindings.REST_SERVER_CONFIG)
+        config: ACLRestServerConfig = {},
         @inject(PrivateACLBindings.USER_MODEL)
         userCtor: Ctor<User>,
         @inject(PrivateACLBindings.GROUP_MODEL)

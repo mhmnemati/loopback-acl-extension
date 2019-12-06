@@ -5,9 +5,14 @@ import {
     Class
 } from "@loopback/repository";
 import { PermissionsList } from "loopback-authorization-extension";
-import { ACLController } from "~/servers";
 import { InvocationContext } from "@loopback/context";
 import { Ctor } from "loopback-history-extension";
+
+import { ApplicationConfig } from "@loopback/core";
+import { RestServerConfig } from "@loopback/rest";
+import { HttpServerOptions } from "@loopback/http-server";
+
+import { ACLController } from "~/servers";
 
 import { User, Group, Role, Permission, Session, Code } from "~/models";
 
@@ -77,4 +82,14 @@ export interface ACLMixinConfig {
     permissionModel?: Ctor<Permission>;
     sessionModel?: Ctor<Session>;
     codeModel?: Ctor<Code>;
+}
+
+/**
+ * ACLApplication configs
+ */
+export type ACLRestServerConfig = RestServerConfig;
+export type ACLGraphQLServerConfig = HttpServerOptions;
+export interface ACLApplicationConfig extends ApplicationConfig {
+    rest?: ACLRestServerConfig;
+    graphql?: ACLGraphQLServerConfig;
 }
