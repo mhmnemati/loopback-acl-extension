@@ -87,7 +87,7 @@ export interface ACLMixinConfig {
 /**
  * ACLApplication configs
  */
-export type ACLRestServerConfig = RestServerConfig;
+export type ACLRestServerConfig = RestServerConfig & { homePath?: string };
 export type ACLGraphQLServerConfig = HttpServerOptions;
 export interface ACLApplicationConfig extends ApplicationConfig {
     rest?: ACLRestServerConfig;

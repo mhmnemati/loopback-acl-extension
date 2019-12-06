@@ -59,6 +59,11 @@ export class ACLRestServer extends RestServer {
         /** Fix rest application to rest server bug */
         (this as any).restServer = this;
 
+        /** Set up default home page */
+        if (config.homePath) {
+            this.static("/", config.homePath);
+        }
+
         /** Bind authentication component */
         app.component(AuthenticationComponent);
 
