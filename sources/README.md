@@ -25,7 +25,7 @@ Now, let's try:
 
 ### Step 1 (Define DataSource)
 
-Bind your dataSources you want to use for acl tables using extending to `RelationalDataSource` or `CacheDataSource`
+Bind your dataSources you want to use for acl tables using `bindACL`
 
 We need two dataSource, one for relational models, and one for cache models
 
@@ -41,9 +41,12 @@ We need two dataSource, one for relational models, and one for cache models
 See this example of binding relational dataSource:
 
 ```ts
-import { RelationalDataSource } from "loopback-acl-extension";
+import { bindACL } from "loopback-acl-extension";
+import { bindAuthorization } from "loopback-authorization-extension";
 
-export class MySqlDataSource extends RelationalDataSource {
+@bindACL("RelationalDataSource")
+@bindAuthorization("DataSource")
+export class MySqlDataSource extends juggler.DataSource {
     static dataSourceName = "MySQL";
 
     constructor(
@@ -58,9 +61,10 @@ export class MySqlDataSource extends RelationalDataSource {
 See this example of binding cache dataSource:
 
 ```ts
-import { CacheDataSource } from "loopback-acl-extension";
+import { bindACL } from "loopback-acl-extension";
 
-export class RedisDataSource extends CacheDataSource {
+@bindACL("CacheDataSource")
+export class RedisDataSource extends juggler.DataSource {
     static dataSourceName = "Redis";
 
     constructor(
