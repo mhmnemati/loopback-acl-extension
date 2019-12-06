@@ -1,11 +1,18 @@
 import { DataSource } from "loopback-authorization-extension";
+import { inject } from "@loopback/context";
 import { Options, ModelBuilder } from "loopback-datasource-juggler";
 
 import { bindACL } from "~/keys";
 
 @bindACL("RelationalDataSource")
 export class RelationalDataSource extends DataSource {
-    constructor(settings?: Options, modelBuilder?: ModelBuilder) {
+    constructor(
+        @inject("private.acl.dataSources.relational.settings", {
+            optional: true
+        })
+        settings?: Options,
+        modelBuilder?: ModelBuilder
+    ) {
         super(settings, modelBuilder);
     }
 }
