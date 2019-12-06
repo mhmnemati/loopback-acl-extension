@@ -5,7 +5,7 @@ import {
     Application
 } from "@loopback/core";
 
-import { Sequence } from "~/servers/rest/sequence";
+import { Sequence } from "~/servers";
 import * as path from "path";
 
 /** Swagger binding imports */
@@ -23,7 +23,7 @@ import { AuthenticationComponent } from "@loopback/authentication";
 /** Authorization binding imports */
 import { AuthorizationComponent } from "loopback-authorization-extension";
 
-@lifeCycleObserver("server-rest")
+@lifeCycleObserver("servers.REST")
 export class ACLRestServer extends RestServer {
     constructor(
         @inject(CoreBindings.APPLICATION_INSTANCE)
