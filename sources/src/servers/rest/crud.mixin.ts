@@ -32,18 +32,31 @@ export function ACLCRUDControllerMixin<Model extends Entity>(
     ctor: Ctor<Model>,
     basePath: string,
     repositoryGetter: RepositoryGetter<Model>,
-    userPermission: {
-        create: Condition<ACLPermissions>;
-        read: Condition<ACLPermissions>;
-        update: Condition<ACLPermissions>;
-        delete: Condition<ACLPermissions>;
-        history: Condition<ACLPermissions>;
-    },
-    filterMethod: FilterMethod<Model>
+    access: {
+        create: {
+            permission: Condition<ACLPermissions>;
+        };
+        read: {
+            permission: Condition<ACLPermissions>;
+            filter: FilterMethod<Model>;
+        };
+        update: {
+            permission: Condition<ACLPermissions>;
+            filter: FilterMethod<Model>;
+        };
+        delete: {
+            permission: Condition<ACLPermissions>;
+            filter: FilterMethod<Model>;
+        };
+        history: {
+            permission: Condition<ACLPermissions>;
+            filter: FilterMethod<Model>;
+        };
+    }
 ): Class<ACLController> {
     class CRUDController extends ACLController {
         @intercept(unique<Model>(repositoryGetter, ctor, 0))
-        @authorize<ACLPermissions>(userPermission.create)
+        @authorize<ACLPermissions>(access.create.permission)
         @authenticate("bearer")
         @post(`${basePath}`, {
             responses: {
@@ -79,8 +92,8 @@ export function ACLCRUDControllerMixin<Model extends Entity>(
             return await repositoryGetter(this).create(model);
         }
 
-        @intercept(filter(0, "where", "where", filterMethod))
-        @authorize<ACLPermissions>(userPermission.read)
+        @intercept(filter(0, "where", "where", access.read.filter))
+        @authorize<ACLPermissions>(access.read.permission)
         @authenticate("bearer")
         @get(`${basePath}/count`, {
             responses: {
@@ -103,8 +116,8 @@ export function ACLCRUDControllerMixin<Model extends Entity>(
             return await repositoryGetter(this).count(where);
         }
 
-        @intercept(filter(0, "filter", "filter", filterMethod))
-        @authorize<ACLPermissions>(userPermission.read)
+        @intercept(filter(0, "filter", "filter", access.read.filter))
+        @authorize<ACLPermissions>(access.read.permission)
         @authenticate("bearer")
         @get(`${basePath}`, {
             responses: {
@@ -133,8 +146,8 @@ export function ACLCRUDControllerMixin<Model extends Entity>(
         }
 
         @intercept(unique<Model>(repositoryGetter, ctor, 0))
-        @intercept(filter(0, "where", "where", filterMethod))
-        @authorize<ACLPermissions>(userPermission.update)
+        @intercept(filter(1, "where", "where", access.update.filter))
+        @authorize<ACLPermissions>(access.update.permission)
         @authenticate("bearer")
         @patch(`${basePath}`, {
             responses: {
@@ -161,8 +174,8 @@ export function ACLCRUDControllerMixin<Model extends Entity>(
             return await repositoryGetter(this).updateAll(model, where);
         }
 
-        @intercept(filter(0, "where", "where", filterMethod))
-        @authorize<ACLPermissions>(userPermission.delete)
+        @intercept(filter(0, "where", "where", access.delete.filter))
+        @authorize<ACLPermissions>(access.delete.permission)
         @authenticate("bearer")
         @del(`${basePath}`, {
             responses: {
@@ -181,8 +194,9 @@ export function ACLCRUDControllerMixin<Model extends Entity>(
             return await repositoryGetter(this).deleteAll(where);
         }
 
+        /** TODO: filter check for read by id */
         @intercept(exist(repositoryGetter))
-        @authorize<ACLPermissions>(userPermission.read)
+        @authorize<ACLPermissions>(access.read.permission)
         @authenticate("bearer")
         @get(`${basePath}/{id}`, {
             responses: {
@@ -202,9 +216,10 @@ export function ACLCRUDControllerMixin<Model extends Entity>(
             return await repositoryGetter(this).findById(id);
         }
 
+        /** TODO: filter check for update by id */
         @intercept(unique<Model>(repositoryGetter, ctor, 1))
         @intercept(exist(repositoryGetter))
-        @authorize<ACLPermissions>(userPermission.update)
+        @authorize<ACLPermissions>(access.update.permission)
         @authenticate("bearer")
         @put(`${basePath}/{id}`, {
             responses: {
@@ -227,8 +242,9 @@ export function ACLCRUDControllerMixin<Model extends Entity>(
             await repositoryGetter(this).updateById(id, model);
         }
 
+        /** TODO: filter check for delete by id */
         @intercept(exist(repositoryGetter))
-        @authorize<ACLPermissions>(userPermission.delete)
+        @authorize<ACLPermissions>(access.delete.permission)
         @authenticate("bearer")
         @del(`${basePath}/{id}`, {
             responses: {
@@ -241,14 +257,14 @@ export function ACLCRUDControllerMixin<Model extends Entity>(
             await repositoryGetter(this).deleteById(id);
         }
 
-        @intercept(filter(0, "filter", "filter", filterMethod))
+        @intercept(filter(1, "filter", "filter", access.history.filter))
         @intercept(exist(repositoryGetter))
-        @authorize<ACLPermissions>(userPermission.history)
+        @authorize<ACLPermissions>(access.history.permission)
         @authenticate("bearer")
         @get(`${basePath}/{id}/history`, {
             responses: {
                 "200": {
-                    description: `Get ${ctor.name} by filter`,
+                    description: `Get ${ctor.name} history by filter`,
                     content: {
                         "application/json": {
                             schema: {
@@ -269,7 +285,9 @@ export function ACLCRUDControllerMixin<Model extends Entity>(
             })
             filter?: Filter<Model>
         ): Promise<Model[]> {
-            return await repositoryGetter(this).find(filter, {});
+            return await repositoryGetter(this).find(filter, {
+                crud: true
+            });
         }
     }
 
