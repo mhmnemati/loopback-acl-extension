@@ -37,6 +37,7 @@ export function ACLCRUDControllerMixin<Model extends Entity>(
         read: Condition<ACLPermissions>;
         update: Condition<ACLPermissions>;
         delete: Condition<ACLPermissions>;
+        history: Condition<ACLPermissions>;
     },
     filterMethod: FilterMethod<Model>
 ): Class<ACLController> {
@@ -76,30 +77,6 @@ export function ACLCRUDControllerMixin<Model extends Entity>(
             model: Model
         ): Promise<Model> {
             return await repositoryGetter(this).create(model);
-        }
-
-        @intercept(filter(0, "where", "where", filterMethod))
-        @authorize<ACLPermissions>(userPermission.read)
-        @authenticate("bearer")
-        @get(`${basePath}/log`, {
-            responses: {
-                "200": {
-                    description: `Get ${ctor.name} count by where`,
-                    content: {
-                        "application/json": {
-                            schema: CountSchema
-                        }
-                    }
-                }
-            }
-        })
-        async log(
-            @param.query.object("where", getWhereSchemaFor(ctor), {
-                description: `Where ${ctor.name}`
-            })
-            where?: Where<Model>
-        ): Promise<Count> {
-            return await repositoryGetter(this).count(where);
         }
 
         @intercept(filter(0, "where", "where", filterMethod))
@@ -262,6 +239,37 @@ export function ACLCRUDControllerMixin<Model extends Entity>(
         })
         async deleteById(@param.path.string("id") id: string): Promise<void> {
             await repositoryGetter(this).deleteById(id);
+        }
+
+        @intercept(filter(0, "filter", "filter", filterMethod))
+        @intercept(exist(repositoryGetter))
+        @authorize<ACLPermissions>(userPermission.history)
+        @authenticate("bearer")
+        @get(`${basePath}/{id}/history`, {
+            responses: {
+                "200": {
+                    description: `Get ${ctor.name} by filter`,
+                    content: {
+                        "application/json": {
+                            schema: {
+                                type: "array",
+                                items: getModelSchemaRef(ctor, {
+                                    includeRelations: true
+                                })
+                            }
+                        }
+                    }
+                }
+            }
+        })
+        async historyById(
+            @param.path.string("id") id: string,
+            @param.query.object("filter", getFilterSchemaFor(ctor), {
+                description: `Filter ${ctor.name}`
+            })
+            filter?: Filter<Model>
+        ): Promise<Model[]> {
+            return await repositoryGetter(this).find(filter, {});
         }
     }
 
