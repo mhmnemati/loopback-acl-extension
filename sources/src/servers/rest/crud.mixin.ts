@@ -81,6 +81,30 @@ export function ACLCRUDControllerMixin<Model extends Entity>(
         @intercept(filter(0, "where", "where", filterMethod))
         @authorize<ACLPermissions>(userPermission.read)
         @authenticate("bearer")
+        @get(`${basePath}/log`, {
+            responses: {
+                "200": {
+                    description: `Get ${ctor.name} count by where`,
+                    content: {
+                        "application/json": {
+                            schema: CountSchema
+                        }
+                    }
+                }
+            }
+        })
+        async log(
+            @param.query.object("where", getWhereSchemaFor(ctor), {
+                description: `Where ${ctor.name}`
+            })
+            where?: Where<Model>
+        ): Promise<Count> {
+            return await repositoryGetter(this).count(where);
+        }
+
+        @intercept(filter(0, "where", "where", filterMethod))
+        @authorize<ACLPermissions>(userPermission.read)
+        @authenticate("bearer")
         @get(`${basePath}/count`, {
             responses: {
                 "200": {
