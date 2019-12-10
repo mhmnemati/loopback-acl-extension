@@ -9,15 +9,30 @@ export function GenerateGroupsController<Model extends Group>(
 ): Class<ACLController> {
     class GroupsController extends ACLCRUDControllerMixin<Group>(
         ctor,
+        "id",
         "/groups",
         controller => controller.groupRepository,
         {
-            create: "GROUPS_WRITE",
-            read: "GROUPS_READ",
-            update: "GROUPS_WRITE",
-            delete: "GROUPS_WRITE"
-        },
-        (context, filter) => filter
+            create: {
+                permission: "GROUPS_WRITE"
+            },
+            read: {
+                permission: "GROUPS_READ",
+                filter: (context, filter) => filter
+            },
+            update: {
+                permission: "GROUPS_WRITE",
+                filter: (context, filter) => filter
+            },
+            delete: {
+                permission: "GROUPS_WRITE",
+                filter: (context, filter) => filter
+            },
+            history: {
+                permission: "GROUPS_HISTORY",
+                filter: (context, filter) => filter
+            }
+        }
     ) {}
 
     return GroupsController;

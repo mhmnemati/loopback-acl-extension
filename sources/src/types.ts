@@ -23,12 +23,17 @@ export class ACLPermissions extends PermissionsList {
     /** Users */
     USERS_READ = "Read users";
     USERS_WRITE = "Write users";
+    USERS_HISTORY = "Read users history";
+
+    /** Self user */
     USERS_READ_SELF = "Read self user";
     USERS_WRITE_SELF = "Write self user";
+    USERS_HISTORY_SELF = "Read self user history";
 
     /** Groups */
     GROUPS_READ = "Read groups";
     GROUPS_WRITE = "Write groups";
+    GROUPS_HISTORY = "Read groups history";
 
     /** Groups - Users */
     GROUPS_ADD_USER = "Add any user to any group";
@@ -37,6 +42,7 @@ export class ACLPermissions extends PermissionsList {
     /** Roles */
     ROLES_READ = "Read roles";
     ROLES_WRITE = "Write roles";
+    ROLES_HISTORY = "Read roles history";
 
     /** Roles - Users */
     ROLES_ADD_USER = "Add any user to any role";

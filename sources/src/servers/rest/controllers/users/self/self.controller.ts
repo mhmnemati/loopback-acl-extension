@@ -1,6 +1,13 @@
-import { Class } from "@loopback/repository";
+import { Class, Filter } from "@loopback/repository";
 import { Ctor } from "loopback-history-extension";
-import { get, put, requestBody, getModelSchemaRef } from "@loopback/rest";
+import {
+    get,
+    put,
+    param,
+    requestBody,
+    getModelSchemaRef,
+    getFilterSchemaFor
+} from "@loopback/rest";
 import { authenticate } from "@loopback/authentication";
 import { authorize } from "loopback-authorization-extension";
 
@@ -10,7 +17,7 @@ import { User } from "~/models";
 import { ACLPermissions } from "~/types";
 
 import { intercept } from "@loopback/core";
-import { unique } from "~/interceptors";
+import { unique, filter } from "~/interceptors";
 
 export function GenerateUsersSelfController<UserModel extends User>(
     userCtor: Ctor<UserModel>
@@ -63,6 +70,41 @@ export function GenerateUsersSelfController<UserModel extends User>(
             user: User
         ): Promise<void> {
             await this.userRepository.updateById(this.session.userId, user);
+        }
+
+        @intercept(
+            filter(0, "filter", (context, filter) => filter, 0, "filter", {
+                arg: context =>
+                    (context.target as ACLController).session.userId,
+                property: "id"
+            })
+        )
+        @authorize<ACLPermissions>("USERS_HISTORY_SELF")
+        @authenticate("bearer")
+        @get("/users/self/history", {
+            responses: {
+                "200": {
+                    description: `Get self history by filter`,
+                    content: {
+                        "application/json": {
+                            schema: {
+                                type: "array",
+                                items: getModelSchemaRef(userCtor, {
+                                    includeRelations: true
+                                })
+                            }
+                        }
+                    }
+                }
+            }
+        })
+        async history(
+            @param.query.object("filter", getFilterSchemaFor(userCtor), {
+                description: `Filter self`
+            })
+            filter?: Filter<UserModel>
+        ): Promise<User[]> {
+            return await this.userRepository.find(filter);
         }
     }
 
