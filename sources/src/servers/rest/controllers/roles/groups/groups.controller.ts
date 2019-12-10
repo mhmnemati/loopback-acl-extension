@@ -14,21 +14,28 @@ export function GenerateRolesGroupsController<MemberModel extends Group>(
     >(
         GroupRole,
         memberCtor,
+        "roleId",
+        "id",
         "/roles/{id}/groups",
         controller => controller.groupRoleRepository,
         (id, memberId) => new GroupRole({ roleId: id, groupId: memberId }),
         (id, memberId) => ({ roleId: id, groupId: memberId }),
         {
-            read: "ROLES_READ",
-            add: "ROLES_ADD_GROUP",
-            remove: "ROLES_REMOVE_GROUP"
-        },
-        (context, filter) => ({
-            ...filter,
-            where: {
-                and: [{ roleId: context.args[0] }, filter.where || {}]
+            read: {
+                permission: "ROLES_READ",
+                filter: (context, filter) => filter
+            },
+            add: {
+                permission: "ROLES_ADD_GROUP"
+            },
+            remove: {
+                permission: "ROLES_REMOVE_GROUP"
+            },
+            history: {
+                permission: "ROLES_HISTORY",
+                filter: (context, filter) => filter
             }
-        })
+        }
     ) {}
 
     return RolesGroupsController;

@@ -14,21 +14,28 @@ export function GenerateGroupsUsersController<MemberModel extends User>(
     >(
         UserGroup,
         memberCtor,
+        "groupId",
+        "id",
         "/groups/{id}/users",
         controller => controller.userGroupRepository,
         (id, memberId) => new UserGroup({ groupId: id, userId: memberId }),
         (id, memberId) => ({ groupId: id, userId: memberId }),
         {
-            read: "GROUPS_READ",
-            add: "GROUPS_ADD_USER",
-            remove: "GROUPS_REMOVE_USER"
-        },
-        (context, filter) => ({
-            ...filter,
-            where: {
-                and: [{ groupId: context.args[0] }, filter.where || {}]
+            read: {
+                permission: "GROUPS_READ",
+                filter: (context, filter) => filter
+            },
+            add: {
+                permission: "GROUPS_ADD_USER"
+            },
+            remove: {
+                permission: "GROUPS_REMOVE_USER"
+            },
+            history: {
+                permission: "GROUPS_HISTORY",
+                filter: (context, filter) => filter
             }
-        })
+        }
     ) {}
 
     return GroupsUsersController;

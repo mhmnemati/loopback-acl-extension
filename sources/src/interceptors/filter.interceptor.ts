@@ -8,32 +8,70 @@ import {
 import { FilterMethod } from "~/types";
 
 export const filter = (
-    argIndex: number,
-    inputFilter: "where" | "filter",
+    inputArg: number,
+    inputFilter: "where" | "filter" | string,
+    filterMethod: FilterMethod<any>,
+    outputArg: number,
     outputFilter: "where" | "filter",
-    filterMethod: FilterMethod<any>
+    andId?: {
+        arg: number | ((context: InvocationContext) => string);
+        property: string;
+    }
 ): Interceptor => {
     return async (
         invocationCtx: InvocationContext,
         next: () => ValueOrPromise<InvocationResult>
     ) => {
+        /** Read input argument */
+        let filter = invocationCtx.args[inputArg] || {};
+
+        /** Change input filter */
         if (inputFilter === "where") {
-            invocationCtx.args[argIndex] = {
-                where: invocationCtx.args[argIndex] || {}
+            filter = {
+                where: filter
+            };
+        } else if (inputFilter === "filter") {
+            filter = {
+                ...filter,
+                where: filter.where || {}
             };
         } else {
-            invocationCtx.args[argIndex] = invocationCtx.args[argIndex] || {};
+            filter = {
+                where: {
+                    [inputFilter]: filter
+                }
+            };
         }
 
-        invocationCtx.args[argIndex] = filterMethod(
-            invocationCtx,
-            invocationCtx.args[argIndex]
-        );
+        /** Apply filter */
+        filter = filterMethod(invocationCtx, filter);
 
+        /** Apply optional id and */
+        if (andId) {
+            if (typeof andId.arg === "number") {
+                filter.where = {
+                    and: [
+                        { [andId.property]: invocationCtx.args[andId.arg] },
+                        filter.where
+                    ]
+                };
+            } else {
+                filter.where = {
+                    and: [
+                        { [andId.property]: andId.arg(invocationCtx) },
+                        filter.where
+                    ]
+                };
+            }
+        }
+
+        /** Change output filter */
         if (outputFilter === "where") {
-            invocationCtx.args[argIndex] =
-                invocationCtx.args[argIndex].where || {};
+            filter = filter.where;
         }
+
+        /** Write output argument */
+        invocationCtx.args[outputArg] = filter;
 
         return next();
     };

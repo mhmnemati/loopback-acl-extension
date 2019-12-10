@@ -14,22 +14,29 @@ export function GenerateRolesPermissionsController<
     >(
         RolePermission,
         memberCtor,
+        "roleId",
+        "id",
         "/roles/{id}/permissions",
         controller => controller.rolePermissionRepository,
         (id, memberId) =>
             new RolePermission({ roleId: id, permissionId: memberId }),
         (id, memberId) => ({ roleId: id, permissionId: memberId }),
         {
-            read: "ROLES_READ",
-            add: "ROLES_ADD_PERMISSION",
-            remove: "ROLES_REMOVE_PERMISSION"
-        },
-        (context, filter) => ({
-            ...filter,
-            where: {
-                and: [{ roleId: context.args[0] }, filter.where || {}]
+            read: {
+                permission: "ROLES_READ",
+                filter: (context, filter) => filter
+            },
+            add: {
+                permission: "ROLES_ADD_PERMISSION"
+            },
+            remove: {
+                permission: "ROLES_REMOVE_PERMISSION"
+            },
+            history: {
+                permission: "ROLES_HISTORY",
+                filter: (context, filter) => filter
             }
-        })
+        }
     ) {}
 
     return RolesPermissionsController;

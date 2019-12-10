@@ -9,15 +9,30 @@ export function GenerateRolesController<Model extends Role>(
 ): Class<ACLController> {
     class RolesController extends ACLCRUDControllerMixin<Role>(
         ctor,
+        "id",
         "/roles",
         controller => controller.roleRepository,
         {
-            create: "ROLES_WRITE",
-            read: "ROLES_READ",
-            update: "ROLES_WRITE",
-            delete: "ROLES_WRITE"
-        },
-        (context, filter) => filter
+            create: {
+                permission: "ROLES_WRITE"
+            },
+            read: {
+                permission: "ROLES_READ",
+                filter: (context, filter) => filter
+            },
+            update: {
+                permission: "ROLES_WRITE",
+                filter: (context, filter) => filter
+            },
+            delete: {
+                permission: "ROLES_WRITE",
+                filter: (context, filter) => filter
+            },
+            history: {
+                permission: "ROLES_HISTORY",
+                filter: (context, filter) => filter
+            }
+        }
     ) {}
 
     return RolesController;
