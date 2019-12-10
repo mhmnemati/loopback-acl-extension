@@ -30,6 +30,7 @@ import { ACLPermissions, RepositoryGetter, FilterMethod } from "~/types";
 
 export function ACLCRUDControllerMixin<Model extends Entity>(
     ctor: Ctor<Model>,
+    ctorId: keyof Model,
     basePath: string,
     repositoryGetter: RepositoryGetter<Model>,
     accessControl: {
@@ -54,8 +55,6 @@ export function ACLCRUDControllerMixin<Model extends Entity>(
         };
     }
 ): Class<ACLController> {
-    const ctorId = "id";
-
     class CRUDController extends ACLController {
         @intercept(unique<Model>(repositoryGetter, ctor, 0))
         @authorize<ACLPermissions>(accessControl.create.permission)
@@ -196,7 +195,9 @@ export function ACLCRUDControllerMixin<Model extends Entity>(
             return await repositoryGetter(this).deleteAll(where);
         }
 
-        @intercept(filter(0, ctorId, accessControl.read.filter, 1, "filter"))
+        @intercept(
+            filter(0, ctorId as string, accessControl.read.filter, 1, "filter")
+        )
         @intercept(exist(repositoryGetter))
         @authorize<ACLPermissions>(accessControl.read.permission)
         @authenticate("bearer")
@@ -218,7 +219,9 @@ export function ACLCRUDControllerMixin<Model extends Entity>(
             return await repositoryGetter(this).findOne(arguments[1]);
         }
 
-        @intercept(filter(0, ctorId, accessControl.update.filter, 2, "where"))
+        @intercept(
+            filter(0, ctorId as string, accessControl.update.filter, 2, "where")
+        )
         @intercept(unique<Model>(repositoryGetter, ctor, 1))
         @intercept(exist(repositoryGetter))
         @authorize<ACLPermissions>(accessControl.update.permission)
@@ -244,7 +247,9 @@ export function ACLCRUDControllerMixin<Model extends Entity>(
             await repositoryGetter(this).updateAll(model, arguments[2]);
         }
 
-        @intercept(filter(0, ctorId, accessControl.delete.filter, 1, "where"))
+        @intercept(
+            filter(0, ctorId as string, accessControl.delete.filter, 1, "where")
+        )
         @intercept(exist(repositoryGetter))
         @authorize<ACLPermissions>(accessControl.delete.permission)
         @authenticate("bearer")
@@ -260,7 +265,10 @@ export function ACLCRUDControllerMixin<Model extends Entity>(
         }
 
         @intercept(
-            filter(1, "filter", accessControl.history.filter, 1, "filter")
+            filter(1, "filter", accessControl.history.filter, 1, "filter", {
+                arg: 0,
+                property: ctorId as string
+            })
         )
         @intercept(exist(repositoryGetter))
         @authorize<ACLPermissions>(accessControl.history.permission)

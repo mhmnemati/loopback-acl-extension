@@ -14,21 +14,28 @@ export function GenerateRolesUsersController<MemberModel extends User>(
     >(
         UserRole,
         memberCtor,
+        "roleId",
+        "id",
         "/roles/{id}/users",
         controller => controller.userRoleRepository,
         (id, memberId) => new UserRole({ roleId: id, userId: memberId }),
         (id, memberId) => ({ roleId: id, userId: memberId }),
         {
-            read: "ROLES_READ",
-            add: "ROLES_ADD_USER",
-            remove: "ROLES_REMOVE_USER"
-        },
-        (context, filter) => ({
-            ...filter,
-            where: {
-                and: [{ roleId: context.args[0] }, filter.where || {}]
+            read: {
+                permission: "ROLES_READ",
+                filter: (context, filter) => filter
+            },
+            add: {
+                permission: "ROLES_ADD_USER"
+            },
+            remove: {
+                permission: "ROLES_REMOVE_USER"
+            },
+            history: {
+                permission: "ROLES_HISTORY",
+                filter: (context, filter) => filter
             }
-        })
+        }
     ) {}
 
     return RolesUsersController;

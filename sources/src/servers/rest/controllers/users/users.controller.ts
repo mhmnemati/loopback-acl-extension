@@ -9,15 +9,30 @@ export function GenerateUsersController<Model extends User>(
 ): Class<ACLController> {
     class UsersController extends ACLCRUDControllerMixin<User>(
         ctor,
+        "id",
         "/users",
         controller => controller.userRepository,
         {
-            create: "USERS_WRITE",
-            read: "USERS_READ",
-            update: "USERS_WRITE",
-            delete: "USERS_WRITE"
-        },
-        (context, filter) => filter
+            create: {
+                permission: "USERS_WRITE"
+            },
+            read: {
+                permission: "USERS_READ",
+                filter: (context, filter) => filter
+            },
+            update: {
+                permission: "USERS_WRITE",
+                filter: (context, filter) => filter
+            },
+            delete: {
+                permission: "USERS_WRITE",
+                filter: (context, filter) => filter
+            },
+            history: {
+                permission: "USERS_HISTORY",
+                filter: (context, filter) => filter
+            }
+        }
     ) {}
 
     return UsersController;

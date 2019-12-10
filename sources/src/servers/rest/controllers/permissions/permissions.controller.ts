@@ -9,15 +9,30 @@ export function GeneratePermissionsController<Model extends Permission>(
 ): Class<ACLController> {
     class PermissionsController extends ACLCRUDControllerMixin<Permission>(
         ctor,
+        "id",
         "/permissions",
         controller => controller.permissionRepository,
         {
-            create: "PERMISSIONS_WRITE",
-            read: "PERMISSIONS_READ",
-            update: "PERMISSIONS_WRITE",
-            delete: "PERMISSIONS_WRITE"
-        },
-        (context, filter) => filter
+            create: {
+                permission: "PERMISSIONS_WRITE"
+            },
+            read: {
+                permission: "PERMISSIONS_READ",
+                filter: (context, filter) => filter
+            },
+            update: {
+                permission: "PERMISSIONS_WRITE",
+                filter: (context, filter) => filter
+            },
+            delete: {
+                permission: "PERMISSIONS_WRITE",
+                filter: (context, filter) => filter
+            },
+            history: {
+                permission: "PERMISSIONS_READ",
+                filter: (context, filter) => filter
+            }
+        }
     ) {}
 
     return PermissionsController;

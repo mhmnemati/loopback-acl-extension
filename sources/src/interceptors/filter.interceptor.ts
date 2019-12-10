@@ -12,7 +12,11 @@ export const filter = (
     inputFilter: "where" | "filter" | string,
     filterMethod: FilterMethod<any>,
     outputArg: number,
-    outputFilter: "where" | "filter"
+    outputFilter: "where" | "filter",
+    andId?: {
+        arg: number | ((context: InvocationContext) => string);
+        property: string;
+    }
 ): Interceptor => {
     return async (
         invocationCtx: InvocationContext,
@@ -41,6 +45,25 @@ export const filter = (
 
         /** Apply filter */
         filter = filterMethod(invocationCtx, filter);
+
+        /** Apply optional id and */
+        if (andId) {
+            if (typeof andId.arg === "number") {
+                filter.where = {
+                    and: [
+                        { [andId.property]: invocationCtx.args[andId.arg] },
+                        filter.where
+                    ]
+                };
+            } else {
+                filter.where = {
+                    and: [
+                        { [andId.property]: andId.arg(invocationCtx) },
+                        filter.where
+                    ]
+                };
+            }
+        }
 
         /** Change output filter */
         if (outputFilter === "where") {

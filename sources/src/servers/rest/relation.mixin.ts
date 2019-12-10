@@ -32,6 +32,8 @@ export function ACLRelationControllerMixin<
 >(
     ctor: Ctor<Model>,
     memberCtor: Ctor<MemberModel>,
+    ctorContainerId: keyof Model,
+    memberCtorId: keyof MemberModel,
     basePath: string,
     repositoryGetter: RepositoryGetter<Model>,
     modelGetter: (id: string, memberId: string) => Model,
@@ -53,11 +55,13 @@ export function ACLRelationControllerMixin<
         };
     }
 ): Class<ACLController> {
-    const ctorId = "id";
-    const memberCtorId = "id";
-
     class RelationController extends ACLController {
-        @intercept(filter(1, "filter", accessControl.read.filter, 1, "filter"))
+        @intercept(
+            filter(1, "filter", accessControl.read.filter, 1, "filter", {
+                arg: 0,
+                property: ctorContainerId as string
+            })
+        )
         @authorize<ACLPermissions>(accessControl.read.permission)
         @authenticate("bearer")
         @get(`${basePath}`, {
@@ -87,7 +91,12 @@ export function ACLRelationControllerMixin<
             return await repositoryGetter(this).find(filter);
         }
 
-        @intercept(filter(1, "where", accessControl.read.filter, 1, "where"))
+        @intercept(
+            filter(1, "where", accessControl.read.filter, 1, "where", {
+                arg: 0,
+                property: ctorContainerId as string
+            })
+        )
         @authorize<ACLPermissions>(accessControl.read.permission)
         @authenticate("bearer")
         @get(`${basePath}/count`, {
@@ -171,7 +180,10 @@ export function ACLRelationControllerMixin<
         }
 
         @intercept(
-            filter(1, "filter", accessControl.history.filter, 1, "filter")
+            filter(1, "filter", accessControl.history.filter, 1, "filter", {
+                arg: 0,
+                property: ctorContainerId as string
+            })
         )
         @authorize<ACLPermissions>(accessControl.history.permission)
         @authenticate("bearer")
