@@ -36,16 +36,29 @@ export function ACLRelationControllerMixin<
     repositoryGetter: RepositoryGetter<Model>,
     modelGetter: (id: string, memberId: string) => Model,
     whereGetter: (id: string, memberId: string) => Where<Model>,
-    userPermission: {
-        read: Condition<ACLPermissions>;
-        add: Condition<ACLPermissions>;
-        remove: Condition<ACLPermissions>;
-    },
-    filterMethod: FilterMethod<Model>
+    accessControl: {
+        read: {
+            permission: Condition<ACLPermissions>;
+            filter: FilterMethod<Model>;
+        };
+        add: {
+            permission: Condition<ACLPermissions>;
+        };
+        remove: {
+            permission: Condition<ACLPermissions>;
+        };
+        history: {
+            permission: Condition<ACLPermissions>;
+            filter: FilterMethod<Model>;
+        };
+    }
 ): Class<ACLController> {
+    const ctorId = "id";
+    const memberCtorId = "id";
+
     class RelationController extends ACLController {
-        @intercept(filter(1, "filter", "filter", filterMethod))
-        @authorize<ACLPermissions>(userPermission.read)
+        @intercept(filter(1, "filter", accessControl.read.filter, 1, "filter"))
+        @authorize<ACLPermissions>(accessControl.read.permission)
         @authenticate("bearer")
         @get(`${basePath}`, {
             responses: {
@@ -74,8 +87,8 @@ export function ACLRelationControllerMixin<
             return await repositoryGetter(this).find(filter);
         }
 
-        @intercept(filter(1, "where", "where", filterMethod))
-        @authorize<ACLPermissions>(userPermission.read)
+        @intercept(filter(1, "where", accessControl.read.filter, 1, "where"))
+        @authorize<ACLPermissions>(accessControl.read.permission)
         @authenticate("bearer")
         @get(`${basePath}/count`, {
             responses: {
@@ -99,7 +112,7 @@ export function ACLRelationControllerMixin<
             return await repositoryGetter(this).count(where);
         }
 
-        @authorize<ACLPermissions>(userPermission.add)
+        @authorize<ACLPermissions>(accessControl.add.permission)
         @authenticate("bearer")
         @post(`${basePath}`, {
             responses: {
@@ -116,7 +129,7 @@ export function ACLRelationControllerMixin<
                         schema: getModelSchemaRef(memberCtor, {
                             exclude: Object.keys(
                                 memberCtor.definition.properties
-                            ).filter(key => key !== "id") as any
+                            ).filter(key => key !== memberCtorId) as any
                         })
                     }
                 }
@@ -124,11 +137,11 @@ export function ACLRelationControllerMixin<
             memberModel: MemberModel
         ): Promise<Model> {
             return await repositoryGetter(this).create(
-                modelGetter(id, memberModel.getId())
+                modelGetter(id, (memberModel as any)[memberCtorId])
             );
         }
 
-        @authorize<ACLPermissions>(userPermission.remove)
+        @authorize<ACLPermissions>(accessControl.remove.permission)
         @authenticate("bearer")
         @del(`${basePath}`, {
             responses: {
@@ -145,7 +158,7 @@ export function ACLRelationControllerMixin<
                         schema: getModelSchemaRef(memberCtor, {
                             exclude: Object.keys(
                                 memberCtor.definition.properties
-                            ).filter(key => key !== "id") as any
+                            ).filter(key => key !== memberCtorId) as any
                         })
                     }
                 }
@@ -153,8 +166,40 @@ export function ACLRelationControllerMixin<
             memberModel: MemberModel
         ) {
             return await repositoryGetter(this).deleteAll(
-                whereGetter(id, memberModel.getId())
+                whereGetter(id, (memberModel as any)[memberCtorId])
             );
+        }
+
+        @intercept(
+            filter(1, "filter", accessControl.history.filter, 1, "filter")
+        )
+        @authorize<ACLPermissions>(accessControl.history.permission)
+        @authenticate("bearer")
+        @get(`${basePath}/history`, {
+            responses: {
+                "200": {
+                    description: `Get ${ctor.name} members history by filter`,
+                    content: {
+                        "application/json": {
+                            schema: {
+                                type: "array",
+                                items: getModelSchemaRef(ctor, {
+                                    includeRelations: true
+                                })
+                            }
+                        }
+                    }
+                }
+            }
+        })
+        async history(
+            @param.path.string("id") id: string,
+            @param.query.object("filter", getFilterSchemaFor(ctor), {
+                description: `Filter ${ctor.name}`
+            })
+            filter?: Filter<Model>
+        ): Promise<Model[]> {
+            return await repositoryGetter(this).find(filter, { crud: true });
         }
     }
 

@@ -32,7 +32,7 @@ export function ACLCRUDControllerMixin<Model extends Entity>(
     ctor: Ctor<Model>,
     basePath: string,
     repositoryGetter: RepositoryGetter<Model>,
-    access: {
+    accessControl: {
         create: {
             permission: Condition<ACLPermissions>;
         };
@@ -54,9 +54,11 @@ export function ACLCRUDControllerMixin<Model extends Entity>(
         };
     }
 ): Class<ACLController> {
+    const ctorId = "id";
+
     class CRUDController extends ACLController {
         @intercept(unique<Model>(repositoryGetter, ctor, 0))
-        @authorize<ACLPermissions>(access.create.permission)
+        @authorize<ACLPermissions>(accessControl.create.permission)
         @authenticate("bearer")
         @post(`${basePath}`, {
             responses: {
@@ -92,8 +94,8 @@ export function ACLCRUDControllerMixin<Model extends Entity>(
             return await repositoryGetter(this).create(model);
         }
 
-        @intercept(filter(0, "where", "where", access.read.filter))
-        @authorize<ACLPermissions>(access.read.permission)
+        @intercept(filter(0, "where", accessControl.read.filter, 0, "where"))
+        @authorize<ACLPermissions>(accessControl.read.permission)
         @authenticate("bearer")
         @get(`${basePath}/count`, {
             responses: {
@@ -116,8 +118,8 @@ export function ACLCRUDControllerMixin<Model extends Entity>(
             return await repositoryGetter(this).count(where);
         }
 
-        @intercept(filter(0, "filter", "filter", access.read.filter))
-        @authorize<ACLPermissions>(access.read.permission)
+        @intercept(filter(0, "filter", accessControl.read.filter, 0, "filter"))
+        @authorize<ACLPermissions>(accessControl.read.permission)
         @authenticate("bearer")
         @get(`${basePath}`, {
             responses: {
@@ -145,9 +147,9 @@ export function ACLCRUDControllerMixin<Model extends Entity>(
             return await repositoryGetter(this).find(filter);
         }
 
+        @intercept(filter(1, "where", accessControl.update.filter, 1, "where"))
         @intercept(unique<Model>(repositoryGetter, ctor, 0))
-        @intercept(filter(1, "where", "where", access.update.filter))
-        @authorize<ACLPermissions>(access.update.permission)
+        @authorize<ACLPermissions>(accessControl.update.permission)
         @authenticate("bearer")
         @patch(`${basePath}`, {
             responses: {
@@ -174,8 +176,8 @@ export function ACLCRUDControllerMixin<Model extends Entity>(
             return await repositoryGetter(this).updateAll(model, where);
         }
 
-        @intercept(filter(0, "where", "where", access.delete.filter))
-        @authorize<ACLPermissions>(access.delete.permission)
+        @intercept(filter(0, "where", accessControl.delete.filter, 0, "where"))
+        @authorize<ACLPermissions>(accessControl.delete.permission)
         @authenticate("bearer")
         @del(`${basePath}`, {
             responses: {
@@ -194,9 +196,9 @@ export function ACLCRUDControllerMixin<Model extends Entity>(
             return await repositoryGetter(this).deleteAll(where);
         }
 
-        /** TODO: filter check for read by id */
+        @intercept(filter(0, ctorId, accessControl.read.filter, 1, "filter"))
         @intercept(exist(repositoryGetter))
-        @authorize<ACLPermissions>(access.read.permission)
+        @authorize<ACLPermissions>(accessControl.read.permission)
         @authenticate("bearer")
         @get(`${basePath}/{id}`, {
             responses: {
@@ -213,13 +215,13 @@ export function ACLCRUDControllerMixin<Model extends Entity>(
             }
         })
         async findById(@param.path.string("id") id: string): Promise<Model> {
-            return await repositoryGetter(this).findById(id);
+            return await repositoryGetter(this).findOne(arguments[1]);
         }
 
-        /** TODO: filter check for update by id */
+        @intercept(filter(0, ctorId, accessControl.update.filter, 2, "where"))
         @intercept(unique<Model>(repositoryGetter, ctor, 1))
         @intercept(exist(repositoryGetter))
-        @authorize<ACLPermissions>(access.update.permission)
+        @authorize<ACLPermissions>(accessControl.update.permission)
         @authenticate("bearer")
         @put(`${basePath}/{id}`, {
             responses: {
@@ -239,12 +241,12 @@ export function ACLCRUDControllerMixin<Model extends Entity>(
             })
             model: Model
         ): Promise<void> {
-            await repositoryGetter(this).updateById(id, model);
+            await repositoryGetter(this).updateAll(model, arguments[2]);
         }
 
-        /** TODO: filter check for delete by id */
+        @intercept(filter(0, ctorId, accessControl.delete.filter, 1, "where"))
         @intercept(exist(repositoryGetter))
-        @authorize<ACLPermissions>(access.delete.permission)
+        @authorize<ACLPermissions>(accessControl.delete.permission)
         @authenticate("bearer")
         @del(`${basePath}/{id}`, {
             responses: {
@@ -254,12 +256,14 @@ export function ACLCRUDControllerMixin<Model extends Entity>(
             }
         })
         async deleteById(@param.path.string("id") id: string): Promise<void> {
-            await repositoryGetter(this).deleteById(id);
+            await repositoryGetter(this).deleteAll(arguments[1]);
         }
 
-        @intercept(filter(1, "filter", "filter", access.history.filter))
+        @intercept(
+            filter(1, "filter", accessControl.history.filter, 1, "filter")
+        )
         @intercept(exist(repositoryGetter))
-        @authorize<ACLPermissions>(access.history.permission)
+        @authorize<ACLPermissions>(accessControl.history.permission)
         @authenticate("bearer")
         @get(`${basePath}/{id}/history`, {
             responses: {
@@ -285,9 +289,7 @@ export function ACLCRUDControllerMixin<Model extends Entity>(
             })
             filter?: Filter<Model>
         ): Promise<Model[]> {
-            return await repositoryGetter(this).find(filter, {
-                crud: true
-            });
+            return await repositoryGetter(this).find(filter, { crud: true });
         }
     }
 
