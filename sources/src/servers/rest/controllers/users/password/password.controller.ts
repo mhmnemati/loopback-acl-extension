@@ -8,8 +8,8 @@ import {
     getModelSchemaRef
 } from "@loopback/rest";
 
-import { ACLController } from "~/servers";
-import { Code, User } from "~/models";
+import { ACLController } from "../../../../../servers";
+import { Code, User } from "../../../../../models";
 
 const randomize = require("randomatic");
 

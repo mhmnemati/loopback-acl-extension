@@ -20,7 +20,7 @@ import {
     AuthorizeFn
 } from "loopback-authorization-extension";
 
-import { ACLPermissions } from "~/types";
+import { ACLPermissions } from "../../types";
 
 const SequenceActions = RestBindings.SequenceActions;
 

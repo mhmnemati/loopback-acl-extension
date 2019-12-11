@@ -12,9 +12,9 @@ import { ApplicationConfig } from "@loopback/core";
 import { RestServerConfig } from "@loopback/rest";
 import { HttpServerOptions } from "@loopback/http-server";
 
-import { ACLController } from "~/servers";
+import { ACLController } from "./servers";
 
-import { User, Group, Role, Permission, Session, Code } from "~/models";
+import { User, Group, Role, Permission, Session, Code } from "./models";
 
 /**
  * Default Permissions

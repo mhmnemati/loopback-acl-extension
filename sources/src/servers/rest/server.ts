@@ -13,11 +13,11 @@ import { RestExplorerComponent } from "@loopback/rest-explorer";
 /** Authentication binding imports */
 import { AuthenticationComponent } from "@loopback/authentication";
 
-import { ACLBindings, PrivateACLBindings } from "~/keys";
-import { ACLRestServerConfig } from "~/types";
-import { Sequence } from "~/servers";
+import { ACLBindings, PrivateACLBindings } from "../../keys";
+import { ACLRestServerConfig } from "../../types";
+import { Sequence } from "../../servers";
 
-import { User, Group, Role, Permission, Session, Code } from "~/models";
+import { User, Group, Role, Permission, Session, Code } from "../../models";
 
 import {
     GenerateUsersController,
@@ -32,7 +32,7 @@ import {
     GenerateRolesGroupsController,
     GenerateRolesPermissionsController,
     GeneratePermissionsController
-} from "~/servers/rest/controllers";
+} from "../../servers/rest/controllers";
 
 @lifeCycleObserver("servers.REST")
 export class ACLRestServer extends RestServer {

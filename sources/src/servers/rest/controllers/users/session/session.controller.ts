@@ -3,8 +3,8 @@ import { Ctor } from "loopback-history-extension";
 import { post, get, del, requestBody, getModelSchemaRef } from "@loopback/rest";
 import { authenticate } from "@loopback/authentication";
 
-import { ACLController } from "~/servers";
-import { Session, Token, User } from "~/models";
+import { ACLController } from "../../../../../servers";
+import { Session, Token, User } from "../../../../../models";
 
 export function GenerateUsersSessionController<
     SessionModel extends Session,

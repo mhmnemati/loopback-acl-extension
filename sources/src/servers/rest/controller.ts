@@ -8,7 +8,7 @@ import {
     RolePermissionRepository
 } from "loopback-authorization-extension";
 
-import { PrivateACLBindings, ACLBindings } from "~/keys";
+import { PrivateACLBindings, ACLBindings } from "../../keys";
 
 import {
     UserRepository,
@@ -17,7 +17,7 @@ import {
     PermissionRepository,
     SessionRepository,
     CodeRepository
-} from "~/repositories";
+} from "../../repositories";
 
 import {
     User,
@@ -30,7 +30,7 @@ import {
     PermissionRelations,
     Session,
     Code
-} from "~/models";
+} from "../../models";
 
 export class ACLController {
     constructor(

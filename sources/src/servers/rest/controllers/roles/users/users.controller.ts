@@ -2,8 +2,11 @@ import { Class } from "@loopback/repository";
 import { Ctor } from "loopback-history-extension";
 import { UserRole } from "loopback-authorization-extension";
 
-import { ACLController, ACLRelationControllerMixin } from "~/servers";
-import { User } from "~/models";
+import {
+    ACLController,
+    ACLRelationControllerMixin
+} from "../../../../../servers";
+import { User } from "../../../../../models";
 
 export function GenerateRolesUsersController<MemberModel extends User>(
     memberCtor: Ctor<MemberModel>

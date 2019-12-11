@@ -1,8 +1,8 @@
 import { Class } from "@loopback/repository";
 import { Ctor } from "loopback-history-extension";
 
-import { ACLController, ACLCRUDControllerMixin } from "~/servers";
-import { Group } from "~/models";
+import { ACLController, ACLCRUDControllerMixin } from "../../../../servers";
+import { Group } from "../../../../models";
 
 export function GenerateGroupsController<Model extends Group>(
     ctor: Ctor<Model>
