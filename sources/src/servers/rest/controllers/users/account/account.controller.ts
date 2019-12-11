@@ -10,11 +10,11 @@ import {
     getModelSchemaRef
 } from "@loopback/rest";
 
-import { ACLController } from "~/servers";
-import { Code, User } from "~/models";
+import { ACLController } from "../../../../../servers";
+import { Code, User } from "../../../../../models";
 
 import { intercept } from "@loopback/core";
-import { unique } from "~/interceptors";
+import { unique } from "../../../../../interceptors";
 
 const randomize = require("randomatic");
 

@@ -4,11 +4,11 @@ import { CoreBindings } from "@loopback/core";
 
 import { registerAuthenticationStrategy } from "@loopback/authentication";
 
-import { PrivateACLBindings, ACLBindings, findACL } from "~/keys";
-import { ACLMixinConfig } from "~/types";
+import { PrivateACLBindings, ACLBindings, findACL } from "../keys";
+import { ACLMixinConfig } from "../types";
 
-import { BearerTokenService, BearerAuthenticationStrategy } from "~/providers";
-import { User, Group, Role, Permission, Session, Code } from "~/models";
+import { BearerTokenService, BearerAuthenticationStrategy } from "../providers";
+import { User, Group, Role, Permission, Session, Code } from "../models";
 import {
     UserRepository,
     GroupRepository,
@@ -16,7 +16,7 @@ import {
     PermissionRepository,
     SessionRepository,
     CodeRepository
-} from "~/repositories";
+} from "../repositories";
 
 export function ACLMixin<T extends Class<any>>(superClass: T) {
     const bootObservers = (ctx: Context) => {

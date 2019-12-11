@@ -1,4 +1,4 @@
-import { ACLController } from "~/servers";
+import { ACLController } from "../../servers";
 import {
     Entity,
     Count,
@@ -23,8 +23,8 @@ import { Ctor } from "loopback-history-extension";
 import { authenticate } from "@loopback/authentication";
 import { authorize, Condition } from "loopback-authorization-extension";
 import { intercept } from "@loopback/core";
-import { filter } from "~/interceptors";
-import { ACLPermissions, RepositoryGetter, FilterMethod } from "~/types";
+import { filter } from "../../interceptors";
+import { ACLPermissions, RepositoryGetter, FilterMethod } from "../../types";
 
 export function ACLRelationControllerMixin<
     Model extends Entity,

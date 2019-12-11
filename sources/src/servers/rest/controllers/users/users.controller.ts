@@ -1,8 +1,8 @@
 import { Class } from "@loopback/repository";
 import { Ctor } from "loopback-history-extension";
 
-import { ACLController, ACLCRUDControllerMixin } from "~/servers";
-import { User } from "~/models";
+import { ACLController, ACLCRUDControllerMixin } from "../../../../servers";
+import { User } from "../../../../models";
 
 export function GenerateUsersController<Model extends User>(
     ctor: Ctor<Model>

@@ -5,7 +5,7 @@ import {
     ValueOrPromise
 } from "@loopback/context";
 
-import { FilterMethod } from "~/types";
+import { FilterMethod } from "../types";
 
 export const filter = (
     inputArg: number,

@@ -11,13 +11,13 @@ import {
 import { authenticate } from "@loopback/authentication";
 import { authorize } from "loopback-authorization-extension";
 
-import { ACLController } from "~/servers";
-import { User } from "~/models";
+import { ACLController } from "../../../../../servers";
+import { User } from "../../../../../models";
 
-import { ACLPermissions } from "~/types";
+import { ACLPermissions } from "../../../../../types";
 
 import { intercept } from "@loopback/core";
-import { unique, filter } from "~/interceptors";
+import { unique, filter } from "../../../../../interceptors";
 
 export function GenerateUsersSelfController<UserModel extends User>(
     userCtor: Ctor<UserModel>

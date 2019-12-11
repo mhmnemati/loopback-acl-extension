@@ -7,9 +7,9 @@ import {
     Application
 } from "@loopback/core";
 
-import { ACLBindings } from "~/keys";
-import { ACLGraphQLServerConfig } from "~/types";
-import { ACLRestServer } from "~/servers";
+import { ACLBindings } from "../../keys";
+import { ACLGraphQLServerConfig } from "../../types";
+import { ACLRestServer } from "../../servers";
 
 import { ApolloServer } from "apollo-server";
 import { createGraphQlSchema } from "openapi-to-graphql";

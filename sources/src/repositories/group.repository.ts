@@ -3,9 +3,9 @@ import { juggler } from "@loopback/repository";
 import { Ctor } from "loopback-history-extension";
 import { GroupRepository as GroupModelRepository } from "loopback-authorization-extension";
 
-import { bindACL, PrivateACLBindings } from "~/keys";
+import { bindACL, PrivateACLBindings } from "../keys";
 
-import { Group, GroupRelations } from "~/models";
+import { Group, GroupRelations } from "../models";
 
 @bindACL("GroupRepository")
 export class GroupRepository<
