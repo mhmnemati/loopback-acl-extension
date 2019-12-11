@@ -2,6 +2,7 @@ import { inject } from "@loopback/context";
 import { Request, RestBindings, SchemaObject } from "@loopback/rest";
 import { AuthenticationBindings, TokenService } from "@loopback/authentication";
 import {
+    AuthorizationBindings,
     UserGroupRepository,
     UserRoleRepository,
     GroupRoleRepository,
@@ -57,13 +58,13 @@ export class ACLController {
         @inject(ACLBindings.CODE_REPOSITORY)
         public codeRepository: CodeRepository<Code>,
 
-        @inject(ACLBindings.USER_GROUP_REPOSITORY)
+        @inject(AuthorizationBindings.USER_GROUP_REPOSITORY)
         public userGroupRepository: UserGroupRepository,
-        @inject(ACLBindings.USER_ROLE_REPOSITORY)
+        @inject(AuthorizationBindings.USER_ROLE_REPOSITORY)
         public userRoleRepository: UserRoleRepository,
-        @inject(ACLBindings.GROUP_ROLE_REPOSITORY)
+        @inject(AuthorizationBindings.GROUP_ROLE_REPOSITORY)
         public groupRoleRepository: GroupRoleRepository,
-        @inject(ACLBindings.ROLE_PERMISSION_REPOSITORY)
+        @inject(AuthorizationBindings.ROLE_PERMISSION_REPOSITORY)
         public rolePermissionRepository: RolePermissionRepository
     ) {}
 }
