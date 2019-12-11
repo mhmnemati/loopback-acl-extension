@@ -127,27 +127,6 @@ export namespace ACLBindings {
     );
 
     /**
-     * Relation Repository key:
-     *
-     * 1. UserGroupRepository
-     * 2. UserRoleRepository
-     * 3. GroupRoleRepository
-     * 4. RolePermissionRepository
-     */
-    export const USER_GROUP_REPOSITORY = BindingKey.create<UserGroupRepository>(
-        "acl.repositories.userGroup"
-    );
-    export const USER_ROLE_REPOSITORY = BindingKey.create<UserRoleRepository>(
-        "acl.repositories.userRole"
-    );
-    export const GROUP_ROLE_REPOSITORY = BindingKey.create<GroupRoleRepository>(
-        "acl.repositories.groupRole"
-    );
-    export const ROLE_PERMISSION_REPOSITORY = BindingKey.create<
-        RolePermissionRepository
-    >("acl.repositories.rolePermission");
-
-    /**
      * Server Config key:
      *
      * 1. RestServerConfig
