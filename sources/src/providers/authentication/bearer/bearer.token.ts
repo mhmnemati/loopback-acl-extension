@@ -46,7 +46,7 @@ export class BearerTokenService implements TokenService {
         return session;
     }
 
-    async generateToken(user: User & Request & any): Promise<string> {
+    async generateToken(user: User & Request & any): Promise<Session | any> {
         if (!user) {
             throw new HttpErrors.Unauthorized(
                 "Error generating token: user is null"
@@ -78,22 +78,22 @@ export class BearerTokenService implements TokenService {
         const ip = user.ip;
         const device = user.headers["user-agent"];
 
+        /** Create session */
+        const session = new Session({
+            token: token,
+            ip: ip,
+            date: new Date(),
+            ttl: ttl,
+            device: device,
+            permissions: permissions
+        });
+
         /** Save session */
-        await this.sessionRepository.set(
-            token,
-            new Session({
-                token: token,
-                ip: ip,
-                date: new Date(),
-                ttl: ttl,
-                device: device,
-                permissions: permissions
-            })
-        );
+        await this.sessionRepository.set(token, session);
 
         /** Set session expiration time (in millis) */
         await this.sessionRepository.expire(token, ttl);
 
-        return token;
+        return session;
     }
 }

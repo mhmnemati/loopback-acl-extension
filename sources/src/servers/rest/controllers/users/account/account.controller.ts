@@ -165,7 +165,7 @@ export function GenerateUsersAccountController<
                             exclude: Object.keys(
                                 userCtor.definition.properties
                             ).filter(
-                                key => key !== "username" && key != "password"
+                                key => key !== "username" && key !== "password"
                             ) as any
                         })
                     }
