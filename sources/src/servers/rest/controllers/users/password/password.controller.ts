@@ -82,7 +82,7 @@ export function GenerateUsersPasswordController<
                             exclude: Object.keys(
                                 userCtor.definition.properties
                             ).filter(
-                                key => key !== "username" && key != "email"
+                                key => key !== "username" && key !== "email"
                             ) as any
                         })
                     }

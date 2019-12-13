@@ -4,7 +4,7 @@ import { post, get, del, requestBody, getModelSchemaRef } from "@loopback/rest";
 import { authenticate } from "@loopback/authentication";
 
 import { ACLController } from "../../../../../servers";
-import { Session, Token, User } from "../../../../../models";
+import { Session, User } from "../../../../../models";
 
 export function GenerateUsersSessionController<
     SessionModel extends Session,
@@ -20,7 +20,7 @@ export function GenerateUsersSessionController<
                     description: "Create Session",
                     content: {
                         "application/json": {
-                            schema: getModelSchemaRef(Token, {
+                            schema: getModelSchemaRef(sessionCtor, {
                                 includeRelations: true
                             })
                         }
@@ -36,21 +36,17 @@ export function GenerateUsersSessionController<
                             exclude: Object.keys(
                                 userCtor.definition.properties
                             ).filter(
-                                key => key !== "username" && key != "password"
+                                key => key !== "username" && key !== "password"
                             ) as any
                         })
                     }
                 }
             })
             user: User
-        ): Promise<Token> {
-            const token = await this.tokenService.generateToken({
+        ): Promise<Session> {
+            return await this.tokenService.generateToken({
                 ...this.request,
                 ...user
-            } as any);
-
-            return new Token({
-                token: token
             });
         }
 

@@ -1,6 +1,7 @@
 import { inject } from "@loopback/context";
 import { Request, RestBindings, SchemaObject } from "@loopback/rest";
-import { AuthenticationBindings, TokenService } from "@loopback/authentication";
+import { AuthenticationBindings } from "@loopback/authentication";
+import { BearerTokenService } from "../../providers";
 import {
     AuthorizationBindings,
     UserGroupRepository,
@@ -38,7 +39,7 @@ export class ACLController {
         @inject(RestBindings.Http.REQUEST)
         public request: Request,
         @inject(PrivateACLBindings.TOKEN_PROVIDER)
-        public tokenService: TokenService,
+        public tokenService: BearerTokenService,
         @inject(AuthenticationBindings.CURRENT_USER, { optional: true })
         public session: Session,
 
