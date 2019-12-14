@@ -8,8 +8,6 @@ import { TokenService } from "@loopback/authentication";
 import {
     User,
     UserRelations,
-    Group,
-    GroupRelations,
     Role,
     RoleRelations,
     Permission,
@@ -19,7 +17,6 @@ import {
 } from "./models";
 import {
     UserRepository,
-    GroupRepository,
     RoleRepository,
     PermissionRepository,
     SessionRepository,
@@ -27,9 +24,7 @@ import {
 } from "./repositories";
 
 import {
-    UserGroupRepository,
     UserRoleRepository,
-    GroupRoleRepository,
     RolePermissionRepository
 } from "loopback-authorization-extension";
 
@@ -41,18 +36,14 @@ export namespace PrivateACLBindings {
      * Model key:
      *
      * 1. UserModel
-     * 2. GroupModel
-     * 3. RoleModel
-     * 4. PermissionModel
+     * 2. RoleModel
+     * 3. PermissionModel
      *
-     * 5. SessionModel
-     * 6. CodeModel
+     * 4. SessionModel
+     * 5. CodeModel
      */
     export const USER_MODEL = BindingKey.create<Ctor<User>>(
         "private.acl.models.user"
-    );
-    export const GROUP_MODEL = BindingKey.create<Ctor<Group>>(
-        "private.acl.models.group"
     );
     export const ROLE_MODEL = BindingKey.create<Ctor<Role>>(
         "private.acl.models.role"
@@ -99,19 +90,15 @@ export namespace ACLBindings {
      * Base Repository key:
      *
      * 1. UserRepository
-     * 2. GroupRepository
-     * 3. RoleRepository
-     * 4. PermissionRepository
+     * 2. RoleRepository
+     * 3. PermissionRepository
      *
-     * 5. SessionRepository
-     * 6. CodeRepository
+     * 4. SessionRepository
+     * 5. CodeRepository
      */
     export const USER_REPOSITORY = BindingKey.create<
         UserRepository<User, UserRelations>
     >("acl.repositories.user");
-    export const GROUP_REPOSITORY = BindingKey.create<
-        GroupRepository<Group, GroupRelations>
-    >("acl.repositories.group");
     export const ROLE_REPOSITORY = BindingKey.create<
         RoleRepository<Role, RoleRelations>
     >("acl.repositories.role");
@@ -148,20 +135,18 @@ export namespace ACLBindings {
  *
  * 3. TokenProvider
  *
- * 5. UserRepository
- * 6. GroupRepository
- * 7. RoleRepository
- * 8. PermissionRepository
+ * 4. UserRepository
+ * 5. RoleRepository
+ * 6. PermissionRepository
  *
- * 9. SessionRepository
- * 10. CodeRepository
+ * 7. SessionRepository
+ * 8. CodeRepository
  */
 export type BindACLKey =
     | "RelationalDataSource"
     | "CacheDataSource"
     | "TokenProvider"
     | "UserRepository"
-    | "GroupRepository"
     | "RoleRepository"
     | "PermissionRepository"
     | "SessionRepository"

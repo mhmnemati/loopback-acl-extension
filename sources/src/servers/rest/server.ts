@@ -17,7 +17,7 @@ import { ACLBindings, PrivateACLBindings } from "../../keys";
 import { ACLRestServerConfig } from "../../types";
 import { Sequence } from "../../servers";
 
-import { User, Group, Role, Permission, Session, Code } from "../../models";
+import { User, Role, Permission, Session, Code } from "../../models";
 
 import {
     GenerateUsersController,
@@ -25,11 +25,8 @@ import {
     GenerateUsersSessionController,
     GenerateUsersAccountController,
     GenerateUsersPasswordController,
-    GenerateGroupsController,
-    GenerateGroupsUsersController,
     GenerateRolesController,
     GenerateRolesUsersController,
-    GenerateRolesGroupsController,
     GenerateRolesPermissionsController,
     GeneratePermissionsController
 } from "../../servers/rest/controllers";
@@ -43,8 +40,6 @@ export class ACLRestServer extends RestServer {
         config: ACLRestServerConfig = {},
         @inject(PrivateACLBindings.USER_MODEL)
         userCtor: Ctor<User>,
-        @inject(PrivateACLBindings.GROUP_MODEL)
-        groupCtor: Ctor<Group>,
         @inject(PrivateACLBindings.ROLE_MODEL)
         roleCtor: Ctor<Role>,
         @inject(PrivateACLBindings.PERMISSION_MODEL)
@@ -91,14 +86,9 @@ export class ACLRestServer extends RestServer {
             GenerateUsersPasswordController<Code, User>(codeCtor, userCtor)
         );
 
-        /** Bind groups controllers */
-        app.controller(GenerateGroupsController<Group>(groupCtor));
-        app.controller(GenerateGroupsUsersController<User>(userCtor));
-
         /** Bind roles controllers */
         app.controller(GenerateRolesController<Role>(roleCtor));
         app.controller(GenerateRolesUsersController<User>(userCtor));
-        app.controller(GenerateRolesGroupsController<Group>(groupCtor));
         app.controller(
             GenerateRolesPermissionsController<Permission>(permissionCtor)
         );

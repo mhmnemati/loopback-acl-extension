@@ -4,9 +4,7 @@ import { AuthenticationBindings } from "@loopback/authentication";
 import { BearerTokenService } from "../../providers";
 import {
     AuthorizationBindings,
-    UserGroupRepository,
     UserRoleRepository,
-    GroupRoleRepository,
     RolePermissionRepository
 } from "loopback-authorization-extension";
 
@@ -14,7 +12,6 @@ import { PrivateACLBindings, ACLBindings } from "../../keys";
 
 import {
     UserRepository,
-    GroupRepository,
     RoleRepository,
     PermissionRepository,
     SessionRepository,
@@ -24,8 +21,6 @@ import {
 import {
     User,
     UserRelations,
-    Group,
-    GroupRelations,
     Role,
     RoleRelations,
     Permission,
@@ -45,8 +40,6 @@ export class ACLController {
 
         @inject(ACLBindings.USER_REPOSITORY)
         public userRepository: UserRepository<User, UserRelations>,
-        @inject(ACLBindings.GROUP_REPOSITORY)
-        public groupRepository: GroupRepository<Group, GroupRelations>,
         @inject(ACLBindings.ROLE_REPOSITORY)
         public roleRepository: RoleRepository<Role, RoleRelations>,
         @inject(ACLBindings.PERMISSION_REPOSITORY)
@@ -59,12 +52,8 @@ export class ACLController {
         @inject(ACLBindings.CODE_REPOSITORY)
         public codeRepository: CodeRepository<Code>,
 
-        @inject(AuthorizationBindings.USER_GROUP_REPOSITORY)
-        public userGroupRepository: UserGroupRepository,
         @inject(AuthorizationBindings.USER_ROLE_REPOSITORY)
         public userRoleRepository: UserRoleRepository,
-        @inject(AuthorizationBindings.GROUP_ROLE_REPOSITORY)
-        public groupRoleRepository: GroupRoleRepository,
         @inject(AuthorizationBindings.ROLE_PERMISSION_REPOSITORY)
         public rolePermissionRepository: RolePermissionRepository
     ) {}

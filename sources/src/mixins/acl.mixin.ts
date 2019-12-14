@@ -8,10 +8,9 @@ import { PrivateACLBindings, ACLBindings, findACL } from "../keys";
 import { ACLMixinConfig } from "../types";
 
 import { BearerTokenService, BearerAuthenticationStrategy } from "../providers";
-import { User, Group, Role, Permission, Session, Code } from "../models";
+import { User, Role, Permission, Session, Code } from "../models";
 import {
     UserRepository,
-    GroupRepository,
     RoleRepository,
     PermissionRepository,
     SessionRepository,
@@ -30,9 +29,6 @@ export function ACLMixin<T extends Class<any>>(superClass: T) {
 
     const bootModels = (ctx: Context, configs: ACLMixinConfig) => {
         ctx.bind(PrivateACLBindings.USER_MODEL).to(configs.userModel || User);
-        ctx.bind(PrivateACLBindings.GROUP_MODEL).to(
-            configs.groupModel || Group
-        );
         ctx.bind(PrivateACLBindings.ROLE_MODEL).to(configs.roleModel || Role);
         ctx.bind(PrivateACLBindings.PERMISSION_MODEL).to(
             configs.permissionModel || Permission
@@ -90,18 +86,6 @@ export function ACLMixin<T extends Class<any>>(superClass: T) {
         } else {
             ctx.bind(ACLBindings.USER_REPOSITORY)
                 .toClass(UserRepository)
-                .tag("repository");
-        }
-
-        /**
-         * Find, Bind Group Repository
-         */
-        let groupRepository = findACL(ctx, "GroupRepository");
-        if (groupRepository) {
-            ctx.bind(ACLBindings.GROUP_REPOSITORY).to(groupRepository);
-        } else {
-            ctx.bind(ACLBindings.GROUP_REPOSITORY)
-                .toClass(GroupRepository)
                 .tag("repository");
         }
 

@@ -1,6 +1,6 @@
 # loopback-acl-extension
 
-Creating `User`, `Group`, `Role`, `Permission` models and repositories and crud controllers in any application is a repetitive and futile task.
+Creating `User`, `Role`, `Permission` models and repositories and crud controllers in any application is a repetitive and futile task.
 
 Using this extension your can bind them to your application using a simple and optional configurations.
 
@@ -31,9 +31,8 @@ We need two dataSource, one for relational models, and one for cache models
 
 1. **Relational Models**: `CRUD`
     1. `User`
-    2. `Group`
-    3. `Role`
-    4. `Permission`
+    2. `Role`
+    3. `Permission`
 2. **Cache Models**: `Key-Value`
     1. `Session`
     2. `Code`

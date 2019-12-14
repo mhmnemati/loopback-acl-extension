@@ -14,7 +14,7 @@ import { HttpServerOptions } from "@loopback/http-server";
 
 import { ACLController } from "./servers";
 
-import { User, Group, Role, Permission, Session, Code } from "./models";
+import { User, Role, Permission, Session, Code } from "./models";
 
 /**
  * Default Permissions
@@ -30,15 +30,6 @@ export class ACLPermissions extends PermissionsList {
     USERS_WRITE_SELF = "Write self user";
     USERS_HISTORY_SELF = "Read self user history";
 
-    /** Groups */
-    GROUPS_READ = "Read groups";
-    GROUPS_WRITE = "Write groups";
-    GROUPS_HISTORY = "Read groups history";
-
-    /** Groups - Users */
-    GROUPS_ADD_USER = "Add any user to any group";
-    GROUPS_REMOVE_USER = "Add any user to any group";
-
     /** Roles */
     ROLES_READ = "Read roles";
     ROLES_WRITE = "Write roles";
@@ -47,10 +38,6 @@ export class ACLPermissions extends PermissionsList {
     /** Roles - Users */
     ROLES_ADD_USER = "Add any user to any role";
     ROLES_REMOVE_USER = "Add any user to any role";
-
-    /** Roles - Groups */
-    ROLES_ADD_GROUP = "Add any group to any role";
-    ROLES_REMOVE_GROUP = "Add any group to any role";
 
     /** Roles - Permissions */
     ROLES_ADD_PERMISSION = "Add any permission to any role";
@@ -83,7 +70,6 @@ export type FilterMethod<Model extends Entity> = (
 export interface ACLMixinConfig {
     permissions?: Class<ACLPermissions>;
     userModel?: Ctor<User>;
-    groupModel?: Ctor<Group>;
     roleModel?: Ctor<Role>;
     permissionModel?: Ctor<Permission>;
     sessionModel?: Ctor<Session>;
