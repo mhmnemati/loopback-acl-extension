@@ -1,9 +1,7 @@
 import { Provider } from "@loopback/context";
 
-import { bindACL } from "../keys";
 import { MessageHandler } from "../types";
 
-@bindACL("MessageProvider")
 export class MessageProvider implements Provider<MessageHandler> {
     constructor() {}
 

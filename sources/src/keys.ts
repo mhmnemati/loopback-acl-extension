@@ -3,7 +3,7 @@ import { Ctor } from "loopback-history-extension";
 import { juggler } from "@loopback/repository";
 import { CoreBindings } from "@loopback/core";
 
-import { TokenService } from "@loopback/authentication";
+import { BearerTokenService } from "./providers";
 import { MessageHandler, RegisterHandler } from "./types";
 
 import {
@@ -75,7 +75,7 @@ export namespace PrivateACLBindings {
      * 2. MessageProvider
      * 3. RegisterProvider
      */
-    export const TOKEN_PROVIDER = BindingKey.create<TokenService>(
+    export const TOKEN_PROVIDER = BindingKey.create<BearerTokenService>(
         "private.acl.providers.token"
     );
     export const MESSAGE_PROVIDER = BindingKey.create<MessageHandler>(
@@ -137,23 +137,16 @@ export namespace ACLBindings {
  * 1. DataSourceRelational
  * 2. DataSourceCache
  *
- * 3. TokenProvider
- * 4. MessageProvider
- * 5. RegisterProvider
+ * 3. UserRepository
+ * 4. RoleRepository
+ * 5. PermissionRepository
  *
- * 6. UserRepository
- * 7. RoleRepository
- * 8. PermissionRepository
- *
- * 9. SessionRepository
- * 10. CodeRepository
+ * 6. SessionRepository
+ * 7. CodeRepository
  */
 export type BindACLKey =
     | "RelationalDataSource"
     | "CacheDataSource"
-    | "TokenProvider"
-    | "MessageProvider"
-    | "RegisterProvider"
     | "UserRepository"
     | "RoleRepository"
     | "PermissionRepository"
