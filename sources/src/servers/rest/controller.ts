@@ -2,11 +2,10 @@ import { inject } from "@loopback/context";
 import { Request, RestBindings, SchemaObject } from "@loopback/rest";
 import { AuthenticationBindings } from "@loopback/authentication";
 import { BearerTokenService } from "../../providers";
+import { MessageHandler, RegisterHandler } from "../../types";
 import {
     AuthorizationBindings,
-    UserGroupRepository,
     UserRoleRepository,
-    GroupRoleRepository,
     RolePermissionRepository
 } from "loopback-authorization-extension";
 
@@ -14,7 +13,6 @@ import { PrivateACLBindings, ACLBindings } from "../../keys";
 
 import {
     UserRepository,
-    GroupRepository,
     RoleRepository,
     PermissionRepository,
     SessionRepository,
@@ -24,8 +22,6 @@ import {
 import {
     User,
     UserRelations,
-    Group,
-    GroupRelations,
     Role,
     RoleRelations,
     Permission,
@@ -38,15 +34,18 @@ export class ACLController {
     constructor(
         @inject(RestBindings.Http.REQUEST)
         public request: Request,
-        @inject(PrivateACLBindings.TOKEN_PROVIDER)
-        public tokenService: BearerTokenService,
         @inject(AuthenticationBindings.CURRENT_USER, { optional: true })
         public session: Session,
 
+        @inject(PrivateACLBindings.TOKEN_PROVIDER)
+        public tokenService: BearerTokenService,
+        @inject(PrivateACLBindings.MESSAGE_PROVIDER)
+        public messageHandler: MessageHandler,
+        @inject(PrivateACLBindings.REGISTER_PROVIDER)
+        public registerHandler: RegisterHandler,
+
         @inject(ACLBindings.USER_REPOSITORY)
         public userRepository: UserRepository<User, UserRelations>,
-        @inject(ACLBindings.GROUP_REPOSITORY)
-        public groupRepository: GroupRepository<Group, GroupRelations>,
         @inject(ACLBindings.ROLE_REPOSITORY)
         public roleRepository: RoleRepository<Role, RoleRelations>,
         @inject(ACLBindings.PERMISSION_REPOSITORY)
@@ -59,12 +58,8 @@ export class ACLController {
         @inject(ACLBindings.CODE_REPOSITORY)
         public codeRepository: CodeRepository<Code>,
 
-        @inject(AuthorizationBindings.USER_GROUP_REPOSITORY)
-        public userGroupRepository: UserGroupRepository,
         @inject(AuthorizationBindings.USER_ROLE_REPOSITORY)
         public userRoleRepository: UserRoleRepository,
-        @inject(AuthorizationBindings.GROUP_ROLE_REPOSITORY)
-        public groupRoleRepository: GroupRoleRepository,
         @inject(AuthorizationBindings.ROLE_PERMISSION_REPOSITORY)
         public rolePermissionRepository: RolePermissionRepository
     ) {}

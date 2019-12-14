@@ -4,12 +4,11 @@ import { juggler } from "@loopback/repository";
 import { CoreBindings } from "@loopback/core";
 
 import { TokenService } from "@loopback/authentication";
+import { MessageHandler, RegisterHandler } from "./types";
 
 import {
     User,
     UserRelations,
-    Group,
-    GroupRelations,
     Role,
     RoleRelations,
     Permission,
@@ -19,19 +18,11 @@ import {
 } from "./models";
 import {
     UserRepository,
-    GroupRepository,
     RoleRepository,
     PermissionRepository,
     SessionRepository,
     CodeRepository
 } from "./repositories";
-
-import {
-    UserGroupRepository,
-    UserRoleRepository,
-    GroupRoleRepository,
-    RolePermissionRepository
-} from "loopback-authorization-extension";
 
 /**
  * Private binding used in component scope
@@ -41,18 +32,14 @@ export namespace PrivateACLBindings {
      * Model key:
      *
      * 1. UserModel
-     * 2. GroupModel
-     * 3. RoleModel
-     * 4. PermissionModel
+     * 2. RoleModel
+     * 3. PermissionModel
      *
-     * 5. SessionModel
-     * 6. CodeModel
+     * 4. SessionModel
+     * 5. CodeModel
      */
     export const USER_MODEL = BindingKey.create<Ctor<User>>(
         "private.acl.models.user"
-    );
-    export const GROUP_MODEL = BindingKey.create<Ctor<Group>>(
-        "private.acl.models.group"
     );
     export const ROLE_MODEL = BindingKey.create<Ctor<Role>>(
         "private.acl.models.role"
@@ -85,9 +72,17 @@ export namespace PrivateACLBindings {
      * Provider key
      *
      * 1. TokenProvider
+     * 2. MessageProvider
+     * 3. RegisterProvider
      */
     export const TOKEN_PROVIDER = BindingKey.create<TokenService>(
         "private.acl.providers.token"
+    );
+    export const MESSAGE_PROVIDER = BindingKey.create<MessageHandler>(
+        "private.acl.providers.message"
+    );
+    export const REGISTER_PROVIDER = BindingKey.create<RegisterHandler>(
+        "private.acl.providers.register"
     );
 }
 
@@ -99,19 +94,15 @@ export namespace ACLBindings {
      * Base Repository key:
      *
      * 1. UserRepository
-     * 2. GroupRepository
-     * 3. RoleRepository
-     * 4. PermissionRepository
+     * 2. RoleRepository
+     * 3. PermissionRepository
      *
-     * 5. SessionRepository
-     * 6. CodeRepository
+     * 4. SessionRepository
+     * 5. CodeRepository
      */
     export const USER_REPOSITORY = BindingKey.create<
         UserRepository<User, UserRelations>
     >("acl.repositories.user");
-    export const GROUP_REPOSITORY = BindingKey.create<
-        GroupRepository<Group, GroupRelations>
-    >("acl.repositories.group");
     export const ROLE_REPOSITORY = BindingKey.create<
         RoleRepository<Role, RoleRelations>
     >("acl.repositories.role");
@@ -147,9 +138,10 @@ export namespace ACLBindings {
  * 2. DataSourceCache
  *
  * 3. TokenProvider
+ * 4. MessageProvider
+ * 5. RegisterProvider
  *
- * 5. UserRepository
- * 6. GroupRepository
+ * 6. UserRepository
  * 7. RoleRepository
  * 8. PermissionRepository
  *
@@ -160,8 +152,9 @@ export type BindACLKey =
     | "RelationalDataSource"
     | "CacheDataSource"
     | "TokenProvider"
+    | "MessageProvider"
+    | "RegisterProvider"
     | "UserRepository"
-    | "GroupRepository"
     | "RoleRepository"
     | "PermissionRepository"
     | "SessionRepository"

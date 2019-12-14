@@ -7,11 +7,15 @@ import { registerAuthenticationStrategy } from "@loopback/authentication";
 import { PrivateACLBindings, ACLBindings, findACL } from "../keys";
 import { ACLMixinConfig } from "../types";
 
-import { BearerTokenService, BearerAuthenticationStrategy } from "../providers";
-import { User, Group, Role, Permission, Session, Code } from "../models";
+import {
+    BearerTokenService,
+    BearerAuthenticationStrategy,
+    MessageProvider,
+    RegisterProvider
+} from "../providers";
+import { User, Role, Permission, Session, Code } from "../models";
 import {
     UserRepository,
-    GroupRepository,
     RoleRepository,
     PermissionRepository,
     SessionRepository,
@@ -30,9 +34,6 @@ export function ACLMixin<T extends Class<any>>(superClass: T) {
 
     const bootModels = (ctx: Context, configs: ACLMixinConfig) => {
         ctx.bind(PrivateACLBindings.USER_MODEL).to(configs.userModel || User);
-        ctx.bind(PrivateACLBindings.GROUP_MODEL).to(
-            configs.groupModel || Group
-        );
         ctx.bind(PrivateACLBindings.ROLE_MODEL).to(configs.roleModel || Role);
         ctx.bind(PrivateACLBindings.PERMISSION_MODEL).to(
             configs.permissionModel || Permission
@@ -53,6 +54,30 @@ export function ACLMixin<T extends Class<any>>(superClass: T) {
         } else {
             ctx.bind(PrivateACLBindings.TOKEN_PROVIDER).toClass(
                 BearerTokenService
+            );
+        }
+
+        /**
+         * Find, Bind Message Provider
+         */
+        let messageProvider = findACL(ctx, "MessageProvider");
+        if (messageProvider) {
+            ctx.bind(PrivateACLBindings.MESSAGE_PROVIDER).to(messageProvider);
+        } else {
+            ctx.bind(PrivateACLBindings.MESSAGE_PROVIDER).toProvider(
+                MessageProvider
+            );
+        }
+
+        /**
+         * Find, Bind Register Provider
+         */
+        let registerProvider = findACL(ctx, "RegisterProvider");
+        if (registerProvider) {
+            ctx.bind(PrivateACLBindings.REGISTER_PROVIDER).to(registerProvider);
+        } else {
+            ctx.bind(PrivateACLBindings.REGISTER_PROVIDER).toProvider(
+                RegisterProvider
             );
         }
 
@@ -90,18 +115,6 @@ export function ACLMixin<T extends Class<any>>(superClass: T) {
         } else {
             ctx.bind(ACLBindings.USER_REPOSITORY)
                 .toClass(UserRepository)
-                .tag("repository");
-        }
-
-        /**
-         * Find, Bind Group Repository
-         */
-        let groupRepository = findACL(ctx, "GroupRepository");
-        if (groupRepository) {
-            ctx.bind(ACLBindings.GROUP_REPOSITORY).to(groupRepository);
-        } else {
-            ctx.bind(ACLBindings.GROUP_REPOSITORY)
-                .toClass(GroupRepository)
                 .tag("repository");
         }
 

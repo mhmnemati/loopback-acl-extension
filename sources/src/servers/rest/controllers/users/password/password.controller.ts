@@ -152,10 +152,7 @@ export function GenerateUsersPasswordController<
             await this.codeRepository.expire(code, ttl);
 
             /** Send activation email */
-            await this.sendEmail(userId, code);
-        }
-        private async sendEmail(userId: string, code: string) {
-            console.log(`Send email to ${userId}: ${code}`);
+            await this.messageHandler(userId, code, "Password");
         }
     }
 
