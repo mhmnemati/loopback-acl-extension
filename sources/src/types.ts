@@ -65,6 +65,20 @@ export type FilterMethod<Model extends Entity> = (
 ) => Filter<Model>;
 
 /**
+ * MessageProvider configs
+ */
+export type MessageHandler = (
+    userId: string,
+    code: string,
+    type: "Account" | "Password"
+) => void;
+
+/**
+ * RegisterProvider configs
+ */
+export type RegisterHandler = (userId: string) => void;
+
+/**
  * ACLMixin configs
  */
 export interface ACLMixinConfig {

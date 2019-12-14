@@ -1,7 +1,11 @@
 import { inject } from "@loopback/context";
 import { Request, RestBindings, SchemaObject } from "@loopback/rest";
 import { AuthenticationBindings } from "@loopback/authentication";
-import { BearerTokenService } from "../../providers";
+import {
+    BearerTokenService,
+    MessageHandler,
+    RegisterHandler
+} from "../../providers";
 import {
     AuthorizationBindings,
     UserRoleRepository,
@@ -33,10 +37,15 @@ export class ACLController {
     constructor(
         @inject(RestBindings.Http.REQUEST)
         public request: Request,
-        @inject(PrivateACLBindings.TOKEN_PROVIDER)
-        public tokenService: BearerTokenService,
         @inject(AuthenticationBindings.CURRENT_USER, { optional: true })
         public session: Session,
+
+        @inject(PrivateACLBindings.TOKEN_PROVIDER)
+        public tokenService: BearerTokenService,
+        @inject(PrivateACLBindings.MESSAGE_PROVIDER)
+        public messageHandler: MessageHandler,
+        @inject(PrivateACLBindings.REGISTER_PROVIDER)
+        public registerHandler: RegisterHandler,
 
         @inject(ACLBindings.USER_REPOSITORY)
         public userRepository: UserRepository<User, UserRelations>,

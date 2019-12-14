@@ -105,6 +105,9 @@ export function GenerateUsersAccountController<
                     status: "Active"
                 })
             );
+
+            /** Register handler - add user to default role, etc */
+            await this.registerHandler(codeObject.userId);
         }
 
         @put("/users/account", {
@@ -205,10 +208,7 @@ export function GenerateUsersAccountController<
             await this.codeRepository.expire(code, ttl);
 
             /** Send activation email */
-            await this.sendEmail(userId, code);
-        }
-        private async sendEmail(userId: string, code: string) {
-            console.log(`Send email to ${userId}: ${code}`);
+            await this.messageHandler(userId, code, "Account");
         }
     }
 

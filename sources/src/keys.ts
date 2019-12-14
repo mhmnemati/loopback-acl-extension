@@ -3,7 +3,11 @@ import { Ctor } from "loopback-history-extension";
 import { juggler } from "@loopback/repository";
 import { CoreBindings } from "@loopback/core";
 
-import { TokenService } from "@loopback/authentication";
+import {
+    BearerTokenService,
+    MessageProvider,
+    RegisterProvider
+} from "./providers";
 
 import {
     User,
@@ -22,11 +26,6 @@ import {
     SessionRepository,
     CodeRepository
 } from "./repositories";
-
-import {
-    UserRoleRepository,
-    RolePermissionRepository
-} from "loopback-authorization-extension";
 
 /**
  * Private binding used in component scope
@@ -76,9 +75,17 @@ export namespace PrivateACLBindings {
      * Provider key
      *
      * 1. TokenProvider
+     * 2. MessageProvider
+     * 3. RegisterProvider
      */
-    export const TOKEN_PROVIDER = BindingKey.create<TokenService>(
+    export const TOKEN_PROVIDER = BindingKey.create<BearerTokenService>(
         "private.acl.providers.token"
+    );
+    export const MESSAGE_PROVIDER = BindingKey.create<MessageProvider>(
+        "private.acl.providers.message"
+    );
+    export const REGISTER_PROVIDER = BindingKey.create<RegisterProvider>(
+        "private.acl.providers.register"
     );
 }
 
@@ -134,18 +141,22 @@ export namespace ACLBindings {
  * 2. DataSourceCache
  *
  * 3. TokenProvider
+ * 4. MessageProvider
+ * 5. RegisterProvider
  *
- * 4. UserRepository
- * 5. RoleRepository
- * 6. PermissionRepository
+ * 6. UserRepository
+ * 7. RoleRepository
+ * 8. PermissionRepository
  *
- * 7. SessionRepository
- * 8. CodeRepository
+ * 9. SessionRepository
+ * 10. CodeRepository
  */
 export type BindACLKey =
     | "RelationalDataSource"
     | "CacheDataSource"
     | "TokenProvider"
+    | "MessageProvider"
+    | "RegisterProvider"
     | "UserRepository"
     | "RoleRepository"
     | "PermissionRepository"
