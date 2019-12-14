@@ -5,12 +5,14 @@ import {
     Class
 } from "@loopback/repository";
 import { PermissionsList } from "loopback-authorization-extension";
-import { InvocationContext } from "@loopback/context";
+import { InvocationContext, Provider } from "@loopback/context";
 import { Ctor } from "loopback-history-extension";
 
 import { ApplicationConfig } from "@loopback/core";
 import { RestServerConfig } from "@loopback/rest";
 import { HttpServerOptions } from "@loopback/http-server";
+
+import { BearerTokenService } from "./providers";
 
 import { ACLController } from "./servers";
 
@@ -88,6 +90,9 @@ export interface ACLMixinConfig {
     permissionModel?: Ctor<Permission>;
     sessionModel?: Ctor<Session>;
     codeModel?: Ctor<Code>;
+    tokenProvider?: Class<BearerTokenService>;
+    messageProvider?: Class<Provider<MessageHandler>>;
+    registerProvider?: Class<Provider<RegisterHandler>>;
 }
 
 /**

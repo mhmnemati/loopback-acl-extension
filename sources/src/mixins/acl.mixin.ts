@@ -44,46 +44,17 @@ export function ACLMixin<T extends Class<any>>(superClass: T) {
         ctx.bind(PrivateACLBindings.CODE_MODEL).to(configs.codeModel || Code);
     };
 
-    const bootProviders = (ctx: Context) => {
-        /**
-         * Find, Bind Authentication Token Provider
-         */
-        let tokenProvider = findACL(ctx, "TokenProvider");
-        if (tokenProvider) {
-            ctx.bind(PrivateACLBindings.TOKEN_PROVIDER).to(tokenProvider);
-        } else {
-            ctx.bind(PrivateACLBindings.TOKEN_PROVIDER).toClass(
-                BearerTokenService
-            );
-        }
+    const bootProviders = (ctx: Context, configs: ACLMixinConfig) => {
+        ctx.bind(PrivateACLBindings.TOKEN_PROVIDER).toClass(
+            configs.tokenProvider || BearerTokenService
+        );
+        ctx.bind(PrivateACLBindings.MESSAGE_PROVIDER).toProvider(
+            configs.messageProvider || MessageProvider
+        );
+        ctx.bind(PrivateACLBindings.REGISTER_PROVIDER).toProvider(
+            configs.registerProvider || RegisterProvider
+        );
 
-        /**
-         * Find, Bind Message Provider
-         */
-        let messageProvider = findACL(ctx, "MessageProvider");
-        if (messageProvider) {
-            ctx.bind(PrivateACLBindings.MESSAGE_PROVIDER).to(messageProvider);
-        } else {
-            ctx.bind(PrivateACLBindings.MESSAGE_PROVIDER).toProvider(
-                MessageProvider
-            );
-        }
-
-        /**
-         * Find, Bind Register Provider
-         */
-        let registerProvider = findACL(ctx, "RegisterProvider");
-        if (registerProvider) {
-            ctx.bind(PrivateACLBindings.REGISTER_PROVIDER).to(registerProvider);
-        } else {
-            ctx.bind(PrivateACLBindings.REGISTER_PROVIDER).toProvider(
-                RegisterProvider
-            );
-        }
-
-        /**
-         * Bind Authentication Strategy Provider
-         */
         registerAuthenticationStrategy(ctx, BearerAuthenticationStrategy);
     };
 
@@ -178,7 +149,7 @@ export function ACLMixin<T extends Class<any>>(superClass: T) {
             await super.boot();
 
             bootModels(this as any, this.aclConfigs);
-            bootProviders(this as any);
+            bootProviders(this as any, this.aclConfigs);
             bootDataSources(this as any);
             bootRepositories(this as any);
         }
