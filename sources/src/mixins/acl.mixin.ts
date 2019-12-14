@@ -7,7 +7,12 @@ import { registerAuthenticationStrategy } from "@loopback/authentication";
 import { PrivateACLBindings, ACLBindings, findACL } from "../keys";
 import { ACLMixinConfig } from "../types";
 
-import { BearerTokenService, BearerAuthenticationStrategy } from "../providers";
+import {
+    BearerTokenService,
+    BearerAuthenticationStrategy,
+    MessageProvider,
+    RegisterProvider
+} from "../providers";
 import { User, Role, Permission, Session, Code } from "../models";
 import {
     UserRepository,
@@ -49,6 +54,30 @@ export function ACLMixin<T extends Class<any>>(superClass: T) {
         } else {
             ctx.bind(PrivateACLBindings.TOKEN_PROVIDER).toClass(
                 BearerTokenService
+            );
+        }
+
+        /**
+         * Find, Bind Message Provider
+         */
+        let messageProvider = findACL(ctx, "MessageProvider");
+        if (messageProvider) {
+            ctx.bind(PrivateACLBindings.MESSAGE_PROVIDER).to(messageProvider);
+        } else {
+            ctx.bind(PrivateACLBindings.MESSAGE_PROVIDER).toProvider(
+                MessageProvider
+            );
+        }
+
+        /**
+         * Find, Bind Register Provider
+         */
+        let registerProvider = findACL(ctx, "RegisterProvider");
+        if (registerProvider) {
+            ctx.bind(PrivateACLBindings.REGISTER_PROVIDER).to(registerProvider);
+        } else {
+            ctx.bind(PrivateACLBindings.REGISTER_PROVIDER).toProvider(
+                RegisterProvider
             );
         }
 

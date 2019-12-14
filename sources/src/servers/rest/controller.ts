@@ -1,11 +1,8 @@
 import { inject } from "@loopback/context";
 import { Request, RestBindings, SchemaObject } from "@loopback/rest";
 import { AuthenticationBindings } from "@loopback/authentication";
-import {
-    BearerTokenService,
-    MessageHandler,
-    RegisterHandler
-} from "../../providers";
+import { BearerTokenService } from "../../providers";
+import { MessageHandler, RegisterHandler } from "../../types";
 import {
     AuthorizationBindings,
     UserRoleRepository,
