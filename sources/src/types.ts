@@ -73,12 +73,12 @@ export type MessageHandler = (
     userId: string,
     code: string,
     type: "Account" | "Password"
-) => void;
+) => Promise<void>;
 
 /**
  * RegisterProvider configs
  */
-export type RegisterHandler = (userId: string) => void;
+export type RegisterHandler = (userId: string) => Promise<void>;
 
 /**
  * ACLMixin configs
