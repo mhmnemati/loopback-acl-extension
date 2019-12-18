@@ -1,8 +1,8 @@
 import { Class } from "@loopback/repository";
 import { Ctor } from "loopback-history-extension";
 import {
-    get,
     put,
+    post,
     param,
     requestBody,
     getModelSchemaRef
@@ -18,7 +18,67 @@ export function GenerateUsersPasswordController<
     UserModel extends User
 >(codeCtor: Ctor<CodeModel>, userCtor: Ctor<UserModel>): Class<ACLController> {
     class UsersPasswordController extends ACLController {
-        @get("/users/password/{code}", {
+        @put("/users/password", {
+            responses: {
+                "204": {
+                    description: "Request Reset Password"
+                }
+            }
+        })
+        async resend(
+            @requestBody({
+                content: {
+                    "application/json": {
+                        schema: getModelSchemaRef(userCtor, {
+                            exclude: Object.keys(
+                                userCtor.definition.properties
+                            ).filter(
+                                key => key !== "email" && key !== "phone"
+                            ) as any
+                        })
+                    }
+                }
+            })
+            user: User
+        ): Promise<void> {
+            /**
+             * 1. Find User
+             * 2. Find Old Code Object
+             * 3. Invalidate Old Code Object
+             * 4. Generate Code And Send
+             */
+
+            /** Find user object by username or email */
+            const userObject = await this.userRepository.findOne({
+                where: {
+                    or: [{ username: user.username }, { email: user.email }]
+                }
+            });
+            if (!userObject) {
+                throw {
+                    name: "DatabaseError",
+                    status: 404,
+                    message: `Not Found Resource`
+                };
+            }
+
+            /** Find activation code object */
+            for await (const code of this.codeRepository.keys()) {
+                const codeObject = await this.codeRepository.get(code);
+
+                if (
+                    codeObject.type === "Password" &&
+                    codeObject.userId === userObject.id
+                ) {
+                    await this.codeRepository.delete(code);
+                }
+            }
+
+            /** Generate Code And Send */
+            await this.generateCodeAndSend(userObject.id);
+        }
+
+        @post("/users/password/{code}", {
             responses: {
                 "204": {
                     description: "Reset Password"
@@ -65,66 +125,6 @@ export function GenerateUsersPasswordController<
                     password: user.password
                 })
             );
-        }
-
-        @put("/users/password", {
-            responses: {
-                "204": {
-                    description: "Request Reset Password"
-                }
-            }
-        })
-        async resend(
-            @requestBody({
-                content: {
-                    "application/json": {
-                        schema: getModelSchemaRef(userCtor, {
-                            exclude: Object.keys(
-                                userCtor.definition.properties
-                            ).filter(
-                                key => key !== "username" && key !== "email"
-                            ) as any
-                        })
-                    }
-                }
-            })
-            user: User
-        ): Promise<void> {
-            /**
-             * 1. Find User
-             * 2. Find Old Code Object
-             * 3. Invalidate Old Code Object
-             * 4. Generate Code And Send
-             */
-
-            /** Find user object by username or email */
-            const userObject = await this.userRepository.findOne({
-                where: {
-                    or: [{ username: user.username }, { email: user.email }]
-                }
-            });
-            if (!userObject) {
-                throw {
-                    name: "DatabaseError",
-                    status: 404,
-                    message: `Not Found Resource`
-                };
-            }
-
-            /** Find activation code object */
-            for await (const code of this.codeRepository.keys()) {
-                const codeObject = await this.codeRepository.get(code);
-
-                if (
-                    codeObject.type === "Password" &&
-                    codeObject.userId === userObject.id
-                ) {
-                    await this.codeRepository.delete(code);
-                }
-            }
-
-            /** Generate Code And Send */
-            await this.generateCodeAndSend(userObject.id);
         }
 
         private async generateCodeAndSend(userId: string) {

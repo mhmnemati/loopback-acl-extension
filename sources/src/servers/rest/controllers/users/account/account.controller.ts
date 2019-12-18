@@ -2,7 +2,6 @@ import { Class } from "@loopback/repository";
 import { Ctor } from "loopback-history-extension";
 import {
     post,
-    get,
     put,
     del,
     param,
@@ -72,44 +71,6 @@ export function GenerateUsersAccountController<
             await this.generateCodeAndSend(userObject.id);
         }
 
-        @get("/users/account/{code}", {
-            responses: {
-                "204": {
-                    description: "Register Account"
-                }
-            }
-        })
-        async register(@param.path.string("code") code: string): Promise<void> {
-            /**
-             * 1. Find Code Object
-             * 2. Check Code Object
-             * 3. Activate User
-             */
-
-            /** Find activation code object */
-            const codeObject = await this.codeRepository.get(code);
-
-            /** Check activation code object type */
-            if (!codeObject || codeObject.type !== "Account") {
-                throw {
-                    name: "DatabaseError",
-                    status: 404,
-                    message: `Not Found Resource`
-                };
-            }
-
-            /** Activate user */
-            await this.userRepository.updateById(
-                codeObject.userId,
-                new User({
-                    status: "Active"
-                })
-            );
-
-            /** Register handler - add user to default role, etc */
-            await this.registerHandler(codeObject.userId);
-        }
-
         @put("/users/account", {
             responses: {
                 "204": {
@@ -151,6 +112,44 @@ export function GenerateUsersAccountController<
 
             /** Generate Code And Send */
             await this.generateCodeAndSend(user.id);
+        }
+
+        @post("/users/account/{code}", {
+            responses: {
+                "204": {
+                    description: "Register Account"
+                }
+            }
+        })
+        async register(@param.path.string("code") code: string): Promise<void> {
+            /**
+             * 1. Find Code Object
+             * 2. Check Code Object
+             * 3. Activate User
+             */
+
+            /** Find activation code object */
+            const codeObject = await this.codeRepository.get(code);
+
+            /** Check activation code object type */
+            if (!codeObject || codeObject.type !== "Account") {
+                throw {
+                    name: "DatabaseError",
+                    status: 404,
+                    message: `Not Found Resource`
+                };
+            }
+
+            /** Activate user */
+            await this.userRepository.updateById(
+                codeObject.userId,
+                new User({
+                    status: "Active"
+                })
+            );
+
+            /** Register handler - add user to default role, etc */
+            await this.registerHandler(codeObject.userId);
         }
 
         @del("/users/account", {
