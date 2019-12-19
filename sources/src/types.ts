@@ -93,6 +93,7 @@ export interface ACLMixinConfig {
     tokenProvider?: Class<BearerTokenService>;
     messageProvider?: Class<Provider<MessageHandler>>;
     registerProvider?: Class<Provider<RegisterHandler>>;
+    administrator: User;
 }
 
 /**
