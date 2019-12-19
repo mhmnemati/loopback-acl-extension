@@ -49,13 +49,15 @@ export function GenerateUsersPasswordController<
              * 4. Generate Code And Send
              */
 
+            const userField = Object.entries(user)[0];
+            if (userField) {
+            }
+
             /** Find user object by username or email */
             const userObject = await this.userRepository.findOne({
-                where: {
-                    or: [{ username: user.username }, { email: user.email }]
-                }
+                where: user as any
             });
-            if (!userObject) {
+            if (!userObject || Object.keys(user).length <= 0) {
                 throw {
                     name: "DatabaseError",
                     status: 404,

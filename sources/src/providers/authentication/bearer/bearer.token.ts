@@ -71,11 +71,12 @@ export class BearerTokenService implements TokenService {
         const token = randomBytes(48).toString("hex");
 
         /** Get user permissions */
-        const permissions = await this.getUserPermissions(user.id);
+        const permissions = await this.getUserPermissions(userObject.id);
 
         /** Set constants */
         const ttl = 300e3; // 300 seconds
-        const ip = user.ip;
+        const ip =
+            user.headers["x-forwarded-for"] || user.connection.remoteAddress;
         const device = user.headers["user-agent"];
 
         /** Create session */
