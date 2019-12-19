@@ -159,6 +159,8 @@ export function GenerateUsersAccountController<
                     status: 404,
                     message: `Not Found Resource`
                 };
+            } else {
+                await this.codeRepository.delete(code);
             }
 
             /** Activate user */

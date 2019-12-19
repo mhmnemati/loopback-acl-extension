@@ -117,6 +117,8 @@ export function GenerateUsersPasswordController<
                     status: 404,
                     message: `Not Found Resource`
                 };
+            } else {
+                await this.codeRepository.delete(code);
             }
 
             /** Change password */
