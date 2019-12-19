@@ -21,7 +21,7 @@ export function GenerateUsersPasswordController<
         @put("/users/password", {
             responses: {
                 "204": {
-                    description: "Request Reset Password"
+                    description: "Resend Reset Password Code"
                 }
             }
         })
