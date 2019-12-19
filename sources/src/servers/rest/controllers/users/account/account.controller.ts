@@ -76,7 +76,7 @@ export function GenerateUsersAccountController<
         @put("/users/account", {
             responses: {
                 "204": {
-                    description: "Register Account"
+                    description: "Resend Register Account Code"
                 }
             }
         })
@@ -87,7 +87,9 @@ export function GenerateUsersAccountController<
                         schema: getModelSchemaRef(userCtor, {
                             exclude: Object.keys(
                                 userCtor.definition.properties
-                            ).filter(key => key !== "id") as any
+                            ).filter(
+                                key => key !== "email" && key !== "phone"
+                            ) as any
                         })
                     }
                 }
@@ -95,10 +97,25 @@ export function GenerateUsersAccountController<
             user: User
         ): Promise<void> {
             /**
-             * 1. Find Old Code Object
-             * 2. Invalidate Old Code Object
-             * 3. Generate Code And Send
+             * 1. Find User
+             * 2. Find Old Code Object
+             * 3. Invalidate Old Code Object
+             * 4. Generate Code And Send
              */
+
+            /** Find user object by username or email */
+            const userObject = await this.userRepository.findOne({
+                where: {
+                    or: [{ username: user.username }, { email: user.email }]
+                }
+            });
+            if (!userObject) {
+                throw {
+                    name: "DatabaseError",
+                    status: 404,
+                    message: `Not Found Resource`
+                };
+            }
 
             /** Find activation code object */
             for await (const code of this.codeRepository.keys()) {
@@ -106,14 +123,14 @@ export function GenerateUsersAccountController<
 
                 if (
                     codeObject.type === "Account" &&
-                    codeObject.userId === user.id
+                    codeObject.userId === userObject.id
                 ) {
                     await this.codeRepository.delete(code);
                 }
             }
 
             /** Generate Code And Send */
-            await this.generateCodeAndSend(user.id);
+            await this.generateCodeAndSend(userObject.id);
         }
 
         @post("/users/account/{code}", {
