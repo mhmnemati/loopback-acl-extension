@@ -4,6 +4,12 @@ import { CoreBindings } from "@loopback/core";
 
 import { registerAuthenticationStrategy } from "@loopback/authentication";
 
+import {
+    AuthorizationBindings,
+    UserRole,
+    RolePermission
+} from "loopback-authorization-extension";
+
 import { PrivateACLBindings, ACLBindings, findACL } from "../keys";
 import { ACLMixinConfig } from "../types";
 
@@ -140,6 +146,172 @@ export function ACLMixin<T extends Class<any>>(superClass: T) {
         }
     };
 
+    const migrateUsers = async (ctx: Context) => {
+        const userRepository = ctx.getSync(ACLBindings.USER_REPOSITORY);
+
+        /**
+         * Migrate Administrator user
+         */
+        if (
+            !(await userRepository.findOne({
+                where: {
+                    username: "administrator"
+                }
+            }))
+        ) {
+            await userRepository.create(
+                new User({
+                    username: "administrator",
+                    password: "administrator",
+                    email: "admin@admin.com",
+                    firstName: "System",
+                    lastName: "Administrator",
+                    status: "Active"
+                })
+            );
+        }
+    };
+
+    const migrateRoles = async (ctx: Context) => {
+        const roleRepository = ctx.getSync(ACLBindings.ROLE_REPOSITORY);
+
+        /**
+         * Migrate Admins role
+         */
+        if (
+            !(await roleRepository.findOne({
+                where: {
+                    title: "Admins"
+                }
+            }))
+        ) {
+            await roleRepository.create(
+                new Role({
+                    title: "Admins",
+                    description: "System admins"
+                })
+            );
+        }
+
+        /**
+         * Migrate Users role
+         */
+        if (
+            !(await roleRepository.findOne({
+                where: {
+                    title: "Users"
+                }
+            }))
+        ) {
+            await roleRepository.create(
+                new Role({
+                    title: "Users",
+                    description: "System users"
+                })
+            );
+        }
+    };
+
+    const migrateUsersRoles = async (ctx: Context) => {
+        const userRepository = ctx.getSync(ACLBindings.USER_REPOSITORY);
+        const roleRepository = ctx.getSync(ACLBindings.ROLE_REPOSITORY);
+        const userRoleRepository = ctx.getSync(
+            AuthorizationBindings.USER_ROLE_REPOSITORY
+        );
+
+        /**
+         * Get Administrator user
+         */
+        const administratorUser = await userRepository.findOne({
+            where: {
+                username: "administrator"
+            }
+        });
+
+        /**
+         * Get Admins role
+         */
+        const adminsRole = await roleRepository.findOne({
+            where: {
+                title: "Admins"
+            }
+        });
+
+        if (administratorUser && adminsRole) {
+            /**
+             * Add Administrator to Admins
+             */
+            if (
+                !(await userRoleRepository.findOne({
+                    where: {
+                        userId: administratorUser.id,
+                        roleId: adminsRole.id
+                    }
+                }))
+            ) {
+                await userRoleRepository.create(
+                    new UserRole({
+                        userId: administratorUser.id,
+                        roleId: adminsRole.id
+                    })
+                );
+            }
+        }
+    };
+
+    const migrateRolesPermissions = async (ctx: Context) => {
+        const roleRepository = ctx.getSync(ACLBindings.ROLE_REPOSITORY);
+        const permissionRepository = ctx.getSync(
+            ACLBindings.PERMISSION_REPOSITORY
+        );
+        const rolePermissionRepository = ctx.getSync(
+            AuthorizationBindings.ROLE_PERMISSION_REPOSITORY
+        );
+
+        /**
+         * Get Admins role
+         */
+        const adminsRole = await roleRepository.findOne({
+            where: {
+                title: "Admins"
+            }
+        });
+
+        /**
+         * Get All permissions
+         */
+        const permissions = await permissionRepository.find();
+
+        if (adminsRole) {
+            /**
+             * Add permissions to Admins
+             */
+            const rolePermissions = await rolePermissionRepository.find({
+                where: {
+                    roleId: adminsRole.id
+                }
+            });
+
+            const notAddedPermissions = permissions.filter(
+                permission =>
+                    rolePermissions
+                        .map(rolePermission => rolePermission.permissionId)
+                        .filter(permissionId => permissionId === permission.id)
+                        .length === 0
+            );
+
+            await rolePermissionRepository.createAll(
+                notAddedPermissions.map(
+                    permission =>
+                        new RolePermission({
+                            roleId: adminsRole.id,
+                            permissionId: permission.id
+                        })
+                )
+            );
+        }
+    };
+
     return class extends superClass {
         public aclConfigs: ACLMixinConfig = {};
 
@@ -152,6 +324,15 @@ export function ACLMixin<T extends Class<any>>(superClass: T) {
             bootProviders(this as any, this.aclConfigs);
             bootDataSources(this as any);
             bootRepositories(this as any);
+        }
+
+        async migrateSchema(options?: any) {
+            await super.migrateSchema(options);
+
+            await migrateUsers(this as any);
+            await migrateRoles(this as any);
+            await migrateUsersRoles(this as any);
+            await migrateRolesPermissions(this as any);
         }
     };
 }
