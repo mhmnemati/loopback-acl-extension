@@ -33,9 +33,7 @@ export function GenerateUsersPasswordController<
                             partial: true,
                             exclude: Object.keys(
                                 userCtor.definition.properties
-                            ).filter(
-                                key => key !== "email" && key !== "phone"
-                            ) as any
+                            ).filter(key => key !== "phone") as any
                         })
                     }
                 }
@@ -52,7 +50,7 @@ export function GenerateUsersPasswordController<
             /** Find user object by username or email */
             const userObject = await this.userRepository.findOne({
                 where: {
-                    or: [{ username: user.username }, { email: user.email }]
+                    phone: user.phone
                 }
             });
             if (!userObject) {
