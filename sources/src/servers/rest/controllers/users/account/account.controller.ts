@@ -88,7 +88,9 @@ export function GenerateUsersAccountController<
                             partial: true,
                             exclude: Object.keys(
                                 userCtor.definition.properties
-                            ).filter(key => key !== "phone") as any
+                            ).filter(
+                                key => key !== "email" && key !== "phone"
+                            ) as any
                         })
                     }
                 }
@@ -104,11 +106,9 @@ export function GenerateUsersAccountController<
 
             /** Find user object by username or email */
             const userObject = await this.userRepository.findOne({
-                where: {
-                    phone: user.phone
-                }
+                where: user as any
             });
-            if (!userObject) {
+            if (!userObject || Object.keys(user).length <= 0) {
                 throw {
                     name: "DatabaseError",
                     status: 404,
