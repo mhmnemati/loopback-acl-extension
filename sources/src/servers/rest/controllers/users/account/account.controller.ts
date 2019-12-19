@@ -85,6 +85,7 @@ export function GenerateUsersAccountController<
                 content: {
                     "application/json": {
                         schema: getModelSchemaRef(userCtor, {
+                            partial: true,
                             exclude: Object.keys(
                                 userCtor.definition.properties
                             ).filter(
