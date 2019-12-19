@@ -9,7 +9,7 @@ export class Role extends RoleModel {
     @property({
         type: "string"
     })
-    title: string;
+    name: string;
 
     @property({
         type: "string"
