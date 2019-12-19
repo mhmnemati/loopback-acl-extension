@@ -9,6 +9,8 @@ import {
     getModelSchemaRef
 } from "@loopback/rest";
 
+import { UserRole } from "loopback-authorization-extension";
+
 import { ACLController } from "../../../../../servers";
 import { Code, User } from "../../../../../models";
 
@@ -126,6 +128,7 @@ export function GenerateUsersAccountController<
              * 1. Find Code Object
              * 2. Check Code Object
              * 3. Activate User
+             * 4. Add User to Users Role
              */
 
             /** Find activation code object */
@@ -148,7 +151,22 @@ export function GenerateUsersAccountController<
                 })
             );
 
-            /** Register handler - add user to default role, etc */
+            /** Add user to Users role */
+            const usersRole = await this.roleRepository.findOne({
+                where: {
+                    name: "Users"
+                }
+            });
+            if (usersRole) {
+                await this.userRoleRepository.create(
+                    new UserRole({
+                        userId: codeObject.userId,
+                        roleId: usersRole.id
+                    })
+                );
+            }
+
+            /** Register handler - default user configs, etc */
             await this.registerHandler(codeObject.userId);
         }
 

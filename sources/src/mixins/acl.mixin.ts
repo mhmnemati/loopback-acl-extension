@@ -167,37 +167,37 @@ export function ACLMixin<T extends Class<any>>(superClass: T) {
         const roleRepository = ctx.getSync(ACLBindings.ROLE_REPOSITORY);
 
         /**
-         * Migrate Admins role
-         */
-        if (
-            !(await roleRepository.findOne({
-                where: {
-                    title: "Admins"
-                }
-            }))
-        ) {
-            await roleRepository.create(
-                new Role({
-                    title: "Admins",
-                    description: "System admins"
-                })
-            );
-        }
-
-        /**
          * Migrate Users role
          */
         if (
             !(await roleRepository.findOne({
                 where: {
-                    title: "Users"
+                    name: "Users"
                 }
             }))
         ) {
             await roleRepository.create(
                 new Role({
-                    title: "Users",
+                    name: "Users",
                     description: "System users"
+                })
+            );
+        }
+
+        /**
+         * Migrate Admins role
+         */
+        if (
+            !(await roleRepository.findOne({
+                where: {
+                    name: "Admins"
+                }
+            }))
+        ) {
+            await roleRepository.create(
+                new Role({
+                    name: "Admins",
+                    description: "System admins"
                 })
             );
         }
@@ -224,7 +224,7 @@ export function ACLMixin<T extends Class<any>>(superClass: T) {
          */
         const adminsRole = await roleRepository.findOne({
             where: {
-                title: "Admins"
+                name: "Admins"
             }
         });
 
@@ -264,7 +264,7 @@ export function ACLMixin<T extends Class<any>>(superClass: T) {
          */
         const adminsRole = await roleRepository.findOne({
             where: {
-                title: "Admins"
+                name: "Admins"
             }
         });
 
