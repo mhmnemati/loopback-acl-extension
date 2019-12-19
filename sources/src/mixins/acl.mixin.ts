@@ -1,5 +1,5 @@
 import { Context } from "@loopback/context";
-import { Class } from "@loopback/repository";
+import { Class, SchemaMigrationOptions } from "@loopback/repository";
 import { CoreBindings } from "@loopback/core";
 
 import { registerAuthenticationStrategy } from "@loopback/authentication";
@@ -146,7 +146,7 @@ export function ACLMixin<T extends Class<any>>(superClass: T) {
         }
     };
 
-    const migrateUsers = async (ctx: Context) => {
+    const migrateUsers = async (ctx: Context, configs: ACLMixinConfig) => {
         const userRepository = ctx.getSync(ACLBindings.USER_REPOSITORY);
 
         /**
@@ -155,20 +155,11 @@ export function ACLMixin<T extends Class<any>>(superClass: T) {
         if (
             !(await userRepository.findOne({
                 where: {
-                    username: "administrator"
+                    username: configs.administrator.username
                 }
             }))
         ) {
-            await userRepository.create(
-                new User({
-                    username: "administrator",
-                    password: "administrator",
-                    email: "admin@admin.com",
-                    firstName: "System",
-                    lastName: "Administrator",
-                    status: "Active"
-                })
-            );
+            await userRepository.create(configs.administrator);
         }
     };
 
@@ -212,7 +203,7 @@ export function ACLMixin<T extends Class<any>>(superClass: T) {
         }
     };
 
-    const migrateUsersRoles = async (ctx: Context) => {
+    const migrateUsersRoles = async (ctx: Context, configs: ACLMixinConfig) => {
         const userRepository = ctx.getSync(ACLBindings.USER_REPOSITORY);
         const roleRepository = ctx.getSync(ACLBindings.ROLE_REPOSITORY);
         const userRoleRepository = ctx.getSync(
@@ -224,7 +215,7 @@ export function ACLMixin<T extends Class<any>>(superClass: T) {
          */
         const administratorUser = await userRepository.findOne({
             where: {
-                username: "administrator"
+                username: configs.administrator.username
             }
         });
 
@@ -313,7 +304,16 @@ export function ACLMixin<T extends Class<any>>(superClass: T) {
     };
 
     return class extends superClass {
-        public aclConfigs: ACLMixinConfig = {};
+        public aclConfigs: ACLMixinConfig = {
+            administrator: new User({
+                username: "administrator",
+                password: "administrator",
+                email: "admin@admin.com",
+                firstName: "System",
+                lastName: "Administrator",
+                status: "Active"
+            })
+        };
 
         async boot() {
             bootObservers(this as any);
@@ -326,12 +326,12 @@ export function ACLMixin<T extends Class<any>>(superClass: T) {
             bootRepositories(this as any);
         }
 
-        async migrateSchema(options?: any) {
+        async migrateSchema(options?: SchemaMigrationOptions) {
             await super.migrateSchema(options);
 
-            await migrateUsers(this as any);
+            await migrateUsers(this as any, this.aclConfigs);
             await migrateRoles(this as any);
-            await migrateUsersRoles(this as any);
+            await migrateUsersRoles(this as any, this.aclConfigs);
             await migrateRolesPermissions(this as any);
         }
     };
