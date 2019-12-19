@@ -85,6 +85,7 @@ export function GenerateUsersAccountController<
                 content: {
                     "application/json": {
                         schema: getModelSchemaRef(userCtor, {
+                            partial: true,
                             exclude: Object.keys(
                                 userCtor.definition.properties
                             ).filter(
@@ -158,6 +159,8 @@ export function GenerateUsersAccountController<
                     status: 404,
                     message: `Not Found Resource`
                 };
+            } else {
+                await this.codeRepository.delete(code);
             }
 
             /** Activate user */
