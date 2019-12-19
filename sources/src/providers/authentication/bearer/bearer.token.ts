@@ -71,7 +71,7 @@ export class BearerTokenService implements TokenService {
         const token = randomBytes(48).toString("hex");
 
         /** Get user permissions */
-        const permissions = await this.getUserPermissions(user.id);
+        const permissions = await this.getUserPermissions(userObject.id);
 
         /** Set constants */
         const ttl = 300e3; // 300 seconds
