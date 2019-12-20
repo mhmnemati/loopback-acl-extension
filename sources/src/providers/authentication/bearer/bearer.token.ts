@@ -15,6 +15,8 @@ import { SessionRepository, UserRepository } from "../../../repositories";
 
 import { randomBytes } from "crypto";
 
+import { getClientIp } from "request-ip";
+
 export class BearerTokenService implements TokenService {
     constructor(
         @inject(ACLBindings.SESSION_REPOSITORY)
@@ -75,8 +77,7 @@ export class BearerTokenService implements TokenService {
 
         /** Set constants */
         const ttl = 300e3; // 300 seconds
-        const ip =
-            user.headers["x-forwarded-for"] || user.connection.remoteAddress;
+        const ip = getClientIp(user);
         const device = user.headers["user-agent"];
 
         /** Create session */
