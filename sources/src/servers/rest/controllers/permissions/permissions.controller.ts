@@ -7,7 +7,11 @@ import { Permission } from "../../../../models";
 export function GeneratePermissionsController<Model extends Permission>(
     ctor: Ctor<Model>
 ): Class<ACLController> {
-    class PermissionsController extends ACLCRUDControllerMixin<Permission>(
+    class PermissionsController extends ACLCRUDControllerMixin<
+        ACLController,
+        Permission
+    >(
+        ACLController,
         ctor,
         "id",
         "/permissions",

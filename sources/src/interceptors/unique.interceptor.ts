@@ -8,11 +8,10 @@ import { Entity } from "@loopback/repository";
 import { Ctor } from "loopback-history-extension";
 
 import { RepositoryGetter } from "../types";
-
 import { ACLController } from "../servers";
 
-export function unique<Model extends Entity>(
-    repositoryGetter: RepositoryGetter<any>,
+export function unique<Controller extends ACLController, Model extends Entity>(
+    repositoryGetter: RepositoryGetter<Controller, any>,
     ctor: Ctor<Model>,
     argIndex: number
 ): Interceptor {
@@ -21,9 +20,7 @@ export function unique<Model extends Entity>(
         next: () => ValueOrPromise<InvocationResult>
     ) => {
         /** Get repository */
-        const repository = await repositoryGetter(
-            invocationCtx.target as ACLController
-        );
+        const repository = await repositoryGetter(invocationCtx.target as any);
 
         /** Get model from arguments by arg index number */
         const model = invocationCtx.args[argIndex];

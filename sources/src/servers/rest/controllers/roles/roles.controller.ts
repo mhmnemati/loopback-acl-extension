@@ -7,7 +7,8 @@ import { Role } from "../../../../models";
 export function GenerateRolesController<Model extends Role>(
     ctor: Ctor<Model>
 ): Class<ACLController> {
-    class RolesController extends ACLCRUDControllerMixin<Role>(
+    class RolesController extends ACLCRUDControllerMixin<ACLController, Role>(
+        ACLController,
         ctor,
         "id",
         "/roles",

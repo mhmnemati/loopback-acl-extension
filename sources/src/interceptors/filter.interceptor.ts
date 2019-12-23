@@ -7,7 +7,7 @@ import {
 
 import { FilterMethod } from "../types";
 
-export const filter = (
+export function filter(
     inputArg: number,
     inputFilter: "where" | "filter" | string,
     filterMethod: FilterMethod<any>,
@@ -17,7 +17,7 @@ export const filter = (
         arg: number | ((context: InvocationContext) => string);
         property: string;
     }
-): Interceptor => {
+): Interceptor {
     return async (
         invocationCtx: InvocationContext,
         next: () => ValueOrPromise<InvocationResult>
@@ -75,4 +75,4 @@ export const filter = (
 
         return next();
     };
-};
+}
