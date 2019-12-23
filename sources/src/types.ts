@@ -51,14 +51,16 @@ export class ACLPermissions extends PermissionsList {
 }
 
 /** Get Repository From Controller */
-export type RepositoryGetter<Model extends Entity> = (
-    controller: ACLController
-) => DefaultCrudRepository<Model, any, any>;
+export type RepositoryGetter<
+    Model extends Entity,
+    Controller extends ACLController
+> = (controller: Controller) => DefaultCrudRepository<Model, any, any>;
 
 /** Get Model Ctor From Controller */
-export type ModelGetter<Model extends Entity> = (
-    controller: ACLController
-) => Ctor<Model>;
+export type ModelGetter<
+    Model extends Entity,
+    Controller extends ACLController
+> = (controller: Controller) => Ctor<Model>;
 
 /** Filter Handler */
 export type FilterMethod<Model extends Entity> = (

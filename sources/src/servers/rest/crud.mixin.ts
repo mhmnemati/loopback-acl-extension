@@ -28,7 +28,11 @@ import { intercept } from "@loopback/core";
 import { exist, filter, unique } from "../../interceptors";
 import { ACLPermissions, RepositoryGetter, FilterMethod } from "../../types";
 
-export function ACLCRUDControllerMixin<Model extends Entity>(
+export function ACLCRUDControllerMixin<
+    Model extends Entity,
+    Controller extends ACLController
+>(
+    controller: Class<Controller>,
     ctor: Ctor<Model>,
     ctorId: keyof Model,
     basePath: string,
@@ -54,8 +58,8 @@ export function ACLCRUDControllerMixin<Model extends Entity>(
             filter: FilterMethod<Model>;
         };
     }
-): Class<ACLController> {
-    class CRUDController extends ACLController {
+): Class<Controller> {
+    class CRUDController extends controller {
         @intercept(unique<Model>(repositoryGetter, ctor, 0))
         @authorize<ACLPermissions>(accessControl.create.permission)
         @authenticate("bearer")
