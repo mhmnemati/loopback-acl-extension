@@ -13,20 +13,29 @@ export class User extends UserModel {
     @property({
         type: "string",
         required: true,
-        unique: true
+        unique: true,
+        jsonSchema: {
+            pattern: `^[A-Za-z\d#$@!%&*?]{6,}$`
+        }
     })
     username: string;
 
     @property({
         type: "string",
-        required: true
+        required: true,
+        jsonSchema: {
+            pattern: `^[A-Za-z\d#$@!%&*?]{8,}$`
+        }
     })
     password: string;
 
     @property({
         type: "string",
         required: true,
-        unique: true
+        unique: true,
+        jsonSchema: {
+            pattern: `^(([^<>()[].,;:s@"]+(.[^<>()[].,;:s@"]+)*)|(".+"))@(([^<>()[].,;:s@"]+.)+[^<>()[].,;:s@"]{2,})$`
+        }
     })
     email: string;
 
@@ -71,7 +80,10 @@ export class User extends UserModel {
     address: string;
 
     @property({
-        type: "string"
+        type: "string",
+        jsonSchema: {
+            pattern: `^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-s./0-9]*$`
+        }
     })
     phone: string;
 
@@ -107,7 +119,10 @@ export class User extends UserModel {
 
     @property({
         type: "string",
-        required: true
+        required: true,
+        jsonSchema: {
+            enum: ["Register", "Active", "Disable"]
+        }
     })
     status: "Register" | "Active" | "Disable";
 

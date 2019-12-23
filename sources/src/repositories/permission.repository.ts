@@ -1,7 +1,11 @@
-import { inject } from "@loopback/context";
+import { inject, Getter } from "@loopback/context";
 import { juggler } from "@loopback/repository";
 import { Ctor } from "loopback-history-extension";
-import { PermissionRepository as PermissionModelRepository } from "loopback-authorization-extension";
+import {
+    PermissionRepository as PermissionModelRepository,
+    AuthorizationBindings,
+    RolePermissionRepository
+} from "loopback-authorization-extension";
 
 import { bindACL, PrivateACLBindings } from "../keys";
 
@@ -16,8 +20,10 @@ export class PermissionRepository<
         @inject(PrivateACLBindings.PERMISSION_MODEL)
         ctor: Ctor<Model>,
         @inject(PrivateACLBindings.RELATIONAL_DATASOURCE)
-        dataSource: juggler.DataSource
+        dataSource: juggler.DataSource,
+        @inject.getter(AuthorizationBindings.ROLE_PERMISSION_REPOSITORY)
+        getRolePermissionRepository: Getter<RolePermissionRepository>
     ) {
-        super(ctor, dataSource);
+        super(ctor, dataSource, getRolePermissionRepository);
     }
 }

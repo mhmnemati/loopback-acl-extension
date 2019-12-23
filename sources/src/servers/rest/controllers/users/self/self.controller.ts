@@ -44,7 +44,7 @@ export function GenerateUsersSelfController<UserModel extends User>(
         }
 
         @intercept(
-            unique<UserModel>(
+            unique<ACLController, UserModel>(
                 controller => controller.userRepository,
                 userCtor,
                 0

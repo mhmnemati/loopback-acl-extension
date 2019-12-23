@@ -7,7 +7,8 @@ import { User } from "../../../../models";
 export function GenerateUsersController<Model extends User>(
     ctor: Ctor<Model>
 ): Class<ACLController> {
-    class UsersController extends ACLCRUDControllerMixin<User>(
+    class UsersController extends ACLCRUDControllerMixin<ACLController, User>(
+        ACLController,
         ctor,
         "id",
         "/users",

@@ -27,15 +27,17 @@ import { filter } from "../../interceptors";
 import { ACLPermissions, RepositoryGetter, FilterMethod } from "../../types";
 
 export function ACLRelationControllerMixin<
+    Controller extends ACLController,
     Model extends Entity,
     MemberModel extends Entity
 >(
+    controllerClass: Class<ACLController>,
     ctor: Ctor<Model>,
     memberCtor: Ctor<MemberModel>,
     ctorContainerId: keyof Model,
     memberCtorId: keyof MemberModel,
     basePath: string,
-    repositoryGetter: RepositoryGetter<Model>,
+    repositoryGetter: RepositoryGetter<Controller, Model>,
     modelGetter: (id: string, memberId: string) => Model,
     whereGetter: (id: string, memberId: string) => Where<Model>,
     accessControl: {
@@ -54,8 +56,8 @@ export function ACLRelationControllerMixin<
             filter: FilterMethod<Model>;
         };
     }
-): Class<ACLController> {
-    class RelationController extends ACLController {
+): Class<Controller> {
+    class RelationController extends controllerClass {
         @intercept(
             filter(1, "filter", accessControl.read.filter, 1, "filter", {
                 arg: 0,
@@ -88,7 +90,7 @@ export function ACLRelationControllerMixin<
             })
             filter?: Filter<Model>
         ): Promise<Model[]> {
-            return await repositoryGetter(this).find(filter);
+            return await repositoryGetter(this as any).find(filter);
         }
 
         @intercept(
@@ -118,7 +120,7 @@ export function ACLRelationControllerMixin<
             })
             where?: Where<Model>
         ): Promise<Count> {
-            return await repositoryGetter(this).count(where);
+            return await repositoryGetter(this as any).count(where);
         }
 
         @authorize<ACLPermissions>(accessControl.add.permission)
@@ -145,7 +147,7 @@ export function ACLRelationControllerMixin<
             })
             memberModel: MemberModel
         ): Promise<Model> {
-            return await repositoryGetter(this).create(
+            return await repositoryGetter(this as any).create(
                 modelGetter(id, (memberModel as any)[memberCtorId])
             );
         }
@@ -174,7 +176,7 @@ export function ACLRelationControllerMixin<
             })
             memberModel: MemberModel
         ) {
-            return await repositoryGetter(this).deleteAll(
+            return await repositoryGetter(this as any).deleteAll(
                 whereGetter(id, (memberModel as any)[memberCtorId])
             );
         }
@@ -211,9 +213,11 @@ export function ACLRelationControllerMixin<
             })
             filter?: Filter<Model>
         ): Promise<Model[]> {
-            return await repositoryGetter(this).find(filter, { crud: true });
+            return await repositoryGetter(this as any).find(filter, {
+                crud: true
+            });
         }
     }
 
-    return RelationController;
+    return RelationController as any;
 }

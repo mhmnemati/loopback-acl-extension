@@ -12,9 +12,11 @@ export function GenerateRolesUsersController<MemberModel extends User>(
     memberCtor: Ctor<MemberModel>
 ): Class<ACLController> {
     class RolesUsersController extends ACLRelationControllerMixin<
+        ACLController,
         UserRole,
         User
     >(
+        ACLController,
         UserRole,
         memberCtor,
         "roleId",

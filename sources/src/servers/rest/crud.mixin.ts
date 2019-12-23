@@ -28,11 +28,15 @@ import { intercept } from "@loopback/core";
 import { exist, filter, unique } from "../../interceptors";
 import { ACLPermissions, RepositoryGetter, FilterMethod } from "../../types";
 
-export function ACLCRUDControllerMixin<Model extends Entity>(
+export function ACLCRUDControllerMixin<
+    Controller extends ACLController,
+    Model extends Entity
+>(
+    controllerClass: Class<ACLController>,
     ctor: Ctor<Model>,
     ctorId: keyof Model,
     basePath: string,
-    repositoryGetter: RepositoryGetter<Model>,
+    repositoryGetter: RepositoryGetter<Controller, Model>,
     accessControl: {
         create: {
             permission: Condition<ACLPermissions>;
@@ -54,9 +58,9 @@ export function ACLCRUDControllerMixin<Model extends Entity>(
             filter: FilterMethod<Model>;
         };
     }
-): Class<ACLController> {
-    class CRUDController extends ACLController {
-        @intercept(unique<Model>(repositoryGetter, ctor, 0))
+): Class<Controller> {
+    class CRUDController extends controllerClass {
+        @intercept(unique<Controller, Model>(repositoryGetter, ctor, 0))
         @authorize<ACLPermissions>(accessControl.create.permission)
         @authenticate("bearer")
         @post(`${basePath}`, {
@@ -90,7 +94,7 @@ export function ACLCRUDControllerMixin<Model extends Entity>(
             })
             model: Model
         ): Promise<Model> {
-            return await repositoryGetter(this).create(model);
+            return await repositoryGetter(this as any).create(model);
         }
 
         @intercept(filter(0, "where", accessControl.read.filter, 0, "where"))
@@ -114,7 +118,7 @@ export function ACLCRUDControllerMixin<Model extends Entity>(
             })
             where?: Where<Model>
         ): Promise<Count> {
-            return await repositoryGetter(this).count(where);
+            return await repositoryGetter(this as any).count(where);
         }
 
         @intercept(filter(0, "filter", accessControl.read.filter, 0, "filter"))
@@ -143,11 +147,11 @@ export function ACLCRUDControllerMixin<Model extends Entity>(
             })
             filter?: Filter<Model>
         ): Promise<Model[]> {
-            return await repositoryGetter(this).find(filter);
+            return await repositoryGetter(this as any).find(filter);
         }
 
         @intercept(filter(1, "where", accessControl.update.filter, 1, "where"))
-        @intercept(unique<Model>(repositoryGetter, ctor, 0))
+        @intercept(unique<Controller, Model>(repositoryGetter, ctor, 0))
         @authorize<ACLPermissions>(accessControl.update.permission)
         @authenticate("bearer")
         @patch(`${basePath}`, {
@@ -172,7 +176,7 @@ export function ACLCRUDControllerMixin<Model extends Entity>(
             })
             where?: Where<Model>
         ): Promise<Count> {
-            return await repositoryGetter(this).updateAll(model, where);
+            return await repositoryGetter(this as any).updateAll(model, where);
         }
 
         @intercept(filter(0, "where", accessControl.delete.filter, 0, "where"))
@@ -192,7 +196,7 @@ export function ACLCRUDControllerMixin<Model extends Entity>(
             })
             where?: Where<Model>
         ) {
-            return await repositoryGetter(this).deleteAll(where);
+            return await repositoryGetter(this as any).deleteAll(where);
         }
 
         @intercept(
@@ -216,13 +220,13 @@ export function ACLCRUDControllerMixin<Model extends Entity>(
             }
         })
         async findById(@param.path.string("id") id: string): Promise<Model> {
-            return await repositoryGetter(this).findOne(arguments[1]);
+            return await repositoryGetter(this as any).findOne(arguments[1]);
         }
 
         @intercept(
             filter(0, ctorId as string, accessControl.update.filter, 2, "where")
         )
-        @intercept(unique<Model>(repositoryGetter, ctor, 1))
+        @intercept(unique<Controller, Model>(repositoryGetter, ctor, 1))
         @intercept(exist(repositoryGetter))
         @authorize<ACLPermissions>(accessControl.update.permission)
         @authenticate("bearer")
@@ -244,7 +248,7 @@ export function ACLCRUDControllerMixin<Model extends Entity>(
             })
             model: Model
         ): Promise<void> {
-            await repositoryGetter(this).updateAll(model, arguments[2]);
+            await repositoryGetter(this as any).updateAll(model, arguments[2]);
         }
 
         @intercept(
@@ -261,7 +265,7 @@ export function ACLCRUDControllerMixin<Model extends Entity>(
             }
         })
         async deleteById(@param.path.string("id") id: string): Promise<void> {
-            await repositoryGetter(this).deleteAll(arguments[1]);
+            await repositoryGetter(this as any).deleteAll(arguments[1]);
         }
 
         @intercept(
@@ -297,9 +301,11 @@ export function ACLCRUDControllerMixin<Model extends Entity>(
             })
             filter?: Filter<Model>
         ): Promise<Model[]> {
-            return await repositoryGetter(this).find(filter, { crud: true });
+            return await repositoryGetter(this as any).find(filter, {
+                crud: true
+            });
         }
     }
 
-    return CRUDController;
+    return CRUDController as any;
 }

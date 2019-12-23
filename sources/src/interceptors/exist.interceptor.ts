@@ -6,16 +6,17 @@ import {
 } from "@loopback/context";
 
 import { RepositoryGetter } from "../types";
-
 import { ACLController } from "../servers";
 
-export const exist = (repositoryGetter: RepositoryGetter<any>): Interceptor => {
+export function exist<Controller extends ACLController>(
+    repositoryGetter: RepositoryGetter<Controller, any>
+): Interceptor {
     return async (
         invocationCtx: InvocationContext,
         next: () => ValueOrPromise<InvocationResult>
     ) => {
         const isExists = await repositoryGetter(
-            invocationCtx.target as ACLController
+            invocationCtx.target as any
         ).exists(invocationCtx.args[0]);
 
         if (!isExists) {
@@ -28,4 +29,4 @@ export const exist = (repositoryGetter: RepositoryGetter<any>): Interceptor => {
 
         return next();
     };
-};
+}
