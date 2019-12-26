@@ -2,7 +2,7 @@ import { inject } from "@loopback/context";
 import { Request, RestBindings, SchemaObject } from "@loopback/rest";
 import { AuthenticationBindings } from "@loopback/authentication";
 import { BearerTokenService } from "../../providers";
-import { MessageHandler, RegisterHandler } from "../../types";
+import { MessageHandler, ActivateHandler } from "../../types";
 import {
     AuthorizationBindings,
     UserRoleRepository,
@@ -44,8 +44,8 @@ export class ACLController {
         public tokenService: BearerTokenService,
         @inject(PrivateACLBindings.MESSAGE_PROVIDER)
         public messageHandler: MessageHandler,
-        @inject(PrivateACLBindings.REGISTER_PROVIDER)
-        public registerHandler: RegisterHandler,
+        @inject(PrivateACLBindings.ACTIVATE_PROVIDER)
+        public activateHandler: ActivateHandler,
 
         @inject(ACLBindings.USER_REPOSITORY)
         public userRepository: UserRepository<User, UserRelations>,

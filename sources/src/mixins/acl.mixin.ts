@@ -17,7 +17,7 @@ import {
     BearerTokenService,
     BearerAuthenticationStrategy,
     MessageProvider,
-    RegisterProvider
+    ActivateProvider
 } from "../providers";
 import { User, Role, Permission, Session, Code } from "../models";
 import {
@@ -57,8 +57,8 @@ export function ACLMixin<T extends Class<any>>(superClass: T) {
         ctx.bind(PrivateACLBindings.MESSAGE_PROVIDER).toProvider(
             configs.messageProvider || MessageProvider
         );
-        ctx.bind(PrivateACLBindings.REGISTER_PROVIDER).toProvider(
-            configs.registerProvider || RegisterProvider
+        ctx.bind(PrivateACLBindings.ACTIVATE_PROVIDER).toProvider(
+            configs.activateProvider || ActivateProvider
         );
 
         registerAuthenticationStrategy(ctx, BearerAuthenticationStrategy);

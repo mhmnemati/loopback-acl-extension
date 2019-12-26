@@ -135,11 +135,11 @@ export function GenerateUsersAccountController<
         @post("/users/account/{code}", {
             responses: {
                 "204": {
-                    description: "Register Account"
+                    description: "Activate Account"
                 }
             }
         })
-        async register(@param.path.string("code") code: string): Promise<void> {
+        async activate(@param.path.string("code") code: string): Promise<void> {
             /**
              * 1. Find Code Object
              * 2. Check Code Object
@@ -184,8 +184,8 @@ export function GenerateUsersAccountController<
                 );
             }
 
-            /** Register handler - default user configs, etc */
-            await this.registerHandler(codeObject.userId);
+            /** Activate handler - default user configs, etc */
+            await this.activateHandler(codeObject.userId);
         }
 
         @del("/users/account", {

@@ -4,7 +4,7 @@ import { juggler } from "@loopback/repository";
 import { CoreBindings } from "@loopback/core";
 
 import { BearerTokenService } from "./providers";
-import { MessageHandler, RegisterHandler } from "./types";
+import { MessageHandler, ActivateHandler } from "./types";
 
 import {
     User,
@@ -73,7 +73,7 @@ export namespace PrivateACLBindings {
      *
      * 1. TokenProvider
      * 2. MessageProvider
-     * 3. RegisterProvider
+     * 3. ActivateProvider
      */
     export const TOKEN_PROVIDER = BindingKey.create<BearerTokenService>(
         "private.acl.providers.token"
@@ -81,8 +81,8 @@ export namespace PrivateACLBindings {
     export const MESSAGE_PROVIDER = BindingKey.create<MessageHandler>(
         "private.acl.providers.message"
     );
-    export const REGISTER_PROVIDER = BindingKey.create<RegisterHandler>(
-        "private.acl.providers.register"
+    export const ACTIVATE_PROVIDER = BindingKey.create<ActivateHandler>(
+        "private.acl.providers.activate"
     );
 
     /**

@@ -95,7 +95,7 @@ export class BearerTokenService implements TokenService {
         await this.sessionRepository.set(token, session);
 
         /** Set session expiration time (in millis) */
-        await this.sessionRepository.expire(token, ttl);
+        await this.sessionRepository.expire(token, this.sessionTimeout);
 
         return session;
     }
