@@ -67,20 +67,3 @@ export class ACLController {
         public rolePermissionRepository: RolePermissionRepository
     ) {}
 }
-
-/** Fix getModelSchemaRef */
-/** Fix getFilterSchemaFor */
-/** Fix getWhereSchemaFor */
-import {
-    getFilterSchemaFor as getFilterSchemaForBad,
-    Model
-} from "@loopback/rest";
-
-export function getFilterSchemaFor(modelCtor: typeof Model): SchemaObject {
-    let result: any = getFilterSchemaForBad(modelCtor);
-
-    /** Fix additionalProperties for graphql schema */
-    delete result.properties.limit.examples;
-
-    return result;
-}
