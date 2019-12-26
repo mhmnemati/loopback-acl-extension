@@ -84,6 +84,15 @@ export namespace PrivateACLBindings {
     export const REGISTER_PROVIDER = BindingKey.create<RegisterHandler>(
         "private.acl.providers.register"
     );
+
+    /**
+     * Constant key
+     *
+     * 1. SessionTimeoutConstant
+     */
+    export const SESSION_TIMEOUT_CONSTANT = BindingKey.create<number>(
+        "private.acl.constants.sessionTimeout"
+    );
 }
 
 /**

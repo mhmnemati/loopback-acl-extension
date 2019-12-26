@@ -90,6 +90,7 @@ export interface ACLMixinConfig {
     messageProvider?: Class<Provider<MessageHandler>>;
     registerProvider?: Class<Provider<RegisterHandler>>;
     administrator: User;
+    sessionTimeout: number;
 }
 
 /**

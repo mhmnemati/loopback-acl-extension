@@ -64,6 +64,12 @@ export function ACLMixin<T extends Class<any>>(superClass: T) {
         registerAuthenticationStrategy(ctx, BearerAuthenticationStrategy);
     };
 
+    const bootConstants = (ctx: Context, configs: ACLMixinConfig) => {
+        ctx.bind(PrivateACLBindings.SESSION_TIMEOUT_CONSTANT).to(
+            configs.sessionTimeout
+        );
+    };
+
     const bootDataSources = (ctx: Context) => {
         let relationalDataSource = findACL(ctx, "RelationalDataSource");
         if (relationalDataSource) {
@@ -312,7 +318,8 @@ export function ACLMixin<T extends Class<any>>(superClass: T) {
                 firstName: "System",
                 lastName: "Administrator",
                 status: "Active"
-            })
+            }),
+            sessionTimeout: 300e3
         };
 
         async boot() {
@@ -322,6 +329,7 @@ export function ACLMixin<T extends Class<any>>(superClass: T) {
 
             bootModels(this as any, this.aclConfigs);
             bootProviders(this as any, this.aclConfigs);
+            bootConstants(this as any, this.aclConfigs);
             bootDataSources(this as any);
             bootRepositories(this as any);
         }

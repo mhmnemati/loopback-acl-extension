@@ -32,6 +32,9 @@ import {
 
 export class ACLController {
     constructor(
+        @inject(PrivateACLBindings.SESSION_TIMEOUT_CONSTANT)
+        public sessionTimeout: number,
+
         @inject(RestBindings.Http.REQUEST)
         public request: Request,
         @inject(AuthenticationBindings.CURRENT_USER, { optional: true })

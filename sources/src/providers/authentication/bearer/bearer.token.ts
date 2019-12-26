@@ -7,7 +7,7 @@ import {
     GetUserPermissionsFn
 } from "loopback-authorization-extension";
 
-import { ACLBindings } from "../../../keys";
+import { PrivateACLBindings, ACLBindings } from "../../../keys";
 import { ACLPermissions } from "../../../types";
 
 import { Session, User, UserRelations } from "../../../models";
@@ -19,6 +19,8 @@ import { getClientIp } from "request-ip";
 
 export class BearerTokenService implements TokenService {
     constructor(
+        @inject(PrivateACLBindings.SESSION_TIMEOUT_CONSTANT)
+        protected sessionTimeout: number,
         @inject(ACLBindings.SESSION_REPOSITORY)
         protected sessionRepository: SessionRepository<Session>,
         @inject(ACLBindings.USER_REPOSITORY)
@@ -76,7 +78,6 @@ export class BearerTokenService implements TokenService {
         const permissions = await this.getUserPermissions(userObject.id);
 
         /** Set constants */
-        const ttl = 300e3; // 300 seconds
         const ip = getClientIp(user);
         const device = user.headers["user-agent"];
 
@@ -85,7 +86,7 @@ export class BearerTokenService implements TokenService {
             token: token,
             ip: ip,
             date: new Date(),
-            ttl: ttl,
+            ttl: this.sessionTimeout,
             device: device,
             permissions: permissions
         });
