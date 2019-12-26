@@ -1,4 +1,5 @@
 import { model, property } from "@loopback/repository";
+
 import {
     User as UserModel,
     UserRelations as UserModelRelations
@@ -15,7 +16,7 @@ export class User extends UserModel {
         required: true,
         unique: true,
         jsonSchema: {
-            pattern: `^[A-Za-z\d#$@!%&*?]{6,}$`
+            pattern: `^[A-Za-z\\d#$@!%&*?]{6,}$`
         }
     })
     username: string;
@@ -24,7 +25,7 @@ export class User extends UserModel {
         type: "string",
         required: true,
         jsonSchema: {
-            pattern: `^[A-Za-z\d#$@!%&*?]{8,}$`
+            pattern: `^[A-Za-z\\d#$@!%&*?]{8,}$`
         }
     })
     password: string;
@@ -34,7 +35,7 @@ export class User extends UserModel {
         required: true,
         unique: true,
         jsonSchema: {
-            pattern: `^(([^<>()[].,;:s@"]+(.[^<>()[].,;:s@"]+)*)|(".+"))@(([^<>()[].,;:s@"]+.)+[^<>()[].,;:s@"]{2,})$`
+            pattern: `^(([^<>()\\[\\]\\.,;:\\s@\\"]+(\\.[^<>()\\[\\]\\.,;:\\s@\\"]+)*)|(\\".+\\"))@(([^<>()[\\]\\.,;:\\s@\\"]+\\.)+[^<>()[\\]\\.,;:\\s@\\"]{2,})$`
         }
     })
     email: string;
@@ -82,7 +83,7 @@ export class User extends UserModel {
     @property({
         type: "string",
         jsonSchema: {
-            pattern: `^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-s./0-9]*$`
+            pattern: `^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\\s\\./0-9]*$`
         }
     })
     phone: string;

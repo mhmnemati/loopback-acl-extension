@@ -1,4 +1,5 @@
 import { model } from "@loopback/repository";
+
 import {
     Permission as PermissionModel,
     PermissionRelations as PermissionModelRelations
