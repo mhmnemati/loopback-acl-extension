@@ -13,6 +13,10 @@ import {
     RoleRelations,
     Permission,
     PermissionRelations,
+    UserRole,
+    UserRoleRelations,
+    RolePermission,
+    RolePermissionRelations,
     Session,
     Code
 } from "./models";
@@ -20,6 +24,8 @@ import {
     UserRepository,
     RoleRepository,
     PermissionRepository,
+    UserRoleRepository,
+    RolePermissionRepository,
     SessionRepository,
     CodeRepository
 } from "./repositories";
@@ -34,9 +40,11 @@ export namespace PrivateACLBindings {
      * 1. UserModel
      * 2. RoleModel
      * 3. PermissionModel
+     * 4. UserRoleModel
+     * 5. RolePermissionModel
      *
-     * 4. SessionModel
-     * 5. CodeModel
+     * 6. SessionModel
+     * 7. CodeModel
      */
     export const USER_MODEL = BindingKey.create<Ctor<User>>(
         "private.acl.models.user"
@@ -47,6 +55,12 @@ export namespace PrivateACLBindings {
     export const PERMISSION_MODEL = BindingKey.create<Ctor<Permission>>(
         "private.acl.models.permission"
     );
+    export const USER_ROLE_MODEL = BindingKey.create<Ctor<UserRole>>(
+        "private.acl.models.userRole"
+    );
+    export const ROLE_PERMISSION_MODEL = BindingKey.create<
+        Ctor<RolePermission>
+    >("private.acl.models.rolePermission");
 
     export const SESSION_MODEL = BindingKey.create<Ctor<Session>>(
         "private.acl.models.session"
@@ -105,9 +119,11 @@ export namespace ACLBindings {
      * 1. UserRepository
      * 2. RoleRepository
      * 3. PermissionRepository
+     * 4. UserRoleRepository
+     * 5. RolePermissionRepository
      *
-     * 4. SessionRepository
-     * 5. CodeRepository
+     * 6. SessionRepository
+     * 7. CodeRepository
      */
     export const USER_REPOSITORY = BindingKey.create<
         UserRepository<User, UserRelations>
@@ -118,6 +134,12 @@ export namespace ACLBindings {
     export const PERMISSION_REPOSITORY = BindingKey.create<
         PermissionRepository<Permission, PermissionRelations>
     >("acl.repositories.permission");
+    export const USER_ROLE_REPOSITORY = BindingKey.create<
+        UserRoleRepository<UserRole, UserRoleRelations>
+    >("acl.repositories.userRole");
+    export const ROLE_PERMISSION_REPOSITORY = BindingKey.create<
+        RolePermissionRepository<RolePermission, RolePermissionRelations>
+    >("acl.repositories.rolePermission");
 
     export const SESSION_REPOSITORY = BindingKey.create<
         SessionRepository<Session>
@@ -149,9 +171,11 @@ export namespace ACLBindings {
  * 3. UserRepository
  * 4. RoleRepository
  * 5. PermissionRepository
+ * 6. UserRoleRepository
+ * 7. RolePermissionRepository
  *
- * 6. SessionRepository
- * 7. CodeRepository
+ * 8. SessionRepository
+ * 9. CodeRepository
  */
 export type BindACLKey =
     | "RelationalDataSource"
@@ -159,6 +183,8 @@ export type BindACLKey =
     | "UserRepository"
     | "RoleRepository"
     | "PermissionRepository"
+    | "UserRoleRepository"
+    | "RolePermissionRepository"
     | "SessionRepository"
     | "CodeRepository";
 export function bindACL(key: BindACLKey) {

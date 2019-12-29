@@ -9,7 +9,12 @@ import {
 
 import { bindACL, PrivateACLBindings } from "../keys";
 
-import { Permission, PermissionRelations } from "../models";
+import {
+    Permission,
+    PermissionRelations,
+    RolePermission,
+    RolePermissionRelations
+} from "../models";
 
 @bindACL("PermissionRepository")
 export class PermissionRepository<
@@ -22,7 +27,9 @@ export class PermissionRepository<
         @inject(PrivateACLBindings.RELATIONAL_DATASOURCE)
         dataSource: juggler.DataSource,
         @inject.getter(AuthorizationBindings.ROLE_PERMISSION_REPOSITORY)
-        getRolePermissionRepository: Getter<RolePermissionRepository>
+        getRolePermissionRepository: Getter<
+            RolePermissionRepository<RolePermission, RolePermissionRelations>
+        >
     ) {
         super(ctor, dataSource, getRolePermissionRepository);
     }

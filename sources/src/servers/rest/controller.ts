@@ -3,11 +3,6 @@ import { Request, RestBindings } from "@loopback/rest";
 import { AuthenticationBindings } from "@loopback/authentication";
 import { BearerTokenService } from "../../providers";
 import { MessageHandler, ActivateHandler } from "../../types";
-import {
-    AuthorizationBindings,
-    UserRoleRepository,
-    RolePermissionRepository
-} from "loopback-authorization-extension";
 
 import { PrivateACLBindings, ACLBindings } from "../../keys";
 
@@ -15,6 +10,8 @@ import {
     UserRepository,
     RoleRepository,
     PermissionRepository,
+    UserRoleRepository,
+    RolePermissionRepository,
     SessionRepository,
     CodeRepository
 } from "../../repositories";
@@ -26,6 +23,10 @@ import {
     RoleRelations,
     Permission,
     PermissionRelations,
+    UserRole,
+    UserRoleRelations,
+    RolePermission,
+    RolePermissionRelations,
     Session,
     Code
 } from "../../models";
@@ -61,9 +62,15 @@ export class ACLController {
         @inject(ACLBindings.CODE_REPOSITORY)
         public codeRepository: CodeRepository<Code>,
 
-        @inject(AuthorizationBindings.USER_ROLE_REPOSITORY)
-        public userRoleRepository: UserRoleRepository,
-        @inject(AuthorizationBindings.ROLE_PERMISSION_REPOSITORY)
-        public rolePermissionRepository: RolePermissionRepository
+        @inject(ACLBindings.USER_ROLE_REPOSITORY)
+        public userRoleRepository: UserRoleRepository<
+            UserRole,
+            UserRoleRelations
+        >,
+        @inject(ACLBindings.ROLE_PERMISSION_REPOSITORY)
+        public rolePermissionRepository: RolePermissionRepository<
+            RolePermission,
+            RolePermissionRelations
+        >
     ) {}
 }

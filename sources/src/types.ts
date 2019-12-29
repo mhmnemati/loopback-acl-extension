@@ -16,7 +16,15 @@ import { BearerTokenService } from "./providers";
 
 import { ACLController } from "./servers";
 
-import { User, Role, Permission, Session, Code } from "./models";
+import {
+    User,
+    Role,
+    Permission,
+    UserRole,
+    RolePermission,
+    Session,
+    Code
+} from "./models";
 
 /**
  * Default Permissions
@@ -83,6 +91,8 @@ export interface ACLMixinConfig {
     permissions?: Class<ACLPermissions>;
     userModel?: Ctor<User>;
     roleModel?: Ctor<Role>;
+    userRoleModel?: Ctor<UserRole>;
+    rolePermissionModel?: Ctor<RolePermission>;
     permissionModel?: Ctor<Permission>;
     sessionModel?: Ctor<Session>;
     codeModel?: Ctor<Code>;
