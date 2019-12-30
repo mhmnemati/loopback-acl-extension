@@ -5,12 +5,13 @@ import {
     ValueOrPromise
 } from "@loopback/context";
 
-import { FilterMethod } from "../types";
+import { RepositoryGetter } from "../types";
+import { ACLController } from "../servers";
 
-export function filter(
+export function filter<Controller extends ACLController>(
+    repositoryGetter: RepositoryGetter<Controller, any>,
     inputArg: number,
     inputFilter: "where" | "filter" | string,
-    filterMethod: FilterMethod<any>,
     outputArg: number,
     outputFilter: "where" | "filter",
     andId?: {
@@ -22,6 +23,9 @@ export function filter(
         invocationCtx: InvocationContext,
         next: () => ValueOrPromise<InvocationResult>
     ) => {
+        /** Get repository */
+        const repository = repositoryGetter(invocationCtx.target as any);
+
         /** Read input argument */
         let filter = invocationCtx.args[inputArg] || {};
 
@@ -44,7 +48,8 @@ export function filter(
         }
 
         /** Apply filter */
-        filter = filterMethod(invocationCtx, filter);
+        // filter = filterMethod(invocationCtx, filter);
+        // TODO: filter, inclusion
 
         /** Apply optional id and */
         if (andId) {

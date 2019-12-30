@@ -73,11 +73,18 @@ export function GenerateUsersSelfController<UserModel extends User>(
         }
 
         @intercept(
-            filter(0, "filter", (context, filter) => filter, 0, "filter", {
-                arg: context =>
-                    (context.target as ACLController).session.userId,
-                property: "id"
-            })
+            filter(
+                controller => controller.userRepository,
+                0,
+                "filter",
+                0,
+                "filter",
+                {
+                    arg: context =>
+                        (context.target as ACLController).session.userId,
+                    property: "id"
+                }
+            )
         )
         @authorize<ACLPermissions>("USERS_HISTORY_SELF")
         @authenticate("bearer")

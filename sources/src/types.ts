@@ -7,6 +7,7 @@ import {
 import { PermissionsList } from "loopback-authorization-extension";
 import { InvocationContext, Provider } from "@loopback/context";
 import { Ctor } from "loopback-history-extension";
+import { Condition } from "loopback-authorization-extension";
 
 import { ApplicationConfig } from "@loopback/core";
 import { RestServerConfig } from "@loopback/rest";
@@ -30,7 +31,7 @@ import {
  * Default Permissions
  */
 export class ACLPermissions extends PermissionsList {
-    /** Users */
+    /** User */
     USERS_READ = "Read users";
     USERS_WRITE = "Write users";
     USERS_HISTORY = "Read users history";
@@ -40,22 +41,24 @@ export class ACLPermissions extends PermissionsList {
     USERS_WRITE_SELF = "Write self user";
     USERS_HISTORY_SELF = "Read self user history";
 
-    /** Roles */
+    /** Role */
     ROLES_READ = "Read roles";
     ROLES_WRITE = "Write roles";
     ROLES_HISTORY = "Read roles history";
 
-    /** Roles - Users */
-    ROLES_ADD_USER = "Add any user to any role";
-    ROLES_REMOVE_USER = "Add any user to any role";
-
-    /** Roles - Permissions */
-    ROLES_ADD_PERMISSION = "Add any permission to any role";
-    ROLES_REMOVE_PERMISSION = "Add any permission to any role";
-
     /** Permissions */
     PERMISSIONS_READ = "Read permissions";
     PERMISSIONS_WRITE = "Write permissions";
+
+    /** UserRoles */
+    USER_ROLES_READ = "Read userRoles";
+    USER_ROLES_WRITE = "Write userRoles";
+    USER_ROLES_HISTORY = "Read userRoles history";
+
+    /** RolePermissions */
+    ROLE_PERMISSIONS_READ = "Read rolePermissions";
+    ROLE_PERMISSIONS_WRITE = "Write rolePermissions";
+    ROLE_PERMISSIONS_HISTORY = "Read rolePermissions history";
 }
 
 /** Get Repository From Controller */
@@ -69,6 +72,31 @@ export type FilterMethod<Model extends Entity> = (
     context: InvocationContext,
     filter: Filter<Model>
 ) => Filter<Model>;
+
+/**
+ * Model Access Type
+ */
+export interface ModelAccess<Model extends Entity> {
+    create: {
+        permission: Condition<ACLPermissions>;
+    };
+    read: {
+        permission: Condition<ACLPermissions>;
+        filter: FilterMethod<Model>;
+    };
+    update: {
+        permission: Condition<ACLPermissions>;
+        filter: FilterMethod<Model>;
+    };
+    delete: {
+        permission: Condition<ACLPermissions>;
+        filter: FilterMethod<Model>;
+    };
+    history: {
+        permission: Condition<ACLPermissions>;
+        filter: FilterMethod<Model>;
+    };
+}
 
 /**
  * MessageProvider configs

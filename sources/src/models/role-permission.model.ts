@@ -5,7 +5,35 @@ import {
     RolePermissionRelations as RolePermissionModelRelations
 } from "loopback-authorization-extension";
 
-@model({ settings: {} })
+import { ModelAccess } from "../types";
+
+const access: ModelAccess<RolePermission> = {
+    create: {
+        permission: "ROLE_PERMISSIONS_WRITE"
+    },
+    read: {
+        permission: "ROLE_PERMISSIONS_READ",
+        filter: (context, filter) => filter
+    },
+    update: {
+        permission: "ROLE_PERMISSIONS_WRITE",
+        filter: (context, filter) => filter
+    },
+    delete: {
+        permission: "ROLE_PERMISSIONS_WRITE",
+        filter: (context, filter) => filter
+    },
+    history: {
+        permission: "ROLE_PERMISSIONS_HISTORY",
+        filter: (context, filter) => filter
+    }
+};
+
+@model({
+    settings: {
+        access: access
+    }
+})
 export class RolePermission extends RolePermissionModel {
     constructor(data?: Partial<RolePermission>) {
         super(data);

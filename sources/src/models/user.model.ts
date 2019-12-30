@@ -5,8 +5,33 @@ import {
     UserRelations as UserModelRelations
 } from "loopback-authorization-extension";
 
+import { ModelAccess } from "../types";
+
+const access: ModelAccess<User> = {
+    create: {
+        permission: "USERS_WRITE"
+    },
+    read: {
+        permission: "USERS_READ",
+        filter: (context, filter) => filter
+    },
+    update: {
+        permission: "USERS_WRITE",
+        filter: (context, filter) => filter
+    },
+    delete: {
+        permission: "USERS_WRITE",
+        filter: (context, filter) => filter
+    },
+    history: {
+        permission: "USERS_HISTORY",
+        filter: (context, filter) => filter
+    }
+};
+
 @model({
     settings: {
+        access: access,
         hiddenProperties: ["password"]
     }
 })

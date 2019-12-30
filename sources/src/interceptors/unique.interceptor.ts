@@ -20,7 +20,7 @@ export function unique<Controller extends ACLController, Model extends Entity>(
         next: () => ValueOrPromise<InvocationResult>
     ) => {
         /** Get repository */
-        const repository = await repositoryGetter(invocationCtx.target as any);
+        const repository = repositoryGetter(invocationCtx.target as any);
 
         /** Get model from arguments by arg index number */
         const model = invocationCtx.args[argIndex];

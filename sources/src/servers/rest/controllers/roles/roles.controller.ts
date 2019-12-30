@@ -12,28 +12,7 @@ export function GenerateRolesController<Model extends Role>(
         ctor,
         "id",
         "/roles",
-        controller => controller.roleRepository,
-        {
-            create: {
-                permission: "ROLES_WRITE"
-            },
-            read: {
-                permission: "ROLES_READ",
-                filter: (context, filter) => filter
-            },
-            update: {
-                permission: "ROLES_WRITE",
-                filter: (context, filter) => filter
-            },
-            delete: {
-                permission: "ROLES_WRITE",
-                filter: (context, filter) => filter
-            },
-            history: {
-                permission: "ROLES_HISTORY",
-                filter: (context, filter) => filter
-            }
-        }
+        controller => controller.roleRepository
     ) {}
 
     return RolesController;

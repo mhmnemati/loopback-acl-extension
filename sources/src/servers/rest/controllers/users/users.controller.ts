@@ -12,28 +12,7 @@ export function GenerateUsersController<Model extends User>(
         ctor,
         "id",
         "/users",
-        controller => controller.userRepository,
-        {
-            create: {
-                permission: "USERS_WRITE"
-            },
-            read: {
-                permission: "USERS_READ",
-                filter: (context, filter) => filter
-            },
-            update: {
-                permission: "USERS_WRITE",
-                filter: (context, filter) => filter
-            },
-            delete: {
-                permission: "USERS_WRITE",
-                filter: (context, filter) => filter
-            },
-            history: {
-                permission: "USERS_HISTORY",
-                filter: (context, filter) => filter
-            }
-        }
+        controller => controller.userRepository
     ) {}
 
     return UsersController;
