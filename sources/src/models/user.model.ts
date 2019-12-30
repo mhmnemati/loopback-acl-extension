@@ -1,39 +1,24 @@
-import { model, property, hasMany } from "@loopback/repository";
+import { model, property } from "@loopback/repository";
 
 import {
     User as UserModel,
     UserRelations as UserModelRelations
 } from "loopback-authorization-extension";
 
-import { ModelAccess } from "../types";
+import { relation, access } from "../decorators";
+import { ACLPermissions } from "../types";
+import { UserRole } from "./";
 
-import { UserRole, UserRoleWithRelations } from "./";
-
-const access: ModelAccess<User> = {
-    create: {
-        permission: "USERS_WRITE"
-    },
-    read: {
-        permission: "USERS_READ",
-        filter: (context, filter) => filter
-    },
-    update: {
-        permission: "USERS_WRITE",
-        filter: (context, filter) => filter
-    },
-    delete: {
-        permission: "USERS_WRITE",
-        filter: (context, filter) => filter
-    },
-    history: {
-        permission: "USERS_HISTORY",
-        filter: (context, filter) => filter
-    }
-};
-
+@access<UserWithRelations, ACLPermissions>({
+    create: "USERS_WRITE",
+    read: ["USERS_READ", (context, filter) => filter],
+    update: ["USERS_WRITE", (context, filter) => filter],
+    delete: ["USERS_WRITE", (context, filter) => filter],
+    history: ["USERS_HISTORY", (context, filter) => filter]
+})
+@relation<UserWithRelations, UserRole>("userRoles", () => UserRole)
 @model({
     settings: {
-        access: access,
         hiddenProperties: ["password"]
     }
 })
@@ -153,15 +138,6 @@ export class User extends UserModel {
         }
     })
     status: "Register" | "Active" | "Disable";
-
-    /**
-     * Begin relation overrides using models with access
-     */
-    @hasMany(() => UserRole, { keyFrom: "id", keyTo: "userId" } as any)
-    userRoles: UserRoleWithRelations[];
-    /**
-     * End relation overrides using models with access
-     */
 
     constructor(data?: Partial<User>) {
         super(data);

@@ -22,10 +22,12 @@ import {
 import { Ctor } from "loopback-history-extension";
 
 import { authenticate } from "@loopback/authentication";
-import { authorize, Condition } from "loopback-authorization-extension";
+import { authorize } from "loopback-authorization-extension";
 import { intercept } from "@loopback/core";
 import { exist, filter, unique } from "../../interceptors";
-import { ACLPermissions, RepositoryGetter } from "../../types";
+import { RepositoryGetter } from "../../types";
+
+import { getAccessPermission } from "../../decorators";
 
 export function ACLCRUDControllerMixin<
     Controller extends ACLController,
@@ -37,11 +39,9 @@ export function ACLCRUDControllerMixin<
     basePath: string,
     repositoryGetter: RepositoryGetter<Controller, Model>
 ): Class<Controller> {
-    const accessControl = ctor.definition.settings.access;
-
     class CRUDController extends controllerClass {
-        @intercept(unique<Controller, Model>(repositoryGetter, ctor, 0))
-        @authorize<ACLPermissions>(accessControl.create.permission)
+        @intercept(unique(ctor, 0, repositoryGetter))
+        @authorize(getAccessPermission(ctor, "create"))
         @authenticate("bearer")
         @post(`${basePath}`, {
             responses: {
@@ -78,7 +78,7 @@ export function ACLCRUDControllerMixin<
         }
 
         @intercept(filter(ctor, "read", 0, "where", 0, "where"))
-        @authorize<ACLPermissions>(accessControl.read.permission)
+        @authorize(getAccessPermission(ctor, "read"))
         @authenticate("bearer")
         @get(`${basePath}/count`, {
             responses: {
@@ -102,7 +102,7 @@ export function ACLCRUDControllerMixin<
         }
 
         @intercept(filter(ctor, "read", 0, "filter", 0, "filter"))
-        @authorize<ACLPermissions>(accessControl.read.permission)
+        @authorize(getAccessPermission(ctor, "read"))
         @authenticate("bearer")
         @get(`${basePath}`, {
             responses: {
@@ -131,8 +131,8 @@ export function ACLCRUDControllerMixin<
         }
 
         @intercept(filter(ctor, "update", 1, "where", 1, "where"))
-        @intercept(unique<Controller, Model>(repositoryGetter, ctor, 0))
-        @authorize<ACLPermissions>(accessControl.update.permission)
+        @intercept(unique(ctor, 0, repositoryGetter))
+        @authorize(getAccessPermission(ctor, "update"))
         @authenticate("bearer")
         @patch(`${basePath}`, {
             responses: {
@@ -160,7 +160,7 @@ export function ACLCRUDControllerMixin<
         }
 
         @intercept(filter(ctor, "delete", 0, "where", 0, "where"))
-        @authorize<ACLPermissions>(accessControl.delete.permission)
+        @authorize(getAccessPermission(ctor, "delete"))
         @authenticate("bearer")
         @del(`${basePath}`, {
             responses: {
@@ -181,7 +181,7 @@ export function ACLCRUDControllerMixin<
 
         @intercept(filter(ctor, "read", 0, ctorId as string, 1, "filter"))
         @intercept(exist(repositoryGetter))
-        @authorize<ACLPermissions>(accessControl.read.permission)
+        @authorize(getAccessPermission(ctor, "read"))
         @authenticate("bearer")
         @get(`${basePath}/{id}`, {
             responses: {
@@ -202,9 +202,9 @@ export function ACLCRUDControllerMixin<
         }
 
         @intercept(filter(ctor, "update", 0, ctorId as string, 2, "where"))
-        @intercept(unique<Controller, Model>(repositoryGetter, ctor, 1))
+        @intercept(unique(ctor, 1, repositoryGetter))
         @intercept(exist(repositoryGetter))
-        @authorize<ACLPermissions>(accessControl.update.permission)
+        @authorize(getAccessPermission(ctor, "update"))
         @authenticate("bearer")
         @put(`${basePath}/{id}`, {
             responses: {
@@ -229,7 +229,7 @@ export function ACLCRUDControllerMixin<
 
         @intercept(filter(ctor, "delete", 0, ctorId as string, 1, "where"))
         @intercept(exist(repositoryGetter))
-        @authorize<ACLPermissions>(accessControl.delete.permission)
+        @authorize(getAccessPermission(ctor, "delete"))
         @authenticate("bearer")
         @del(`${basePath}/{id}`, {
             responses: {
@@ -249,7 +249,7 @@ export function ACLCRUDControllerMixin<
             })
         )
         @intercept(exist(repositoryGetter))
-        @authorize<ACLPermissions>(accessControl.history.permission)
+        @authorize(getAccessPermission(ctor, "history"))
         @authenticate("bearer")
         @get(`${basePath}/{id}/history`, {
             responses: {

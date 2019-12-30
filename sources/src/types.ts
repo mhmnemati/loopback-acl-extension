@@ -7,7 +7,6 @@ import {
 import { PermissionsList } from "loopback-authorization-extension";
 import { InvocationContext, Provider } from "@loopback/context";
 import { Ctor } from "loopback-history-extension";
-import { Condition } from "loopback-authorization-extension";
 
 import { ApplicationConfig } from "@loopback/core";
 import { RestServerConfig } from "@loopback/rest";
@@ -72,31 +71,6 @@ export type FilterMethod<Model extends Entity> = (
     context: InvocationContext,
     filter: Filter<Model>
 ) => Filter<Model>;
-
-/**
- * Model Access Type
- */
-export interface ModelAccess<Model extends Entity> {
-    create: {
-        permission: Condition<ACLPermissions>;
-    };
-    read: {
-        permission: Condition<ACLPermissions>;
-        filter: FilterMethod<Model>;
-    };
-    update: {
-        permission: Condition<ACLPermissions>;
-        filter: FilterMethod<Model>;
-    };
-    delete: {
-        permission: Condition<ACLPermissions>;
-        filter: FilterMethod<Model>;
-    };
-    history: {
-        permission: Condition<ACLPermissions>;
-        filter: FilterMethod<Model>;
-    };
-}
 
 /**
  * MessageProvider configs

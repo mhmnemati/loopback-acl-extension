@@ -7,11 +7,11 @@ import {
 import { Entity } from "@loopback/repository";
 import { Ctor } from "loopback-history-extension";
 
-import { FilterMethod } from "../types";
+import { getAccessFilter } from "../decorators";
 
 export function filter<Model extends Entity>(
     ctor: Ctor<Model>,
-    accessKey: "read" | "update" | "delete" | "history",
+    access: "read" | "update" | "delete" | "history",
     inputArg: number,
     inputFilter: "where" | "filter" | string,
     outputArg: number,
@@ -47,12 +47,8 @@ export function filter<Model extends Entity>(
         }
 
         /** Apply filter */
-        if (ctor.definition.settings && ctor.definition.settings.access) {
-            const filterMethod: FilterMethod<Model> =
-                ctor.definition.settings.access[accessKey].filter;
-            // TODO: filter, inclusion
-            filter = filterMethod(invocationCtx, filter);
-        }
+        const filterMethod = getAccessFilter<Model>(ctor, access);
+        // TODO
 
         /** Apply optional id and */
         if (andId) {

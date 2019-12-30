@@ -1,54 +1,31 @@
-import { model, hasMany } from "@loopback/repository";
+import { model } from "@loopback/repository";
 
 import {
     Permission as PermissionModel,
     PermissionRelations as PermissionModelRelations
 } from "loopback-authorization-extension";
 
-import { ModelAccess } from "../types";
+import { relation, access } from "../decorators";
+import { ACLPermissions } from "../types";
+import { RolePermission } from "./";
 
-import { RolePermission, RolePermissionWithRelations } from "./";
-
-const access: ModelAccess<Permission> = {
-    create: {
-        permission: "PERMISSIONS_WRITE"
-    },
-    read: {
-        permission: "PERMISSIONS_READ",
-        filter: (context, filter) => filter
-    },
-    update: {
-        permission: "PERMISSIONS_WRITE",
-        filter: (context, filter) => filter
-    },
-    delete: {
-        permission: "PERMISSIONS_WRITE",
-        filter: (context, filter) => filter
-    },
-    history: {
-        permission: "PERMISSIONS_READ",
-        filter: (context, filter) => filter
-    }
-};
-
+@access<PermissionWithRelations, ACLPermissions>({
+    create: "PERMISSIONS_WRITE",
+    read: ["PERMISSIONS_READ", (context, filter) => filter],
+    update: ["PERMISSIONS_WRITE", (context, filter) => filter],
+    delete: ["PERMISSIONS_WRITE", (context, filter) => filter],
+    history: ["PERMISSIONS_READ", (context, filter) => filter]
+})
+@relation<PermissionWithRelations, RolePermission>(
+    "rolePermissions",
+    () => RolePermission
+)
 @model({
     settings: {
         access: access
     }
 })
 export class Permission extends PermissionModel {
-    /**
-     * Begin relation overrides using models with access
-     */
-    @hasMany(() => RolePermission, {
-        keyFrom: "id",
-        keyTo: "permissionId"
-    } as any)
-    rolePermissions: RolePermissionWithRelations[];
-    /**
-     * End relation overrides using models with access
-     */
-
     constructor(data?: Partial<Permission>) {
         super(data);
     }

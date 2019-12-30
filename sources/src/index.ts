@@ -1,6 +1,8 @@
 export * from "./keys";
 export * from "./types";
 
+export * from "./decorators";
+export * from "./interceptors";
 export * from "./models";
 export * from "./repositories";
 export * from "./providers";
