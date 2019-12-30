@@ -25,7 +25,7 @@ import { authenticate } from "@loopback/authentication";
 import { authorize, Condition } from "loopback-authorization-extension";
 import { intercept } from "@loopback/core";
 import { exist, filter, unique } from "../../interceptors";
-import { ACLPermissions, RepositoryGetter, FilterMethod } from "../../types";
+import { ACLPermissions, RepositoryGetter } from "../../types";
 
 export function ACLCRUDControllerMixin<
     Controller extends ACLController,
@@ -35,29 +35,10 @@ export function ACLCRUDControllerMixin<
     ctor: Ctor<Model>,
     ctorId: keyof Model,
     basePath: string,
-    repositoryGetter: RepositoryGetter<Controller, Model>,
-    accessControl: {
-        create: {
-            permission: Condition<ACLPermissions>;
-        };
-        read: {
-            permission: Condition<ACLPermissions>;
-            filter: FilterMethod<Model>;
-        };
-        update: {
-            permission: Condition<ACLPermissions>;
-            filter: FilterMethod<Model>;
-        };
-        delete: {
-            permission: Condition<ACLPermissions>;
-            filter: FilterMethod<Model>;
-        };
-        history: {
-            permission: Condition<ACLPermissions>;
-            filter: FilterMethod<Model>;
-        };
-    }
+    repositoryGetter: RepositoryGetter<Controller, Model>
 ): Class<Controller> {
+    const accessControl = ctor.definition.settings.access;
+
     class CRUDController extends controllerClass {
         @intercept(unique<Controller, Model>(repositoryGetter, ctor, 0))
         @authorize<ACLPermissions>(accessControl.create.permission)
@@ -96,7 +77,7 @@ export function ACLCRUDControllerMixin<
             return await repositoryGetter(this as any).create(model);
         }
 
-        @intercept(filter(0, "where", accessControl.read.filter, 0, "where"))
+        @intercept(filter(repositoryGetter, 0, "where", 0, "where"))
         @authorize<ACLPermissions>(accessControl.read.permission)
         @authenticate("bearer")
         @get(`${basePath}/count`, {
@@ -120,7 +101,7 @@ export function ACLCRUDControllerMixin<
             return await repositoryGetter(this as any).count(where);
         }
 
-        @intercept(filter(0, "filter", accessControl.read.filter, 0, "filter"))
+        @intercept(filter(repositoryGetter, 0, "filter", 0, "filter"))
         @authorize<ACLPermissions>(accessControl.read.permission)
         @authenticate("bearer")
         @get(`${basePath}`, {
@@ -149,7 +130,7 @@ export function ACLCRUDControllerMixin<
             return await repositoryGetter(this as any).find(filter);
         }
 
-        @intercept(filter(1, "where", accessControl.update.filter, 1, "where"))
+        @intercept(filter(repositoryGetter, 1, "where", 1, "where"))
         @intercept(unique<Controller, Model>(repositoryGetter, ctor, 0))
         @authorize<ACLPermissions>(accessControl.update.permission)
         @authenticate("bearer")
@@ -178,7 +159,7 @@ export function ACLCRUDControllerMixin<
             return await repositoryGetter(this as any).updateAll(model, where);
         }
 
-        @intercept(filter(0, "where", accessControl.delete.filter, 0, "where"))
+        @intercept(filter(repositoryGetter, 0, "where", 0, "where"))
         @authorize<ACLPermissions>(accessControl.delete.permission)
         @authenticate("bearer")
         @del(`${basePath}`, {
@@ -198,9 +179,7 @@ export function ACLCRUDControllerMixin<
             return await repositoryGetter(this as any).deleteAll(where);
         }
 
-        @intercept(
-            filter(0, ctorId as string, accessControl.read.filter, 1, "filter")
-        )
+        @intercept(filter(repositoryGetter, 0, ctorId as string, 1, "filter"))
         @intercept(exist(repositoryGetter))
         @authorize<ACLPermissions>(accessControl.read.permission)
         @authenticate("bearer")
@@ -222,9 +201,7 @@ export function ACLCRUDControllerMixin<
             return await repositoryGetter(this as any).findOne(arguments[1]);
         }
 
-        @intercept(
-            filter(0, ctorId as string, accessControl.update.filter, 2, "where")
-        )
+        @intercept(filter(repositoryGetter, 0, ctorId as string, 2, "where"))
         @intercept(unique<Controller, Model>(repositoryGetter, ctor, 1))
         @intercept(exist(repositoryGetter))
         @authorize<ACLPermissions>(accessControl.update.permission)
@@ -250,9 +227,7 @@ export function ACLCRUDControllerMixin<
             await repositoryGetter(this as any).updateAll(model, arguments[2]);
         }
 
-        @intercept(
-            filter(0, ctorId as string, accessControl.delete.filter, 1, "where")
-        )
+        @intercept(filter(repositoryGetter, 0, ctorId as string, 1, "where"))
         @intercept(exist(repositoryGetter))
         @authorize<ACLPermissions>(accessControl.delete.permission)
         @authenticate("bearer")
@@ -268,7 +243,7 @@ export function ACLCRUDControllerMixin<
         }
 
         @intercept(
-            filter(1, "filter", accessControl.history.filter, 1, "filter", {
+            filter(repositoryGetter, 1, "filter", 1, "filter", {
                 arg: 0,
                 property: ctorId as string
             })

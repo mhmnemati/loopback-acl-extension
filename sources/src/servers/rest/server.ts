@@ -26,8 +26,6 @@ import {
     GenerateUsersAccountController,
     GenerateUsersPasswordController,
     GenerateRolesController,
-    GenerateRolesUsersController,
-    GenerateRolesPermissionsController,
     GeneratePermissionsController
 } from "../../servers/rest/controllers";
 
@@ -88,10 +86,10 @@ export class ACLRestServer extends RestServer {
 
         /** Bind roles controllers */
         app.controller(GenerateRolesController<Role>(roleCtor));
-        app.controller(GenerateRolesUsersController<User>(userCtor));
-        app.controller(
-            GenerateRolesPermissionsController<Permission>(permissionCtor)
-        );
+        // app.controller(GenerateRolesUsersController<User>(userCtor));
+        // app.controller(
+        //     GenerateRolesPermissionsController<Permission>(permissionCtor)
+        // );
 
         /** Bind permissions controllers */
         app.controller(

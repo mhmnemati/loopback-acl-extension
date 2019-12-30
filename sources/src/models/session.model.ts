@@ -2,7 +2,9 @@ import { model, property, belongsTo, Entity } from "@loopback/repository";
 
 import { User, UserWithRelations } from "../models";
 
-@model({ settings: {} })
+@model({
+    settings: {}
+})
 export class Session extends Entity {
     @property({
         type: "string",
