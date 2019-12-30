@@ -4,12 +4,14 @@ import {
     InvocationResult,
     ValueOrPromise
 } from "@loopback/context";
+import { Entity } from "@loopback/repository";
+import { Ctor } from "loopback-history-extension";
 
-import { RepositoryGetter } from "../types";
-import { ACLController } from "../servers";
+import { FilterMethod } from "../types";
 
-export function filter<Controller extends ACLController>(
-    repositoryGetter: RepositoryGetter<Controller, any>,
+export function filter<Model extends Entity>(
+    ctor: Ctor<Model>,
+    accessKey: "read" | "update" | "delete" | "history",
     inputArg: number,
     inputFilter: "where" | "filter" | string,
     outputArg: number,
@@ -23,9 +25,6 @@ export function filter<Controller extends ACLController>(
         invocationCtx: InvocationContext,
         next: () => ValueOrPromise<InvocationResult>
     ) => {
-        /** Get repository */
-        const repository = repositoryGetter(invocationCtx.target as any);
-
         /** Read input argument */
         let filter = invocationCtx.args[inputArg] || {};
 
@@ -48,8 +47,12 @@ export function filter<Controller extends ACLController>(
         }
 
         /** Apply filter */
-        // filter = filterMethod(invocationCtx, filter);
-        // TODO: filter, inclusion
+        if (ctor.definition.settings && ctor.definition.settings.access) {
+            const filterMethod: FilterMethod<Model> =
+                ctor.definition.settings.access[accessKey].filter;
+            // TODO: filter, inclusion
+            filter = filterMethod(invocationCtx, filter);
+        }
 
         /** Apply optional id and */
         if (andId) {
