@@ -1,4 +1,5 @@
-import { Entity, model, property, belongsTo } from "@loopback/repository";
+import { model, property, belongsTo, Entity } from "@loopback/repository";
+
 import { User, UserWithRelations } from "../models";
 
 @model({ settings: {} })
@@ -35,7 +36,7 @@ export class Session extends Entity {
     @property.array(String)
     permissions: string[];
 
-    @belongsTo(() => User)
+    @belongsTo(() => User, { keyFrom: "userId", keyTo: "id" })
     userId: string;
 
     constructor(data?: Partial<Session>) {

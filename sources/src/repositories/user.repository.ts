@@ -1,15 +1,13 @@
 import { inject, Getter } from "@loopback/context";
 import { juggler } from "@loopback/repository";
 import { Ctor } from "loopback-history-extension";
-import {
-    UserRepository as UserModelRepository,
-    AuthorizationBindings,
-    UserRoleRepository
-} from "loopback-authorization-extension";
+import { UserRepository as UserModelRepository } from "loopback-authorization-extension";
 
-import { bindACL, PrivateACLBindings } from "../keys";
+import { bindACL, ACLBindings, PrivateACLBindings } from "../keys";
 
-import { User, UserRelations } from "../models";
+import { User, UserRelations, UserRole, UserRoleRelations } from "../models";
+
+import { UserRoleRepository } from "./";
 
 @bindACL("UserRepository")
 export class UserRepository<
@@ -21,8 +19,10 @@ export class UserRepository<
         ctor: Ctor<Model>,
         @inject(PrivateACLBindings.RELATIONAL_DATASOURCE)
         dataSource: juggler.DataSource,
-        @inject.getter(AuthorizationBindings.USER_ROLE_REPOSITORY)
-        getUserRoleRepository: Getter<UserRoleRepository>
+        @inject.getter(ACLBindings.USER_ROLE_REPOSITORY)
+        getUserRoleRepository: Getter<
+            UserRoleRepository<UserRole, UserRoleRelations>
+        >
     ) {
         super(ctor, dataSource, getUserRoleRepository);
     }

@@ -5,11 +5,12 @@ import {
     DefaultKeyValueRepository
 } from "@loopback/repository";
 import { Ctor } from "loopback-history-extension";
-import { UserRepository } from "loopback-authorization-extension";
 
-import { bindACL, PrivateACLBindings, ACLBindings } from "../keys";
+import { bindACL, ACLBindings, PrivateACLBindings } from "../keys";
 
 import { Code, User, UserRelations } from "../models";
+
+import { UserRepository } from "./";
 
 @bindACL("CodeRepository")
 export class CodeRepository<

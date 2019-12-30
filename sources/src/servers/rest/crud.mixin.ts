@@ -20,7 +20,6 @@ import {
     getFilterSchemaFor
 } from "@loopback/rest";
 import { Ctor } from "loopback-history-extension";
-// import { getFilterSchemaFor } from "~/servers";
 
 import { authenticate } from "@loopback/authentication";
 import { authorize, Condition } from "loopback-authorization-extension";

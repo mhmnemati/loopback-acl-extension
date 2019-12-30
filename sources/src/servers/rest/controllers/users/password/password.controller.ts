@@ -153,8 +153,7 @@ export function GenerateUsersPasswordController<
             );
 
             /** Set activation code object expiration time (in millis) */
-            const ttl = 300e3; // 300 seconds - 5 minutes
-            await this.codeRepository.expire(code, ttl);
+            await this.codeRepository.expire(code, this.sessionTimeout);
 
             /** Send activation email */
             await this.messageHandler(userId, code, "Password");

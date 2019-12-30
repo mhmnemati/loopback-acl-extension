@@ -1,13 +1,8 @@
 import { inject } from "@loopback/context";
-import { Request, RestBindings, SchemaObject } from "@loopback/rest";
+import { Request, RestBindings } from "@loopback/rest";
 import { AuthenticationBindings } from "@loopback/authentication";
 import { BearerTokenService } from "../../providers";
-import { MessageHandler, RegisterHandler } from "../../types";
-import {
-    AuthorizationBindings,
-    UserRoleRepository,
-    RolePermissionRepository
-} from "loopback-authorization-extension";
+import { MessageHandler, ActivateHandler } from "../../types";
 
 import { PrivateACLBindings, ACLBindings } from "../../keys";
 
@@ -15,6 +10,8 @@ import {
     UserRepository,
     RoleRepository,
     PermissionRepository,
+    UserRoleRepository,
+    RolePermissionRepository,
     SessionRepository,
     CodeRepository
 } from "../../repositories";
@@ -26,12 +23,19 @@ import {
     RoleRelations,
     Permission,
     PermissionRelations,
+    UserRole,
+    UserRoleRelations,
+    RolePermission,
+    RolePermissionRelations,
     Session,
     Code
 } from "../../models";
 
 export class ACLController {
     constructor(
+        @inject(PrivateACLBindings.SESSION_TIMEOUT_CONSTANT)
+        public sessionTimeout: number,
+
         @inject(RestBindings.Http.REQUEST)
         public request: Request,
         @inject(AuthenticationBindings.CURRENT_USER, { optional: true })
@@ -41,8 +45,8 @@ export class ACLController {
         public tokenService: BearerTokenService,
         @inject(PrivateACLBindings.MESSAGE_PROVIDER)
         public messageHandler: MessageHandler,
-        @inject(PrivateACLBindings.REGISTER_PROVIDER)
-        public registerHandler: RegisterHandler,
+        @inject(PrivateACLBindings.ACTIVATE_PROVIDER)
+        public activateHandler: ActivateHandler,
 
         @inject(ACLBindings.USER_REPOSITORY)
         public userRepository: UserRepository<User, UserRelations>,
@@ -58,26 +62,15 @@ export class ACLController {
         @inject(ACLBindings.CODE_REPOSITORY)
         public codeRepository: CodeRepository<Code>,
 
-        @inject(AuthorizationBindings.USER_ROLE_REPOSITORY)
-        public userRoleRepository: UserRoleRepository,
-        @inject(AuthorizationBindings.ROLE_PERMISSION_REPOSITORY)
-        public rolePermissionRepository: RolePermissionRepository
+        @inject(ACLBindings.USER_ROLE_REPOSITORY)
+        public userRoleRepository: UserRoleRepository<
+            UserRole,
+            UserRoleRelations
+        >,
+        @inject(ACLBindings.ROLE_PERMISSION_REPOSITORY)
+        public rolePermissionRepository: RolePermissionRepository<
+            RolePermission,
+            RolePermissionRelations
+        >
     ) {}
-}
-
-/** Fix getModelSchemaRef */
-/** Fix getFilterSchemaFor */
-/** Fix getWhereSchemaFor */
-import {
-    getFilterSchemaFor as getFilterSchemaForBad,
-    Model
-} from "@loopback/rest";
-
-export function getFilterSchemaFor(modelCtor: typeof Model): SchemaObject {
-    let result: any = getFilterSchemaForBad(modelCtor);
-
-    /** Fix additionalProperties for graphql schema */
-    delete result.properties.limit.examples;
-
-    return result;
 }
