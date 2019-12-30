@@ -4,13 +4,7 @@ import { CoreBindings } from "@loopback/core";
 
 import { registerAuthenticationStrategy } from "@loopback/authentication";
 
-import {
-    AuthorizationBindings,
-    UserRole,
-    RolePermission
-} from "loopback-authorization-extension";
-
-import { PrivateACLBindings, ACLBindings, findACL } from "../keys";
+import { findACL, ACLBindings, PrivateACLBindings } from "../keys";
 import { ACLMixinConfig } from "../types";
 
 import {
@@ -19,11 +13,21 @@ import {
     MessageProvider,
     ActivateProvider
 } from "../providers";
-import { User, Role, Permission, Session, Code } from "../models";
+import {
+    User,
+    Role,
+    Permission,
+    UserRole,
+    RolePermission,
+    Session,
+    Code
+} from "../models";
 import {
     UserRepository,
     RoleRepository,
     PermissionRepository,
+    UserRoleRepository,
+    RolePermissionRepository,
     SessionRepository,
     CodeRepository
 } from "../repositories";
@@ -44,6 +48,13 @@ export function ACLMixin<T extends Class<any>>(superClass: T) {
         ctx.bind(PrivateACLBindings.PERMISSION_MODEL).to(
             configs.permissionModel || Permission
         );
+        ctx.bind(PrivateACLBindings.USER_ROLE_MODEL).to(
+            configs.userRoleModel || UserRole
+        );
+        ctx.bind(PrivateACLBindings.ROLE_PERMISSION_MODEL).to(
+            configs.rolePermissionModel || RolePermission
+        );
+
         ctx.bind(PrivateACLBindings.SESSION_MODEL).to(
             configs.sessionModel || Session
         );
@@ -124,6 +135,32 @@ export function ACLMixin<T extends Class<any>>(superClass: T) {
         } else {
             ctx.bind(ACLBindings.PERMISSION_REPOSITORY)
                 .toClass(PermissionRepository)
+                .tag("repository");
+        }
+
+        /**
+         * Find, Bind UserRole Repository
+         */
+        let userRoleRepository = findACL(ctx, "UserRoleRepository");
+        if (userRoleRepository) {
+            ctx.bind(ACLBindings.USER_ROLE_REPOSITORY).to(userRoleRepository);
+        } else {
+            ctx.bind(ACLBindings.USER_ROLE_REPOSITORY)
+                .toClass(UserRoleRepository)
+                .tag("repository");
+        }
+
+        /**
+         * Find, Bind RolePermission Repository
+         */
+        let rolePermissionRepository = findACL(ctx, "RolePermissionRepository");
+        if (rolePermissionRepository) {
+            ctx.bind(ACLBindings.ROLE_PERMISSION_REPOSITORY).to(
+                rolePermissionRepository
+            );
+        } else {
+            ctx.bind(ACLBindings.ROLE_PERMISSION_REPOSITORY)
+                .toClass(RolePermissionRepository)
                 .tag("repository");
         }
 
@@ -213,7 +250,7 @@ export function ACLMixin<T extends Class<any>>(superClass: T) {
         const userRepository = ctx.getSync(ACLBindings.USER_REPOSITORY);
         const roleRepository = ctx.getSync(ACLBindings.ROLE_REPOSITORY);
         const userRoleRepository = ctx.getSync(
-            AuthorizationBindings.USER_ROLE_REPOSITORY
+            ACLBindings.USER_ROLE_REPOSITORY
         );
 
         /**
@@ -262,7 +299,7 @@ export function ACLMixin<T extends Class<any>>(superClass: T) {
             ACLBindings.PERMISSION_REPOSITORY
         );
         const rolePermissionRepository = ctx.getSync(
-            AuthorizationBindings.ROLE_PERMISSION_REPOSITORY
+            ACLBindings.ROLE_PERMISSION_REPOSITORY
         );
 
         /**
