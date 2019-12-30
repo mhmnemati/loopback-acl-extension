@@ -1,4 +1,4 @@
-import { model } from "@loopback/repository";
+import { model, hasMany } from "@loopback/repository";
 
 import {
     Permission as PermissionModel,
@@ -6,6 +6,8 @@ import {
 } from "loopback-authorization-extension";
 
 import { ModelAccess } from "../types";
+
+import { RolePermission, RolePermissionWithRelations } from "./";
 
 const access: ModelAccess<Permission> = {
     create: {
@@ -35,6 +37,18 @@ const access: ModelAccess<Permission> = {
     }
 })
 export class Permission extends PermissionModel {
+    /**
+     * Begin relation overrides using models with access
+     */
+    @hasMany(() => RolePermission, {
+        keyFrom: "id",
+        keyTo: "permissionId"
+    } as any)
+    rolePermissions: RolePermissionWithRelations[];
+    /**
+     * End relation overrides using models with access
+     */
+
     constructor(data?: Partial<Permission>) {
         super(data);
     }

@@ -5,5 +5,7 @@ export * from "./users/account/account.controller";
 export * from "./users/password/password.controller";
 
 export * from "./roles/roles.controller";
+export * from "./roles/users/user.controller";
+export * from "./roles/permissions/permissions.controller";
 
 export * from "./permissions/permissions.controller";

@@ -1,4 +1,4 @@
-import { model, property } from "@loopback/repository";
+import { model, property, hasMany } from "@loopback/repository";
 
 import {
     User as UserModel,
@@ -6,6 +6,8 @@ import {
 } from "loopback-authorization-extension";
 
 import { ModelAccess } from "../types";
+
+import { UserRole, UserRoleWithRelations } from "./";
 
 const access: ModelAccess<User> = {
     create: {
@@ -151,6 +153,15 @@ export class User extends UserModel {
         }
     })
     status: "Register" | "Active" | "Disable";
+
+    /**
+     * Begin relation overrides using models with access
+     */
+    @hasMany(() => UserRole, { keyFrom: "id", keyTo: "userId" } as any)
+    userRoles: UserRoleWithRelations[];
+    /**
+     * End relation overrides using models with access
+     */
 
     constructor(data?: Partial<User>) {
         super(data);
