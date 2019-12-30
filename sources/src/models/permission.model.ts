@@ -1,4 +1,4 @@
-import { model, hasMany } from "@loopback/repository";
+import { model } from "@loopback/repository";
 
 import {
     Permission as PermissionModel,

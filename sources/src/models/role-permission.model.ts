@@ -1,4 +1,4 @@
-import { model, belongsTo } from "@loopback/repository";
+import { model } from "@loopback/repository";
 
 import {
     RolePermission as RolePermissionModel,

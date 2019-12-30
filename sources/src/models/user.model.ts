@@ -1,4 +1,4 @@
-import { model, property, hasMany } from "@loopback/repository";
+import { model, property } from "@loopback/repository";
 
 import {
     User as UserModel,

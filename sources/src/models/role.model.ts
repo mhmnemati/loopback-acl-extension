@@ -1,4 +1,4 @@
-import { model, property, belongsTo, hasMany } from "@loopback/repository";
+import { model, property } from "@loopback/repository";
 
 import {
     Role as RoleModel,

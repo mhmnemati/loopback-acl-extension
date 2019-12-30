@@ -1,4 +1,4 @@
-import { model, belongsTo } from "@loopback/repository";
+import { model } from "@loopback/repository";
 
 import {
     UserRole as UserRoleModel,
@@ -16,8 +16,8 @@ import { User, Role } from "./";
     delete: ["USER_ROLES_WRITE", (context, filter) => filter],
     history: ["USER_ROLES_HISTORY", (context, filter) => filter]
 })
-@relation<UserRoleWithRelations, Role>("role", () => Role)
 @relation<UserRoleWithRelations, User>("user", () => User)
+@relation<UserRoleWithRelations, Role>("role", () => Role)
 @model({
     settings: {
         access: access
