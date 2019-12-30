@@ -1,4 +1,4 @@
-import { model } from "@loopback/repository";
+import { model, belongsTo } from "@loopback/repository";
 
 import {
     UserRole as UserRoleModel,
@@ -6,6 +6,8 @@ import {
 } from "loopback-authorization-extension";
 
 import { ModelAccess } from "../types";
+
+import { User, Role } from "./";
 
 const access: ModelAccess<UserRole> = {
     create: {
@@ -35,6 +37,18 @@ const access: ModelAccess<UserRole> = {
     }
 })
 export class UserRole extends UserRoleModel {
+    /**
+     * Begin relation overrides using models with access
+     */
+    @belongsTo(() => User, { keyFrom: "userId", keyTo: "id" })
+    userId: string;
+
+    @belongsTo(() => Role, { keyFrom: "roleId", keyTo: "id" })
+    roleId: string;
+    /**
+     * End relation overrides using models with access
+     */
+
     constructor(data?: Partial<UserRole>) {
         super(data);
     }
