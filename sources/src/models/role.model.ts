@@ -5,37 +5,24 @@ import {
     RoleRelations as RoleModelRelations
 } from "loopback-authorization-extension";
 
-import { ModelAccess } from "../types";
+import { relation, access } from "../decorators";
+import { ACLPermissions } from "../types";
+import { UserRole, RolePermission } from "./";
 
-import {
-    UserRole,
-    UserRoleWithRelations,
-    RolePermission,
-    RolePermissionWithRelations
-} from "./";
-
-const access: ModelAccess<Role> = {
-    create: {
-        permission: "ROLES_WRITE"
-    },
-    read: {
-        permission: "ROLES_READ",
-        filter: (context, filter) => filter
-    },
-    update: {
-        permission: "ROLES_WRITE",
-        filter: (context, filter) => filter
-    },
-    delete: {
-        permission: "ROLES_WRITE",
-        filter: (context, filter) => filter
-    },
-    history: {
-        permission: "ROLES_HISTORY",
-        filter: (context, filter) => filter
-    }
-};
-
+@access<RoleWithRelations, ACLPermissions>({
+    create: "ROLES_WRITE",
+    read: ["ROLES_READ", (context, filter) => filter],
+    update: ["ROLES_WRITE", (context, filter) => filter],
+    delete: ["ROLES_WRITE", (context, filter) => filter],
+    history: ["ROLES_HISTORY", (context, filter) => filter]
+})
+@relation<RoleWithRelations, Role>("parent", () => Role)
+@relation<RoleWithRelations, Role>("childs", () => Role)
+@relation<RoleWithRelations, UserRole>("userRoles", () => UserRole)
+@relation<RoleWithRelations, RolePermission>(
+    "rolePermissions",
+    () => RolePermission
+)
 @model({
     settings: {
         access: access
@@ -51,24 +38,6 @@ export class Role extends RoleModel {
         type: "string"
     })
     description: string;
-
-    /**
-     * Begin relation overrides using models with access
-     */
-    @belongsTo(() => Role, { keyFrom: "parentId", keyTo: "id" })
-    parentId: string;
-
-    @hasMany(() => Role, { keyFrom: "id", keyTo: "parentId" } as any)
-    childs: RoleWithRelations[];
-
-    @hasMany(() => UserRole, { keyFrom: "id", keyTo: "roleId" } as any)
-    userRoles: UserRoleWithRelations[];
-
-    @hasMany(() => RolePermission, { keyFrom: "id", keyTo: "roleId" } as any)
-    rolePermissions: RolePermissionWithRelations[];
-    /**
-     * End relation overrides using models with access
-     */
 
     constructor(data?: Partial<Role>) {
         super(data);
