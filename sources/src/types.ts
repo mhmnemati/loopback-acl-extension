@@ -91,9 +91,9 @@ export interface ACLMixinConfig {
     permissions?: Class<ACLPermissions>;
     userModel?: Ctor<User>;
     roleModel?: Ctor<Role>;
+    permissionModel?: Ctor<Permission>;
     userRoleModel?: Ctor<UserRole>;
     rolePermissionModel?: Ctor<RolePermission>;
-    permissionModel?: Ctor<Permission>;
     sessionModel?: Ctor<Session>;
     codeModel?: Ctor<Code>;
     tokenProvider?: Class<BearerTokenService>;
