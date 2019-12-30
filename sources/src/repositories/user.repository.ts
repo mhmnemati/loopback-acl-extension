@@ -3,7 +3,7 @@ import { juggler } from "@loopback/repository";
 import { Ctor } from "loopback-history-extension";
 import { UserRepository as UserModelRepository } from "loopback-authorization-extension";
 
-import { bindACL, PrivateACLBindings, ACLBindings } from "../keys";
+import { bindACL, ACLBindings, PrivateACLBindings } from "../keys";
 
 import { User, UserRelations, UserRole, UserRoleRelations } from "../models";
 
