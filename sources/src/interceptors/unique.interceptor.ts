@@ -11,9 +11,9 @@ import { RepositoryGetter } from "../types";
 import { ACLController } from "../servers";
 
 export function unique<Controller extends ACLController, Model extends Entity>(
-    repositoryGetter: RepositoryGetter<Controller, any>,
     ctor: Ctor<Model>,
-    argIndex: number
+    argIndex: number,
+    repositoryGetter: RepositoryGetter<Controller, any>
 ): Interceptor {
     return async (
         invocationCtx: InvocationContext,

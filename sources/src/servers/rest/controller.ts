@@ -1,9 +1,9 @@
 import { inject } from "@loopback/context";
 import { Request, RestBindings } from "@loopback/rest";
 import { AuthenticationBindings } from "@loopback/authentication";
+
 import { BearerTokenService } from "../../providers";
 import { MessageHandler, ActivateHandler } from "../../types";
-
 import { PrivateACLBindings, ACLBindings } from "../../keys";
 
 import {
@@ -57,11 +57,6 @@ export class ACLController {
             Permission,
             PermissionRelations
         >,
-        @inject(ACLBindings.SESSION_REPOSITORY)
-        public sessionRepository: SessionRepository<Session>,
-        @inject(ACLBindings.CODE_REPOSITORY)
-        public codeRepository: CodeRepository<Code>,
-
         @inject(ACLBindings.USER_ROLE_REPOSITORY)
         public userRoleRepository: UserRoleRepository<
             UserRole,
@@ -71,6 +66,10 @@ export class ACLController {
         public rolePermissionRepository: RolePermissionRepository<
             RolePermission,
             RolePermissionRelations
-        >
+        >,
+        @inject(ACLBindings.SESSION_REPOSITORY)
+        public sessionRepository: SessionRepository<Session>,
+        @inject(ACLBindings.CODE_REPOSITORY)
+        public codeRepository: CodeRepository<Code>
     ) {}
 }

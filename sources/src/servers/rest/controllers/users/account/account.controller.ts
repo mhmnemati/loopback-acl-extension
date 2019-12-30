@@ -26,9 +26,9 @@ export function GenerateUsersAccountController<
     class UsersAccountController extends ACLController {
         @intercept(
             unique<ACLController, UserModel>(
-                controller => controller.userRepository,
                 userCtor,
-                0
+                0,
+                controller => controller.userRepository
             )
         )
         @post("/users/account", {
