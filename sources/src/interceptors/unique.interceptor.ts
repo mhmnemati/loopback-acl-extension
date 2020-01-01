@@ -53,7 +53,7 @@ export function unique<Controller extends ACLController, Model extends Entity>(
                     )
                     .reduce((prev, current) => prev + current, 0)
             };
-        } else {
+        } else if (uniqueFields.length > 0) {
             /** Find count of models where unique field values are same */
             count = await repository.count({
                 or: uniqueFields.map(fieldName => ({
