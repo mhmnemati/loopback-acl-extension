@@ -51,9 +51,7 @@ export function ACLCRUDControllerMixin<
                         "application/json": {
                             schema: {
                                 type: "array",
-                                items: getModelSchemaRef(ctor, {
-                                    includeRelations: true
-                                })
+                                items: getModelSchemaRef(ctor)
                             }
                         }
                     }
@@ -86,15 +84,13 @@ export function ACLCRUDControllerMixin<
         @intercept(unique(ctor, 0, "single", false, repositoryGetter))
         @authorize(getAccessPermission(ctor, "create"))
         @authenticate("bearer")
-        @post(`${basePath}`, {
+        @post(`${basePath}/one`, {
             responses: {
                 "200": {
                     description: `Create single ${ctor.name}`,
                     content: {
                         "application/json": {
-                            schema: getModelSchemaRef(ctor, {
-                                includeRelations: true
-                            })
+                            schema: getModelSchemaRef(ctor)
                         }
                     }
                 }
@@ -207,9 +203,7 @@ export function ACLCRUDControllerMixin<
                     description: `Update multiple ${ctor.name} by where`,
                     schema: {
                         type: "array",
-                        items: getModelSchemaRef(ctor, {
-                            includeRelations: true
-                        })
+                        items: getModelSchemaRef(ctor)
                     }
                 }
             }
@@ -242,9 +236,7 @@ export function ACLCRUDControllerMixin<
             responses: {
                 "200": {
                     description: `Update single ${ctor.name} by id`,
-                    schema: getModelSchemaRef(ctor, {
-                        includeRelations: true
-                    })
+                    schema: getModelSchemaRef(ctor)
                 }
             }
         })
