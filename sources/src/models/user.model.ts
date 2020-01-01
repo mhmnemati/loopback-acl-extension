@@ -2,10 +2,11 @@ import { model, property } from "@loopback/repository";
 
 import {
     User as UserModel,
-    UserRelations as UserModelRelations
+    UserRelations as UserModelRelations,
+    relation
 } from "loopback-authorization-extension";
 
-import { relation, access } from "../decorators";
+import { access } from "../decorators";
 import { ACLPermissions } from "../types";
 import { UserRole } from "./";
 
