@@ -2,19 +2,19 @@ import { inject } from "@loopback/context";
 import { Request, RestBindings } from "@loopback/rest";
 import { AuthenticationBindings } from "@loopback/authentication";
 
-import { BearerTokenService } from "../../providers";
-import { MessageHandler, ActivateHandler } from "../../types";
-import { PrivateACLBindings, ACLBindings } from "../../keys";
-
 import {
     UserRepository,
     RoleRepository,
     PermissionRepository,
     UserRoleRepository,
-    RolePermissionRepository,
-    SessionRepository,
-    CodeRepository
-} from "../../repositories";
+    RolePermissionRepository
+} from "loopback-authorization-extension";
+
+import { BearerTokenService } from "../../providers";
+import { MessageHandler, ActivateHandler } from "../../types";
+import { PrivateACLBindings, ACLBindings } from "../../keys";
+
+import { SessionRepository, CodeRepository } from "../../repositories";
 
 import {
     User,

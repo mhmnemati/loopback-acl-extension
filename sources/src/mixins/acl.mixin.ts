@@ -13,24 +13,8 @@ import {
     MessageProvider,
     ActivateProvider
 } from "../providers";
-import {
-    User,
-    Role,
-    Permission,
-    UserRole,
-    RolePermission,
-    Session,
-    Code
-} from "../models";
-import {
-    UserRepository,
-    RoleRepository,
-    PermissionRepository,
-    UserRoleRepository,
-    RolePermissionRepository,
-    SessionRepository,
-    CodeRepository
-} from "../repositories";
+import { User, Role, UserRole, RolePermission, Session, Code } from "../models";
+import { SessionRepository, CodeRepository } from "../repositories";
 
 export function ACLMixin<T extends Class<any>>(superClass: T) {
     const bootObservers = (ctx: Context) => {
@@ -43,18 +27,6 @@ export function ACLMixin<T extends Class<any>>(superClass: T) {
     };
 
     const bootModels = (ctx: Context, configs: ACLMixinConfig) => {
-        ctx.bind(PrivateACLBindings.USER_MODEL).to(configs.userModel || User);
-        ctx.bind(PrivateACLBindings.ROLE_MODEL).to(configs.roleModel || Role);
-        ctx.bind(PrivateACLBindings.PERMISSION_MODEL).to(
-            configs.permissionModel || Permission
-        );
-        ctx.bind(PrivateACLBindings.USER_ROLE_MODEL).to(
-            configs.userRoleModel || UserRole
-        );
-        ctx.bind(PrivateACLBindings.ROLE_PERMISSION_MODEL).to(
-            configs.rolePermissionModel || RolePermission
-        );
-
         ctx.bind(PrivateACLBindings.SESSION_MODEL).to(
             configs.sessionModel || Session
         );
@@ -82,15 +54,6 @@ export function ACLMixin<T extends Class<any>>(superClass: T) {
     };
 
     const bootDataSources = (ctx: Context) => {
-        let relationalDataSource = findACL(ctx, "RelationalDataSource");
-        if (relationalDataSource) {
-            ctx.bind(PrivateACLBindings.RELATIONAL_DATASOURCE).to(
-                relationalDataSource
-            );
-        } else {
-            throw new Error("ACLComponent: Relational dataSource not found!");
-        }
-
         let cacheDataSource = findACL(ctx, "CacheDataSource");
         if (cacheDataSource) {
             ctx.bind(PrivateACLBindings.CACHE_DATASOURCE).to(cacheDataSource);
@@ -100,70 +63,6 @@ export function ACLMixin<T extends Class<any>>(superClass: T) {
     };
 
     const bootRepositories = (ctx: Context) => {
-        /**
-         * Find, Bind User Repository
-         */
-        let userRepository = findACL(ctx, "UserRepository");
-        if (userRepository) {
-            ctx.bind(ACLBindings.USER_REPOSITORY).to(userRepository);
-        } else {
-            ctx.bind(ACLBindings.USER_REPOSITORY)
-                .toClass(UserRepository)
-                .tag("repository");
-        }
-
-        /**
-         * Find, Bind Role Repository
-         */
-        let roleRepository = findACL(ctx, "RoleRepository");
-        if (roleRepository) {
-            ctx.bind(ACLBindings.ROLE_REPOSITORY).to(roleRepository);
-        } else {
-            ctx.bind(ACLBindings.ROLE_REPOSITORY)
-                .toClass(RoleRepository)
-                .tag("repository");
-        }
-
-        /**
-         * Find, Bind Permission Repository
-         */
-        let permissionRepository = findACL(ctx, "PermissionRepository");
-        if (permissionRepository) {
-            ctx.bind(ACLBindings.PERMISSION_REPOSITORY).to(
-                permissionRepository
-            );
-        } else {
-            ctx.bind(ACLBindings.PERMISSION_REPOSITORY)
-                .toClass(PermissionRepository)
-                .tag("repository");
-        }
-
-        /**
-         * Find, Bind UserRole Repository
-         */
-        let userRoleRepository = findACL(ctx, "UserRoleRepository");
-        if (userRoleRepository) {
-            ctx.bind(ACLBindings.USER_ROLE_REPOSITORY).to(userRoleRepository);
-        } else {
-            ctx.bind(ACLBindings.USER_ROLE_REPOSITORY)
-                .toClass(UserRoleRepository)
-                .tag("repository");
-        }
-
-        /**
-         * Find, Bind RolePermission Repository
-         */
-        let rolePermissionRepository = findACL(ctx, "RolePermissionRepository");
-        if (rolePermissionRepository) {
-            ctx.bind(ACLBindings.ROLE_PERMISSION_REPOSITORY).to(
-                rolePermissionRepository
-            );
-        } else {
-            ctx.bind(ACLBindings.ROLE_PERMISSION_REPOSITORY)
-                .toClass(RolePermissionRepository)
-                .tag("repository");
-        }
-
         /**
          * Find, Bind Session Repository
          */

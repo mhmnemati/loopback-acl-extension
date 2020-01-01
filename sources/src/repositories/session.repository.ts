@@ -6,11 +6,11 @@ import {
 } from "@loopback/repository";
 import { Ctor } from "loopback-history-extension";
 
+import { UserRepository } from "loopback-authorization-extension";
+
 import { bindACL, ACLBindings, PrivateACLBindings } from "../keys";
 
 import { Session, User, UserRelations } from "../models";
-
-import { UserRepository } from "./";
 
 @bindACL("SessionRepository")
 export class SessionRepository<
