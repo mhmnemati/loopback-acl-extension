@@ -48,6 +48,7 @@ export function GenerateUsersSelfController<UserModel extends User>(
                 userCtor,
                 0,
                 "single",
+                false,
                 controller => controller.userRepository
             )
         )

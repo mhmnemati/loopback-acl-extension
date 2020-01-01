@@ -29,6 +29,7 @@ export function GenerateUsersAccountController<
                 userCtor,
                 0,
                 "single",
+                false,
                 controller => controller.userRepository
             )
         )
