@@ -12,7 +12,7 @@ import {
 
 import { BearerTokenService } from "../../providers";
 import { MessageHandler, ActivateHandler } from "../../types";
-import { PrivateACLBindings, ACLBindings } from "../../keys";
+import { ACLBindings, PrivateACLBindings } from "../../keys";
 
 import { SessionRepository, CodeRepository } from "../../repositories";
 

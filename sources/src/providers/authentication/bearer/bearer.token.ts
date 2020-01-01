@@ -8,7 +8,7 @@ import {
     UserRepository
 } from "loopback-authorization-extension";
 
-import { PrivateACLBindings, ACLBindings } from "../../../keys";
+import { ACLBindings, PrivateACLBindings } from "../../../keys";
 import { ACLPermissions } from "../../../types";
 
 import { Session, User, UserRelations } from "../../../models";

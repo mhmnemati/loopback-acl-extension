@@ -1,9 +1,9 @@
 import { model, property } from "@loopback/repository";
 
 import {
+    relation,
     Role as RoleModel,
-    RoleRelations as RoleModelRelations,
-    relation
+    RoleRelations as RoleModelRelations
 } from "loopback-authorization-extension";
 
 import { access } from "../decorators";

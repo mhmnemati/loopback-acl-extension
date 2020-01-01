@@ -4,8 +4,8 @@ import { juggler } from "@loopback/repository";
 import { CoreBindings } from "@loopback/core";
 
 import {
-    PrivateAuthorizationBindings,
     AuthorizationBindings,
+    PrivateAuthorizationBindings,
     UserRepository,
     RoleRepository,
     PermissionRepository,
