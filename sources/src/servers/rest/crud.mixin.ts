@@ -40,7 +40,7 @@ export function ACLCRUDControllerMixin<
     repositoryGetter: RepositoryGetter<Controller, Model>
 ): Class<Controller> {
     class CRUDController extends controllerClass {
-        @intercept(unique(ctor, 0, repositoryGetter))
+        @intercept(unique(ctor, 0, "single", repositoryGetter))
         @authorize(getAccessPermission(ctor, "create"))
         @authenticate("bearer")
         @post(`${basePath}`, {
@@ -131,7 +131,7 @@ export function ACLCRUDControllerMixin<
         }
 
         @intercept(filter(ctor, "update", 1, "where", 1, "where"))
-        @intercept(unique(ctor, 0, repositoryGetter))
+        @intercept(unique(ctor, 0, "single", repositoryGetter))
         @authorize(getAccessPermission(ctor, "update"))
         @authenticate("bearer")
         @patch(`${basePath}`, {
@@ -202,7 +202,7 @@ export function ACLCRUDControllerMixin<
         }
 
         @intercept(filter(ctor, "update", 0, ctorId as string, 2, "where"))
-        @intercept(unique(ctor, 1, repositoryGetter))
+        @intercept(unique(ctor, 1, "single", repositoryGetter))
         @intercept(exist(repositoryGetter))
         @authorize(getAccessPermission(ctor, "update"))
         @authenticate("bearer")
