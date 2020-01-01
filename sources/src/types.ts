@@ -16,15 +16,7 @@ import { BearerTokenService } from "./providers";
 
 import { ACLController } from "./servers";
 
-import {
-    User,
-    Role,
-    Permission,
-    UserRole,
-    RolePermission,
-    Session,
-    Code
-} from "./models";
+import { User, Session, Code } from "./models";
 
 /**
  * Default Permissions
@@ -90,12 +82,6 @@ export type ActivateHandler = (userId: string) => Promise<void>;
  * ACLMixin configs
  */
 export interface ACLMixinConfig {
-    permissions?: Class<ACLPermissions>;
-    userModel?: Ctor<User>;
-    roleModel?: Ctor<Role>;
-    permissionModel?: Ctor<Permission>;
-    userRoleModel?: Ctor<UserRole>;
-    rolePermissionModel?: Ctor<RolePermission>;
     sessionModel?: Ctor<Session>;
     codeModel?: Ctor<Code>;
     tokenProvider?: Class<BearerTokenService>;

@@ -4,10 +4,10 @@ import {
     InvocationResult,
     ValueOrPromise
 } from "@loopback/context";
-import { Entity } from "@loopback/repository";
+import { Entity, Filter } from "@loopback/repository";
 import { Ctor } from "loopback-history-extension";
 
-import { getAccessFilter } from "../decorators";
+import { getAccessFilter, getAccessTarget } from "../decorators";
 
 export function filter<Model extends Entity>(
     ctor: Ctor<Model>,
@@ -47,8 +47,7 @@ export function filter<Model extends Entity>(
         }
 
         /** Apply filter */
-        const filterMethod = getAccessFilter<Model>(ctor, access);
-        // TODO
+        filter = filterApply<Model>(ctor, access, invocationCtx, filter);
 
         /** Apply optional id and */
         if (andId) {
@@ -78,5 +77,55 @@ export function filter<Model extends Entity>(
         invocationCtx.args[outputArg] = filter;
 
         return next();
+    };
+}
+
+function filterApply<Model extends Entity>(
+    ctor: Ctor<Model>,
+    access: "read" | "update" | "delete" | "history",
+    invocationCtx: InvocationContext,
+    filter: Filter<Model>
+): Filter<Model> {
+    filter = getAccessFilter<Model>(ctor, access)(invocationCtx, filter);
+
+    if (filter.include) {
+        for (
+            let inclusionIndex = 0;
+            inclusionIndex < filter.include.length;
+            inclusionIndex++
+        ) {
+            const inclusionRelation = filter.include[inclusionIndex].relation;
+            const inclusionFilter = getFilter<any>(
+                filter.include[inclusionIndex].scope
+            );
+            const inclusionTarget = getAccessTarget<Model>(
+                ctor,
+                inclusionRelation
+            );
+
+            if (inclusionTarget) {
+                filter.include[inclusionIndex].scope = filterApply<Model>(
+                    inclusionTarget,
+                    access,
+                    invocationCtx,
+                    inclusionFilter
+                );
+            }
+        }
+    }
+
+    return filter;
+}
+
+function getFilter<Model extends Entity>(
+    filter?: Filter<Model>
+): Filter<Model> {
+    if (filter && filter.where) {
+        return filter;
+    }
+
+    return {
+        where: {},
+        ...filter
     };
 }

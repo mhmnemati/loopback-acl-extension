@@ -40,11 +40,9 @@ We need two dataSource, one for relational models, and one for cache models
 See this example of binding relational dataSource:
 
 ```ts
-import { bindACL } from "loopback-acl-extension";
-import { bindAuthorization } from "loopback-authorization-extension";
+import { bindRelationalDataSource } from "loopback-authorization-extension";
 
-@bindACL("RelationalDataSource")
-@bindAuthorization("DataSource")
+@bindRelationalDataSource()
 export class MySqlDataSource extends juggler.DataSource {
     static dataSourceName = "MySQL";
 
@@ -60,9 +58,9 @@ export class MySqlDataSource extends juggler.DataSource {
 See this example of binding cache dataSource:
 
 ```ts
-import { bindACL } from "loopback-acl-extension";
+import { bindCacheDataSource } from "loopback-acl-extension";
 
-@bindACL("CacheDataSource")
+@bindCacheDataSource()
 export class RedisDataSource extends juggler.DataSource {
     static dataSourceName = "Redis";
 

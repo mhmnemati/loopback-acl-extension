@@ -28,6 +28,8 @@ export function GenerateUsersAccountController<
             unique<ACLController, UserModel>(
                 userCtor,
                 0,
+                "single",
+                false,
                 controller => controller.userRepository
             )
         )

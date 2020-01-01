@@ -13,6 +13,8 @@ import { ACLController } from "../servers";
 export function unique<Controller extends ACLController, Model extends Entity>(
     ctor: Ctor<Model>,
     argIndex: number,
+    argType: "single" | "multiple",
+    withoutUnqiue: boolean,
     repositoryGetter: RepositoryGetter<Controller, any>
 ): Interceptor {
     return async (
@@ -22,25 +24,44 @@ export function unique<Controller extends ACLController, Model extends Entity>(
         /** Get repository */
         const repository = repositoryGetter(invocationCtx.target as any);
 
-        /** Get model from arguments by arg index number */
-        const model = invocationCtx.args[argIndex];
+        /** Get models from arguments by arg index number */
+        let models: any[] = invocationCtx.args[argIndex];
+        if (argType === "single") {
+            models = [models];
+        }
 
         /** Find unique fields of model ctor */
         const uniqueFields = Object.entries(ctor.definition.properties)
             .filter(([key, value]) => value.unique)
             .map(([key, value]) => key);
 
-        /** Find unique fields that has a value in current model */
-        const valueUniqueFields = uniqueFields.filter(key =>
-            Boolean(model[key])
-        );
+        let count = { count: 0 };
 
-        /** Find count of models where unique field values are same */
-        const count = await repository.count({
-            or: valueUniqueFields.map(fieldName => ({
-                [fieldName]: model[fieldName]
-            }))
-        });
+        /** Check for without unique, when using updateAll */
+        if (withoutUnqiue) {
+            /** Find count of models unique fields */
+            count = {
+                count: models
+                    .map(
+                        model =>
+                            Object.keys(model).filter(
+                                modelKey => uniqueFields.indexOf(modelKey) >= 0
+                            ).length
+                    )
+                    .reduce((prev, current) => prev + current, 0)
+            };
+        } else {
+            /** Find count of models where unique field values are same */
+            count = await repository.count({
+                or: uniqueFields.map(fieldName => ({
+                    [fieldName]: {
+                        inq: models
+                            .map(model => model[fieldName])
+                            .filter(fieldValue => Boolean(fieldValue))
+                    }
+                }))
+            });
+        }
 
         if (count.count > 0) {
             throw {

@@ -1,11 +1,12 @@
 import { model } from "@loopback/repository";
 
 import {
+    relation,
     Permission as PermissionModel,
     PermissionRelations as PermissionModelRelations
 } from "loopback-authorization-extension";
 
-import { relation, access } from "../decorators";
+import { access } from "../decorators";
 import { ACLPermissions } from "../types";
 import { RolePermission } from "./";
 

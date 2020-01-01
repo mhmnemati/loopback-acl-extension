@@ -10,7 +10,6 @@ import {
 import {
     get,
     post,
-    patch,
     put,
     del,
     param,
@@ -40,13 +39,57 @@ export function ACLCRUDControllerMixin<
     repositoryGetter: RepositoryGetter<Controller, Model>
 ): Class<Controller> {
     class CRUDController extends controllerClass {
-        @intercept(unique(ctor, 0, repositoryGetter))
+        /** Create operations */
+        @intercept(unique(ctor, 0, "multiple", false, repositoryGetter))
         @authorize(getAccessPermission(ctor, "create"))
         @authenticate("bearer")
         @post(`${basePath}`, {
             responses: {
                 "200": {
-                    description: `Create ${ctor.name}`,
+                    description: `Create multiple ${ctor.name}`,
+                    content: {
+                        "application/json": {
+                            schema: {
+                                type: "array",
+                                items: getModelSchemaRef(ctor, {
+                                    includeRelations: true
+                                })
+                            }
+                        }
+                    }
+                }
+            }
+        })
+        async createAll(
+            @requestBody({
+                content: {
+                    "application/json": {
+                        schema: {
+                            type: "array",
+                            items: getModelSchemaRef(ctor, {
+                                exclude: [
+                                    "uid",
+                                    "beginDate",
+                                    "endDate",
+                                    "id"
+                                ] as any
+                            })
+                        }
+                    }
+                }
+            })
+            models: Model[]
+        ): Promise<Model[]> {
+            return await repositoryGetter(this as any).createAll(models);
+        }
+
+        @intercept(unique(ctor, 0, "single", false, repositoryGetter))
+        @authorize(getAccessPermission(ctor, "create"))
+        @authenticate("bearer")
+        @post(`${basePath}`, {
+            responses: {
+                "200": {
+                    description: `Create single ${ctor.name}`,
                     content: {
                         "application/json": {
                             schema: getModelSchemaRef(ctor, {
@@ -57,7 +100,7 @@ export function ACLCRUDControllerMixin<
                 }
             }
         })
-        async create(
+        async createOne(
             @requestBody({
                 content: {
                     "application/json": {
@@ -77,37 +120,14 @@ export function ACLCRUDControllerMixin<
             return await repositoryGetter(this as any).create(model);
         }
 
-        @intercept(filter(ctor, "read", 0, "where", 0, "where"))
-        @authorize(getAccessPermission(ctor, "read"))
-        @authenticate("bearer")
-        @get(`${basePath}/count`, {
-            responses: {
-                "200": {
-                    description: `Get ${ctor.name} count by where`,
-                    content: {
-                        "application/json": {
-                            schema: CountSchema
-                        }
-                    }
-                }
-            }
-        })
-        async count(
-            @param.query.object("where", getWhereSchemaFor(ctor), {
-                description: `Where ${ctor.name}`
-            })
-            where?: Where<Model>
-        ): Promise<Count> {
-            return await repositoryGetter(this as any).count(where);
-        }
-
+        /** Read operations */
         @intercept(filter(ctor, "read", 0, "filter", 0, "filter"))
         @authorize(getAccessPermission(ctor, "read"))
         @authenticate("bearer")
         @get(`${basePath}`, {
             responses: {
                 "200": {
-                    description: `Get ${ctor.name} by filter`,
+                    description: `Read multiple ${ctor.name} by filter`,
                     content: {
                         "application/json": {
                             schema: {
@@ -121,7 +141,7 @@ export function ACLCRUDControllerMixin<
                 }
             }
         })
-        async find(
+        async readAll(
             @param.query.object("filter", getFilterSchemaFor(ctor), {
                 description: `Filter ${ctor.name}`
             })
@@ -130,15 +150,67 @@ export function ACLCRUDControllerMixin<
             return await repositoryGetter(this as any).find(filter);
         }
 
-        @intercept(filter(ctor, "update", 1, "where", 1, "where"))
-        @intercept(unique(ctor, 0, repositoryGetter))
-        @authorize(getAccessPermission(ctor, "update"))
+        @intercept(filter(ctor, "read", 0, "where", 0, "where"))
+        @authorize(getAccessPermission(ctor, "read"))
         @authenticate("bearer")
-        @patch(`${basePath}`, {
+        @get(`${basePath}/count`, {
             responses: {
                 "200": {
-                    description: `Update ${ctor.name} by where`,
-                    content: { "application/json": { schema: CountSchema } }
+                    description: `Read ${ctor.name} count by where`,
+                    content: {
+                        "application/json": {
+                            schema: CountSchema
+                        }
+                    }
+                }
+            }
+        })
+        async countAll(
+            @param.query.object("where", getWhereSchemaFor(ctor), {
+                description: `Where ${ctor.name}`
+            })
+            where?: Where<Model>
+        ): Promise<Count> {
+            return await repositoryGetter(this as any).count(where);
+        }
+
+        @intercept(exist(0, repositoryGetter))
+        @intercept(filter(ctor, "read", 0, ctorId as string, 1, "filter"))
+        @authorize(getAccessPermission(ctor, "read"))
+        @authenticate("bearer")
+        @get(`${basePath}/{id}`, {
+            responses: {
+                "200": {
+                    description: `Read single ${ctor.name} by id`,
+                    content: {
+                        "application/json": {
+                            schema: getModelSchemaRef(ctor, {
+                                includeRelations: true
+                            })
+                        }
+                    }
+                }
+            }
+        })
+        async readOne(@param.path.string("id") id: string): Promise<Model> {
+            return await repositoryGetter(this as any).findOne(arguments[1]);
+        }
+
+        /** Update operations */
+        @intercept(unique(ctor, 0, "single", true, repositoryGetter))
+        @intercept(filter(ctor, "update", 1, "where", 1, "where"))
+        @authorize(getAccessPermission(ctor, "update"))
+        @authenticate("bearer")
+        @put(`${basePath}`, {
+            responses: {
+                "200": {
+                    description: `Update multiple ${ctor.name} by where`,
+                    schema: {
+                        type: "array",
+                        items: getModelSchemaRef(ctor, {
+                            includeRelations: true
+                        })
+                    }
                 }
             }
         })
@@ -155,18 +227,56 @@ export function ACLCRUDControllerMixin<
                 description: `Where ${ctor.name}`
             })
             where?: Where<Model>
-        ): Promise<Count> {
-            return await repositoryGetter(this as any).updateAll(model, where);
+        ): Promise<Model[]> {
+            await repositoryGetter(this as any).updateAll(model, where);
+
+            return await this.readAll({ where: where });
         }
 
+        @intercept(unique(ctor, 0, "single", false, repositoryGetter))
+        @intercept(exist(1, repositoryGetter))
+        @intercept(filter(ctor, "update", 1, ctorId as string, 2, "where"))
+        @authorize(getAccessPermission(ctor, "update"))
+        @authenticate("bearer")
+        @put(`${basePath}/{id}`, {
+            responses: {
+                "200": {
+                    description: `Update single ${ctor.name} by id`,
+                    schema: getModelSchemaRef(ctor, {
+                        includeRelations: true
+                    })
+                }
+            }
+        })
+        async updateOne(
+            @requestBody({
+                content: {
+                    "application/json": {
+                        schema: getModelSchemaRef(ctor, { partial: true })
+                    }
+                }
+            })
+            model: Model,
+            @param.path.string("id") id: string
+        ): Promise<Model> {
+            await repositoryGetter(this as any).updateAll(model, arguments[2]);
+
+            return await this.readOne(id);
+        }
+
+        /** Delete operations */
         @intercept(filter(ctor, "delete", 0, "where", 0, "where"))
         @authorize(getAccessPermission(ctor, "delete"))
         @authenticate("bearer")
         @del(`${basePath}`, {
             responses: {
                 "200": {
-                    description: `Delete ${ctor.name} by where`,
-                    content: { "application/json": { schema: CountSchema } }
+                    description: `Delete multiple ${ctor.name} by where`,
+                    content: {
+                        "application/json": {
+                            schema: CountSchema
+                        }
+                    }
                 }
             }
         })
@@ -175,80 +285,38 @@ export function ACLCRUDControllerMixin<
                 description: `Where ${ctor.name}`
             })
             where?: Where<Model>
-        ) {
+        ): Promise<Count> {
             return await repositoryGetter(this as any).deleteAll(where);
         }
 
-        @intercept(filter(ctor, "read", 0, ctorId as string, 1, "filter"))
-        @intercept(exist(repositoryGetter))
-        @authorize(getAccessPermission(ctor, "read"))
+        @intercept(exist(0, repositoryGetter))
+        @intercept(filter(ctor, "delete", 0, ctorId as string, 1, "where"))
+        @authorize(getAccessPermission(ctor, "delete"))
         @authenticate("bearer")
-        @get(`${basePath}/{id}`, {
+        @del(`${basePath}/{id}`, {
             responses: {
                 "200": {
-                    description: `Get ${ctor.name} by id`,
+                    description: `Delete single ${ctor.name} by id`,
                     content: {
                         "application/json": {
-                            schema: getModelSchemaRef(ctor, {
-                                includeRelations: true
-                            })
+                            schema: CountSchema
                         }
                     }
                 }
             }
         })
-        async findById(@param.path.string("id") id: string): Promise<Model> {
-            return await repositoryGetter(this as any).findOne(arguments[1]);
+        async deleteOne(@param.path.string("id") id: string): Promise<Count> {
+            return await repositoryGetter(this as any).deleteAll(arguments[1]);
         }
 
-        @intercept(filter(ctor, "update", 0, ctorId as string, 2, "where"))
-        @intercept(unique(ctor, 1, repositoryGetter))
-        @intercept(exist(repositoryGetter))
-        @authorize(getAccessPermission(ctor, "update"))
-        @authenticate("bearer")
-        @put(`${basePath}/{id}`, {
-            responses: {
-                "204": {
-                    description: `Update ${ctor.name} by id`
-                }
-            }
-        })
-        async updateById(
-            @param.path.string("id") id: string,
-            @requestBody({
-                content: {
-                    "application/json": {
-                        schema: getModelSchemaRef(ctor, { partial: true })
-                    }
-                }
-            })
-            model: Model
-        ): Promise<void> {
-            await repositoryGetter(this as any).updateAll(model, arguments[2]);
-        }
-
-        @intercept(filter(ctor, "delete", 0, ctorId as string, 1, "where"))
-        @intercept(exist(repositoryGetter))
-        @authorize(getAccessPermission(ctor, "delete"))
-        @authenticate("bearer")
-        @del(`${basePath}/{id}`, {
-            responses: {
-                "204": {
-                    description: `Delete ${ctor.name} by id`
-                }
-            }
-        })
-        async deleteById(@param.path.string("id") id: string): Promise<void> {
-            await repositoryGetter(this as any).deleteAll(arguments[1]);
-        }
-
+        /** History operations */
+        @intercept(exist(0, repositoryGetter))
         @intercept(
             filter(ctor, "history", 1, "filter", 1, "filter", {
                 arg: 0,
                 property: ctorId as string
             })
         )
-        @intercept(exist(repositoryGetter))
         @authorize(getAccessPermission(ctor, "history"))
         @authenticate("bearer")
         @get(`${basePath}/{id}/history`, {
@@ -268,7 +336,7 @@ export function ACLCRUDControllerMixin<
                 }
             }
         })
-        async historyById(
+        async historyOne(
             @param.path.string("id") id: string,
             @param.query.object("filter", getFilterSchemaFor(ctor), {
                 description: `Filter ${ctor.name}`
