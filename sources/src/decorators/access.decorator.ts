@@ -1,4 +1,5 @@
 import { Entity } from "@loopback/repository";
+import { Ctor } from "loopback-history-extension";
 import { Condition } from "loopback-authorization-extension";
 
 import { ACLPermissions, FilterMethod } from "../types";
@@ -21,20 +22,38 @@ export function access<
     };
 }
 
-export function getAccessPermission<Permissions extends ACLPermissions>(
-    model: Function & { definition?: any },
+export function getAccessPermission<
+    Model extends Entity,
+    Permissions extends ACLPermissions
+>(
+    ctor: Ctor<Model>,
     access: "create" | "read" | "update" | "delete" | "history"
 ): Condition<Permissions> {
     if (access === "create") {
-        return model.definition.access[access];
+        return ctor.definition.access[access];
     }
 
-    return model.definition.access[access][0];
+    return ctor.definition.access[access][0];
 }
 
 export function getAccessFilter<Model extends Entity>(
-    model: Function & { definition?: any },
+    ctor: Ctor<Model>,
     access: "read" | "update" | "delete" | "history"
 ): FilterMethod<Model> {
-    return model.definition.access[access][1];
+    if (ctor.definition.access && ctor.definition.access[access]) {
+        return ctor.definition.access[access][1];
+    }
+
+    return (context, filter) => filter;
+}
+
+export function getAccessTarget<Model extends Entity>(
+    ctor: Ctor<Model>,
+    relation: string
+): Ctor<Model> | undefined {
+    if (ctor.definition.relations && ctor.definition.relations[relation]) {
+        return ctor.definition.relations[relation].target();
+    }
+
+    return undefined;
 }

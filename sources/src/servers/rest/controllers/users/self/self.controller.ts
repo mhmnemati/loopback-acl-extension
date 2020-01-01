@@ -47,7 +47,7 @@ export function GenerateUsersSelfController<UserModel extends User>(
             unique<ACLController, UserModel>(
                 userCtor,
                 0,
-                "single"
+                "single",
                 controller => controller.userRepository
             )
         )
