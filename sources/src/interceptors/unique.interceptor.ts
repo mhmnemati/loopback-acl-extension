@@ -32,7 +32,10 @@ export function unique<Controller extends ACLController, Model extends Entity>(
 
         /** Find unique fields of model ctor */
         const uniqueFields = Object.entries(ctor.definition.properties)
-            .filter(([key, value]) => value.unique)
+            .filter(
+                ([key, value]) =>
+                    value.unique || (value.index && value.index.unique)
+            )
             .map(([key, value]) => key);
 
         let count = { count: 0 };
