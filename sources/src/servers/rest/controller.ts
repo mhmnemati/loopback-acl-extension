@@ -2,34 +2,21 @@ import { inject } from "@loopback/context";
 import { Request, RestBindings } from "@loopback/rest";
 import { AuthenticationBindings } from "@loopback/authentication";
 
-import {
-    UserRepository,
-    RoleRepository,
-    PermissionRepository,
-    UserRoleRepository,
-    RolePermissionRepository
-} from "loopback-authorization-extension";
-
 import { BearerTokenService } from "../../providers";
 import { MessageHandler, ActivateHandler } from "../../types";
 import { ACLBindings, PrivateACLBindings } from "../../keys";
 
-import { SessionRepository, CodeRepository } from "../../repositories";
-
 import {
-    User,
-    UserRelations,
-    Role,
-    RoleRelations,
-    Permission,
-    PermissionRelations,
-    UserRole,
-    UserRoleRelations,
-    RolePermission,
-    RolePermissionRelations,
-    Session,
-    Code
-} from "../../models";
+    DefaultUserRepository,
+    DefaultRoleRepository,
+    DefaultPermissionRepository,
+    DefaultUserRoleRepository,
+    DefaultRolePermissionRepository,
+    SessionRepository,
+    CodeRepository
+} from "../../repositories";
+
+import { Session, Code } from "../../models";
 
 export class ACLController {
     constructor(
@@ -49,24 +36,15 @@ export class ACLController {
         public activateHandler: ActivateHandler,
 
         @inject(ACLBindings.USER_REPOSITORY)
-        public userRepository: UserRepository<User, UserRelations>,
+        public userRepository: DefaultUserRepository,
         @inject(ACLBindings.ROLE_REPOSITORY)
-        public roleRepository: RoleRepository<Role, RoleRelations>,
+        public roleRepository: DefaultRoleRepository,
         @inject(ACLBindings.PERMISSION_REPOSITORY)
-        public permissionRepository: PermissionRepository<
-            Permission,
-            PermissionRelations
-        >,
+        public permissionRepository: DefaultPermissionRepository,
         @inject(ACLBindings.USER_ROLE_REPOSITORY)
-        public userRoleRepository: UserRoleRepository<
-            UserRole,
-            UserRoleRelations
-        >,
+        public userRoleRepository: DefaultUserRoleRepository,
         @inject(ACLBindings.ROLE_PERMISSION_REPOSITORY)
-        public rolePermissionRepository: RolePermissionRepository<
-            RolePermission,
-            RolePermissionRelations
-        >,
+        public rolePermissionRepository: DefaultRolePermissionRepository,
         @inject(ACLBindings.SESSION_REPOSITORY)
         public sessionRepository: SessionRepository<Session>,
         @inject(ACLBindings.CODE_REPOSITORY)
