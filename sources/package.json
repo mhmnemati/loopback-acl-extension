@@ -45,7 +45,7 @@
         "@types/request-ip": "0.0.34",
         "apollo-server": "^2.9.12",
         "graphql": "^14.5.8",
-        "loopback-authorization-extension": "^9.9.0",
+        "loopback-authorization-extension": "^9.9.1",
         "loopback-history-extension": "^4.5.0",
         "openapi-to-graphql": "^1.6.3",
         "randomatic": "^3.1.1",

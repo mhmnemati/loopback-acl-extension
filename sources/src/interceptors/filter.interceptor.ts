@@ -6,8 +6,17 @@ import {
 } from "@loopback/context";
 import { Entity, Filter } from "@loopback/repository";
 import { Ctor } from "loopback-history-extension";
+import { authorizeFn } from "loopback-authorization-extension";
 
-import { getAccessFilter, getAccessTarget } from "../decorators";
+import { ACLPermissions } from "../types";
+
+import {
+    getAccessPermission,
+    getAccessFilter,
+    getAccessTarget
+} from "../decorators";
+
+import { ACLController } from "../servers";
 
 export function filter<Model extends Entity>(
     ctor: Ctor<Model>,
@@ -47,7 +56,7 @@ export function filter<Model extends Entity>(
         }
 
         /** Apply filter */
-        filter = filterApply<Model>(ctor, access, invocationCtx, filter);
+        filter = await filterApply<Model>(ctor, access, invocationCtx, filter);
 
         /** Apply optional id and */
         if (andId) {
@@ -80,38 +89,54 @@ export function filter<Model extends Entity>(
     };
 }
 
-function filterApply<Model extends Entity>(
+async function filterApply<Model extends Entity>(
     ctor: Ctor<Model>,
     access: "read" | "update" | "delete" | "history",
     invocationCtx: InvocationContext,
     filter: Filter<Model>
-): Filter<Model> {
+): Promise<Filter<Model>> {
     filter = getAccessFilter<Model>(ctor, access)(invocationCtx, filter);
 
     if (filter.include) {
-        for (
-            let inclusionIndex = 0;
-            inclusionIndex < filter.include.length;
-            inclusionIndex++
-        ) {
-            const inclusionRelation = filter.include[inclusionIndex].relation;
-            const inclusionFilter = getFilter<any>(
-                filter.include[inclusionIndex].scope
-            );
-            const inclusionTarget = getAccessTarget<Model>(
-                ctor,
-                inclusionRelation
-            );
+        filter.include = (
+            await Promise.all(
+                filter.include.map(async inclusion => {
+                    const inclusionRelation = inclusion.relation;
+                    const inclusionPermission = getAccessPermission<
+                        any,
+                        ACLPermissions
+                    >(ctor, access);
+                    const inclusionFilter = getFilter<any>(inclusion.scope);
+                    const inclusionTarget = getAccessTarget<Model>(
+                        ctor,
+                        inclusionRelation
+                    );
 
-            if (inclusionTarget) {
-                filter.include[inclusionIndex].scope = filterApply<Model>(
-                    inclusionTarget,
-                    access,
-                    invocationCtx,
-                    inclusionFilter
-                );
-            }
-        }
+                    /** Check user has permission access to related model */
+                    if (
+                        !(await authorizeFn<any>(
+                            inclusionPermission,
+                            (invocationCtx.target as ACLController).session
+                                .permissions,
+                            invocationCtx
+                        ))
+                    ) {
+                        return undefined;
+                    }
+
+                    if (inclusionTarget) {
+                        inclusion.scope = await filterApply<Model>(
+                            inclusionTarget,
+                            access,
+                            invocationCtx,
+                            inclusionFilter
+                        );
+                    }
+
+                    return inclusion;
+                })
+            )
+        ).filter(inclusion => Boolean(inclusion));
     }
 
     return filter;
