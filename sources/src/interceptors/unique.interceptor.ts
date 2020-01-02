@@ -32,11 +32,19 @@ export function unique<Controller extends ACLController, Model extends Entity>(
 
         /** Find unique fields of model ctor */
         const uniqueFields = Object.entries(ctor.definition.properties)
-            .filter(
-                ([key, value]) =>
-                    value.unique || (value.index && value.index.unique)
+            .filter(([key, value]) =>
+                Boolean(value.unique || (value.index && value.index.unique))
             )
             .map(([key, value]) => key);
+
+        /** Find unique fields with at least one property in models */
+        const uniqueFieldsWithProperties = uniqueFields.filter(
+            fieldName =>
+                models
+                    .map(model => model[fieldName])
+                    .filter(uniqueProperty => Boolean(uniqueProperty)).length >
+                0
+        );
 
         let count = { count: 0 };
 
@@ -48,15 +56,18 @@ export function unique<Controller extends ACLController, Model extends Entity>(
                     .map(
                         model =>
                             Object.keys(model).filter(
-                                modelKey => uniqueFields.indexOf(modelKey) >= 0
+                                modelKey =>
+                                    uniqueFieldsWithProperties.indexOf(
+                                        modelKey
+                                    ) >= 0
                             ).length
                     )
                     .reduce((prev, current) => prev + current, 0)
             };
-        } else if (uniqueFields.length > 0) {
+        } else if (uniqueFieldsWithProperties.length > 0) {
             /** Find count of models where unique field values are same */
             count = await repository.count({
-                or: uniqueFields.map(fieldName => ({
+                or: uniqueFieldsWithProperties.map(fieldName => ({
                     [fieldName]: {
                         inq: models
                             .map(model => model[fieldName])
