@@ -12,10 +12,10 @@ import { RolePermission } from "./";
 
 @access<PermissionWithRelations, ACLPermissions>({
     create: "PERMISSIONS_WRITE",
-    read: ["PERMISSIONS_READ", (context, filter) => filter],
-    update: ["PERMISSIONS_WRITE", (context, filter) => filter],
-    delete: ["PERMISSIONS_WRITE", (context, filter) => filter],
-    history: ["PERMISSIONS_READ", (context, filter) => filter]
+    read: ["PERMISSIONS_READ", async (context, filter) => filter],
+    update: ["PERMISSIONS_WRITE", async (context, filter) => filter],
+    delete: ["PERMISSIONS_WRITE", async (context, filter) => filter],
+    history: ["PERMISSIONS_READ", async (context, filter) => filter]
 })
 @relation<PermissionWithRelations, RolePermission>(
     "rolePermissions",

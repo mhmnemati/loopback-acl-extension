@@ -12,10 +12,10 @@ import { User, Role } from "./";
 
 @access<UserRoleWithRelations, ACLPermissions>({
     create: "USER_ROLES_WRITE",
-    read: ["USER_ROLES_READ", (context, filter) => filter],
-    update: ["USER_ROLES_WRITE", (context, filter) => filter],
-    delete: ["USER_ROLES_WRITE", (context, filter) => filter],
-    history: ["USER_ROLES_HISTORY", (context, filter) => filter]
+    read: ["USER_ROLES_READ", async (context, filter) => filter],
+    update: ["USER_ROLES_WRITE", async (context, filter) => filter],
+    delete: ["USER_ROLES_WRITE", async (context, filter) => filter],
+    history: ["USER_ROLES_HISTORY", async (context, filter) => filter]
 })
 @relation<UserRoleWithRelations, User>("user", () => User)
 @relation<UserRoleWithRelations, Role>("role", () => Role)

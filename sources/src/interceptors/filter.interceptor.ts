@@ -95,48 +95,52 @@ async function filterApply<Model extends Entity>(
     invocationCtx: InvocationContext,
     filter: Filter<Model>
 ): Promise<Filter<Model>> {
-    filter = getAccessFilter<Model>(ctor, access)(invocationCtx, filter);
+    filter = await getAccessFilter<Model>(ctor, access)(invocationCtx, filter);
 
     if (filter.include) {
-        filter.include = (
-            await Promise.all(
-                filter.include.map(async inclusion => {
-                    const inclusionRelation = inclusion.relation;
-                    const inclusionPermission = getAccessPermission<
-                        any,
-                        ACLPermissions
-                    >(ctor, access);
-                    const inclusionFilter = getFilter<any>(inclusion.scope);
-                    const inclusionTarget = getAccessTarget<Model>(
-                        ctor,
-                        inclusionRelation
-                    );
+        filter.include = (await Promise.all(
+            filter.include.map(async inclusion => {
+                const inclusionRelation = inclusion.relation;
+                const inclusionTarget = getAccessTarget<Model>(
+                    ctor,
+                    inclusionRelation
+                );
+                const inclusionPermission = getAccessPermission<
+                    any,
+                    ACLPermissions
+                >(ctor, access);
+                const inclusionFilter = getFilter<any>(inclusion.scope);
 
-                    /** Check user has permission access to related model */
-                    if (
-                        !(await authorizeFn<any>(
-                            inclusionPermission,
-                            (invocationCtx.target as ACLController).session
-                                .permissions,
-                            invocationCtx
-                        ))
-                    ) {
-                        return undefined;
-                    }
+                /** Check related model is accessable using current model */
+                if (!inclusionTarget) {
+                    return undefined;
+                }
 
-                    if (inclusionTarget) {
-                        inclusion.scope = await filterApply<Model>(
-                            inclusionTarget,
-                            access,
-                            invocationCtx,
-                            inclusionFilter
-                        );
-                    }
+                /** Check user has access permission to related model */
+                if (
+                    !(await authorizeFn<any>(
+                        inclusionPermission,
+                        (invocationCtx.target as ACLController).session
+                            .permissions,
+                        invocationCtx
+                    ))
+                ) {
+                    return undefined;
+                }
 
-                    return inclusion;
-                })
-            )
-        ).filter(inclusion => Boolean(inclusion));
+                /** Apply filter over inclusion filter */
+                inclusion.scope = await filterApply<Model>(
+                    inclusionTarget,
+                    access,
+                    invocationCtx,
+                    inclusionFilter
+                );
+
+                return inclusion;
+            })
+        )) as any[];
+
+        filter.include = filter.include.filter(inclusion => Boolean(inclusion));
     }
 
     return filter;
