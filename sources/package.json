@@ -1,6 +1,6 @@
 {
     "name": "loopback-acl-extension",
-    "version": "5.13.6",
+    "version": "5.14.0",
     "description": "Loopback ACL generic implementation based on RBAC",
     "keywords": [
         "loopback-extension",
