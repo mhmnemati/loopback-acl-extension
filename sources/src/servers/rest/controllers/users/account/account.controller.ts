@@ -9,10 +9,8 @@ import {
     getModelSchemaRef
 } from "@loopback/rest";
 
-import { UserRole } from "loopback-authorization-extension";
-
 import { ACLController } from "../../../../../servers";
-import { Code, User } from "../../../../../models";
+import { Code, User, UserRole } from "../../../../../models";
 
 import { intercept } from "@loopback/core";
 import { unique } from "../../../../../interceptors";

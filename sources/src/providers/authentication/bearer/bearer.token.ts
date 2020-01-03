@@ -4,15 +4,17 @@ import { TokenService } from "@loopback/authentication";
 
 import {
     AuthorizationBindings,
-    GetUserPermissionsFn,
-    UserRepository
+    GetUserPermissionsFn
 } from "loopback-authorization-extension";
 
 import { ACLBindings, PrivateACLBindings } from "../../../keys";
 import { ACLPermissions } from "../../../types";
 
-import { Session, User, UserRelations } from "../../../models";
-import { SessionRepository } from "../../../repositories";
+import { Session, User } from "../../../models";
+import {
+    SessionRepository,
+    DefaultUserRepository
+} from "../../../repositories";
 
 import { randomBytes } from "crypto";
 
@@ -25,7 +27,7 @@ export class BearerTokenService implements TokenService {
         @inject(ACLBindings.SESSION_REPOSITORY)
         protected sessionRepository: SessionRepository<Session>,
         @inject(ACLBindings.USER_REPOSITORY)
-        protected userRepository: UserRepository<User, UserRelations>,
+        protected userRepository: DefaultUserRepository,
         @inject(AuthorizationBindings.GET_USER_PERMISSIONS_ACTION)
         protected getUserPermissions: GetUserPermissionsFn<ACLPermissions>
     ) {}

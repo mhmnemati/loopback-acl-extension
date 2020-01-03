@@ -62,7 +62,7 @@ export type RepositoryGetter<
 export type FilterMethod<Model extends Entity> = (
     context: InvocationContext,
     filter: Filter<Model>
-) => Filter<Model>;
+) => Promise<Filter<Model>>;
 
 /**
  * MessageProvider configs

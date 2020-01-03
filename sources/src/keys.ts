@@ -5,12 +5,7 @@ import { CoreBindings } from "@loopback/core";
 
 import {
     AuthorizationBindings,
-    PrivateAuthorizationBindings,
-    UserRepository,
-    RoleRepository,
-    PermissionRepository,
-    UserRoleRepository,
-    RolePermissionRepository
+    PrivateAuthorizationBindings
 } from "loopback-authorization-extension";
 
 import { BearerTokenService } from "./providers";
@@ -18,19 +13,22 @@ import { MessageHandler, ActivateHandler } from "./types";
 
 import {
     User,
-    UserRelations,
     Role,
-    RoleRelations,
     Permission,
-    PermissionRelations,
     UserRole,
-    UserRoleRelations,
     RolePermission,
-    RolePermissionRelations,
     Session,
     Code
 } from "./models";
-import { SessionRepository, CodeRepository } from "./repositories";
+import {
+    DefaultUserRepository,
+    DefaultRoleRepository,
+    DefaultPermissionRepository,
+    DefaultUserRoleRepository,
+    DefaultRolePermissionRepository,
+    SessionRepository,
+    CodeRepository
+} from "./repositories";
 
 /**
  * Public bindings used in application scope
@@ -48,26 +46,16 @@ export namespace ACLBindings {
      * 6. SessionRepository
      * 7. CodeRepository
      */
-    export const USER_REPOSITORY: BindingKey<UserRepository<
-        User,
-        UserRelations
-    >> = AuthorizationBindings.USER_REPOSITORY;
-    export const ROLE_REPOSITORY: BindingKey<RoleRepository<
-        Role,
-        RoleRelations
-    >> = AuthorizationBindings.ROLE_REPOSITORY;
-    export const PERMISSION_REPOSITORY: BindingKey<PermissionRepository<
-        Permission,
-        PermissionRelations
-    >> = AuthorizationBindings.PERMISSION_REPOSITORY;
-    export const USER_ROLE_REPOSITORY: BindingKey<UserRoleRepository<
-        UserRole,
-        UserRoleRelations
-    >> = AuthorizationBindings.USER_ROLE_REPOSITORY;
-    export const ROLE_PERMISSION_REPOSITORY: BindingKey<RolePermissionRepository<
-        RolePermission,
-        RolePermissionRelations
-    >> = AuthorizationBindings.ROLE_PERMISSION_REPOSITORY;
+    export const USER_REPOSITORY: BindingKey<DefaultUserRepository> =
+        AuthorizationBindings.USER_REPOSITORY;
+    export const ROLE_REPOSITORY: BindingKey<DefaultRoleRepository> =
+        AuthorizationBindings.ROLE_REPOSITORY;
+    export const PERMISSION_REPOSITORY: BindingKey<DefaultPermissionRepository> =
+        AuthorizationBindings.PERMISSION_REPOSITORY;
+    export const USER_ROLE_REPOSITORY: BindingKey<DefaultUserRoleRepository> =
+        AuthorizationBindings.USER_ROLE_REPOSITORY;
+    export const ROLE_PERMISSION_REPOSITORY: BindingKey<DefaultRolePermissionRepository> =
+        AuthorizationBindings.ROLE_PERMISSION_REPOSITORY;
 
     export const SESSION_REPOSITORY = BindingKey.create<
         SessionRepository<Session>

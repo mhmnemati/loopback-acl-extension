@@ -44,7 +44,7 @@ export function getAccessFilter<Model extends Entity>(
         return ctor.definition.access[access][1];
     }
 
-    return (context, filter) => filter;
+    return async (context, filter) => filter;
 }
 
 export function getAccessTarget<Model extends Entity>(

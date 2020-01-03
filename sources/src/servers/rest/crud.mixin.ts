@@ -224,7 +224,7 @@ export function ACLCRUDControllerMixin<
         ): Promise<Model[]> {
             await repositoryGetter(this as any).updateAll(model, where);
 
-            return await this.readAll({ where: where });
+            return await repositoryGetter(this as any).find({ where: where });
         }
 
         @intercept(unique(ctor, 0, "single", false, repositoryGetter))
@@ -253,7 +253,7 @@ export function ACLCRUDControllerMixin<
         ): Promise<Model> {
             await repositoryGetter(this as any).updateAll(model, arguments[2]);
 
-            return await this.readOne(id);
+            return await repositoryGetter(this as any).findById(id);
         }
 
         /** Delete operations */

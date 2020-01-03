@@ -49,7 +49,7 @@ export class Sequence implements SequenceHandler {
             const args = await this.parseParams(request, route);
             const session = await this.authenticateRequest(request);
             if (session) {
-                await this.authorizeRequest(session.permissions, request, args);
+                await this.authorizeRequest(session.permissions, args);
             }
             const result = await this.invoke(route, args);
             this.send(response, result);

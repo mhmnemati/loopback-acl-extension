@@ -6,11 +6,11 @@ import {
 } from "@loopback/repository";
 import { Ctor } from "loopback-history-extension";
 
-import { UserRepository } from "loopback-authorization-extension";
-
 import { bindACL, ACLBindings, PrivateACLBindings } from "../keys";
 
-import { Session, User, UserRelations } from "../models";
+import { Session, User } from "../models";
+
+import { DefaultUserRepository } from "./";
 
 @bindACL("SessionRepository")
 export class SessionRepository<
@@ -24,7 +24,7 @@ export class SessionRepository<
         @inject(PrivateACLBindings.CACHE_DATASOURCE)
         dataSource: juggler.DataSource,
         @inject(ACLBindings.USER_REPOSITORY)
-        userRepository: UserRepository<User, UserRelations>
+        userRepository: DefaultUserRepository
     ) {
         super(ctor, dataSource);
 
