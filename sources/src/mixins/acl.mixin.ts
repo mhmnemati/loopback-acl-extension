@@ -5,7 +5,7 @@ import { CoreBindings } from "@loopback/core";
 import { registerAuthenticationStrategy } from "@loopback/authentication";
 
 import { findACL, ACLBindings, PrivateACLBindings } from "../keys";
-import { ACLMixinConfig } from "../types";
+import { ACLMixinConfig, ACLPermissions } from "../types";
 
 import {
     BearerTokenService,
@@ -13,10 +13,13 @@ import {
     MessageProvider,
     ActivateProvider
 } from "../providers";
-import { User, Role, UserRole, RolePermission, Session, Code } from "../models";
+import { User, Role, Session, Code } from "../models";
 import { SessionRepository, CodeRepository } from "../repositories";
 
-export function ACLMixin<T extends Class<any>>(superClass: T) {
+export function ACLMixin<
+    T extends Class<any>,
+    Permissions extends ACLPermissions
+>(superClass: T) {
     const bootObservers = (ctx: Context) => {
         /**
          * Fix: servers start dependency bug
@@ -26,14 +29,17 @@ export function ACLMixin<T extends Class<any>>(superClass: T) {
         });
     };
 
-    const bootModels = (ctx: Context, configs: ACLMixinConfig) => {
+    const bootModels = (ctx: Context, configs: ACLMixinConfig<Permissions>) => {
         ctx.bind(PrivateACLBindings.SESSION_MODEL).to(
             configs.sessionModel || Session
         );
         ctx.bind(PrivateACLBindings.CODE_MODEL).to(configs.codeModel || Code);
     };
 
-    const bootProviders = (ctx: Context, configs: ACLMixinConfig) => {
+    const bootProviders = (
+        ctx: Context,
+        configs: ACLMixinConfig<Permissions>
+    ) => {
         ctx.bind(PrivateACLBindings.TOKEN_PROVIDER).toClass(
             configs.tokenProvider || BearerTokenService
         );
@@ -47,7 +53,10 @@ export function ACLMixin<T extends Class<any>>(superClass: T) {
         registerAuthenticationStrategy(ctx, BearerAuthenticationStrategy);
     };
 
-    const bootConstants = (ctx: Context, configs: ACLMixinConfig) => {
+    const bootConstants = (
+        ctx: Context,
+        configs: ACLMixinConfig<Permissions>
+    ) => {
         ctx.bind(PrivateACLBindings.SESSION_TIMEOUT_CONSTANT).to(
             configs.sessionTimeout
         );
@@ -88,7 +97,10 @@ export function ACLMixin<T extends Class<any>>(superClass: T) {
         }
     };
 
-    const migrateUsers = async (ctx: Context, configs: ACLMixinConfig) => {
+    const migrateUsers = async (
+        ctx: Context,
+        configs: ACLMixinConfig<Permissions>
+    ) => {
         const userRepository = ctx.getSync(ACLBindings.USER_REPOSITORY);
 
         /**
@@ -145,7 +157,10 @@ export function ACLMixin<T extends Class<any>>(superClass: T) {
         }
     };
 
-    const migrateUsersRoles = async (ctx: Context, configs: ACLMixinConfig) => {
+    const migrateUsersRoles = async (
+        ctx: Context,
+        configs: ACLMixinConfig<Permissions>
+    ) => {
         const userRepository = ctx.getSync(ACLBindings.USER_REPOSITORY);
         const roleRepository = ctx.getSync(ACLBindings.ROLE_REPOSITORY);
         const userRoleRepository = ctx.getSync(
@@ -182,17 +197,18 @@ export function ACLMixin<T extends Class<any>>(superClass: T) {
                     }
                 }))
             ) {
-                await userRoleRepository.create(
-                    new UserRole({
-                        userId: administratorUser.id,
-                        roleId: adminsRole.id
-                    })
-                );
+                await userRoleRepository.create({
+                    userId: administratorUser.id,
+                    roleId: adminsRole.id
+                });
             }
         }
     };
 
-    const migrateRolesPermissions = async (ctx: Context) => {
+    const migrateRolesPermissions = async (
+        ctx: Context,
+        configs: ACLMixinConfig<Permissions>
+    ) => {
         const roleRepository = ctx.getSync(ACLBindings.ROLE_REPOSITORY);
         const permissionRepository = ctx.getSync(
             ACLBindings.PERMISSION_REPOSITORY
@@ -200,6 +216,15 @@ export function ACLMixin<T extends Class<any>>(superClass: T) {
         const rolePermissionRepository = ctx.getSync(
             ACLBindings.ROLE_PERMISSION_REPOSITORY
         );
+
+        /**
+         * Get Users role
+         */
+        const usersRole = await roleRepository.findOne({
+            where: {
+                name: "Users"
+            }
+        });
 
         /**
          * Get Admins role
@@ -215,38 +240,54 @@ export function ACLMixin<T extends Class<any>>(superClass: T) {
          */
         const permissions = await permissionRepository.find();
 
-        if (adminsRole) {
+        if (usersRole) {
             /**
-             * Add permissions to Admins
+             * Remove old permissions from Users
              */
-            const rolePermissions = await rolePermissionRepository.find({
-                where: {
-                    roleId: adminsRole.id
-                }
+            await rolePermissionRepository.deleteAll({
+                roleId: usersRole.id
             });
 
-            const notAddedPermissions = permissions.filter(
-                permission =>
-                    rolePermissions
-                        .map(rolePermission => rolePermission.permissionId)
-                        .filter(permissionId => permissionId === permission.id)
-                        .length === 0
-            );
-
+            /**
+             * Add new permissions to Users
+             */
             await rolePermissionRepository.createAll(
-                notAddedPermissions.map(
-                    permission =>
-                        new RolePermission({
-                            roleId: adminsRole.id,
-                            permissionId: permission.id
-                        })
-                )
+                permissions
+                    .filter(
+                        permission =>
+                            configs.usersPermissions.indexOf(
+                                permission.key as any
+                            ) >= 0
+                    )
+                    .map(permission => ({
+                        roleId: usersRole.id,
+                        permissionId: permission.id
+                    }))
+            );
+        }
+
+        if (adminsRole) {
+            /**
+             * Remove old permissions from Admins
+             */
+            await rolePermissionRepository.deleteAll({
+                roleId: adminsRole.id
+            });
+
+            /**
+             * Add new permissions to Admins
+             */
+            await rolePermissionRepository.createAll(
+                permissions.map(permission => ({
+                    roleId: adminsRole.id,
+                    permissionId: permission.id
+                }))
             );
         }
     };
 
     return class extends superClass {
-        public aclConfigs: ACLMixinConfig = {
+        public aclConfigs: ACLMixinConfig<Permissions> = {
             administrator: new User({
                 username: "administrator",
                 password: "administrator",
@@ -255,6 +296,7 @@ export function ACLMixin<T extends Class<any>>(superClass: T) {
                 lastName: "Administrator",
                 status: "Active"
             }),
+            usersPermissions: [],
             sessionTimeout: 300e3
         };
 
@@ -276,7 +318,7 @@ export function ACLMixin<T extends Class<any>>(superClass: T) {
             await migrateUsers(this as any, this.aclConfigs);
             await migrateRoles(this as any);
             await migrateUsersRoles(this as any, this.aclConfigs);
-            await migrateRolesPermissions(this as any);
+            await migrateRolesPermissions(this as any, this.aclConfigs);
         }
     };
 }
