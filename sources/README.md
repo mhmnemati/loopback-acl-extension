@@ -7,8 +7,9 @@ Using this extension your can bind them to your application using a simple and o
 ## Installation
 
 ```bash
-npm i --save loopback-acl-extension
+npm i --save loopback-history-extension
 npm i --save loopback-authorization-extension
+npm i --save loopback-acl-extension
 ```
 
 ## Usage
@@ -25,7 +26,7 @@ Now, let's try:
 
 ### Step 1 (Define DataSource)
 
-Bind your dataSources you want to use for acl tables using `bindACL`
+Bind your dataSources you want to use for acl tables using `bindRelationalDataSource` and `bindCacheDataSource`
 
 We need two dataSource, one for relational models, and one for cache models
 
@@ -33,6 +34,8 @@ We need two dataSource, one for relational models, and one for cache models
     1. `User`
     2. `Role`
     3. `Permission`
+    4. `UserRole`
+    5. `RolePermission`
 2. **Cache Models**: `Key-Value`
     1. `Session`
     2. `Code`

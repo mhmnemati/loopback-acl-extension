@@ -34,11 +34,28 @@ export class ACLGraphQLServer extends Context implements Server {
     async start() {
         const restServer = this.getSync<ACLRestServer>("servers.ACLRestServer");
 
-        // Fix: openapi default servers not added
         let openApiSpec: any = restServer.getApiSpec();
+
+        /** hotfix: openapi default servers not added */
         openApiSpec.servers = [{ url: restServer.url }];
 
-        // get OpenAPI specs from restServer and bind REST url to it
+        /** hotfix: rest put methods don't return data */
+        openApiSpec.paths = Object.entries(openApiSpec.paths)
+            .map(pair => {
+                const value: any = pair[1];
+                if (value.put && value.put.responses["200"]) {
+                    delete value.put.responses["200"].schema;
+                }
+
+                return pair;
+            })
+            .reduce((prev: any, current: any) => {
+                prev[current[0]] = current[1];
+
+                return prev;
+            }, {});
+
+        /** get OpenAPI specs from restServer and bind REST url to it */
         const { schema, report } = await createGraphQlSchema(openApiSpec, {
             fillEmptyResponses: true
         });

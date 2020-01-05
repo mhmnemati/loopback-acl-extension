@@ -81,13 +81,14 @@ export type ActivateHandler = (userId: string) => Promise<void>;
 /**
  * ACLMixin configs
  */
-export interface ACLMixinConfig {
+export interface ACLMixinConfig<Permissions extends ACLPermissions> {
     sessionModel?: Ctor<Session>;
     codeModel?: Ctor<Code>;
     tokenProvider?: Class<BearerTokenService>;
     messageProvider?: Class<Provider<MessageHandler>>;
     activateProvider?: Class<Provider<ActivateHandler>>;
     administrator: User;
+    usersPermissions: (keyof Permissions)[];
     sessionTimeout: number;
 }
 

@@ -28,7 +28,7 @@ import { RepositoryGetter } from "../../types";
 
 import { getAccessPermission } from "../../decorators";
 
-export function ACLCRUDControllerMixin<
+export function ACLControllerMixin<
     Controller extends ACLController,
     Model extends Entity
 >(
