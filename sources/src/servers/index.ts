@@ -3,4 +3,4 @@ export * from "./rest/server";
 
 export * from "./rest/sequence";
 export * from "./rest/controller";
-export * from "./rest/crud.mixin";
+export * from "./rest/controller.mixin";
