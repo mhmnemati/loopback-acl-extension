@@ -171,7 +171,12 @@ export function ACLControllerMixin<
         }
 
         @intercept(exist(0, repositoryGetter))
-        @intercept(filter(ctor, "read", 0, ctorId as string, 1, "filter"))
+        @intercept(
+            filter(ctor, "read", 1, "filter", 1, "filter", {
+                arg: 0,
+                property: ctorId as string
+            })
+        )
         @authorize(getAccessPermission(ctor, "read"))
         @authenticate("bearer")
         @get(`${basePath}/{id}`, {
@@ -188,8 +193,14 @@ export function ACLControllerMixin<
                 }
             }
         })
-        async readOne(@param.path.string("id") id: string): Promise<Model> {
-            return await repositoryGetter(this as any).findOne(arguments[1]);
+        async readOne(
+            @param.path.string("id") id: string,
+            @param.query.object("filter", getFilterSchemaFor(ctor), {
+                description: `Filter ${ctor.name}`
+            })
+            filter?: Filter<Model>
+        ): Promise<Model> {
+            return await repositoryGetter(this as any).findOne(filter);
         }
 
         /** Update operations */
