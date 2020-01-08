@@ -40,8 +40,8 @@ export function ACLControllerMixin<
 ): Class<Controller> {
     class CRUDController extends controllerClass {
         /** Create operations */
-        @intercept(unique(ctor, 0, "multiple", false, repositoryGetter))
         @intercept(valid(ctor, 0, "multiple", false))
+        @intercept(unique(ctor, 0, "multiple", false, repositoryGetter))
         @authorize(getAccessPermission(ctor, "create"))
         @authenticate("bearer")
         @post(`${basePath}`, {
@@ -82,8 +82,8 @@ export function ACLControllerMixin<
             return await repositoryGetter(this as any).createAll(models);
         }
 
-        @intercept(unique(ctor, 0, "single", false, repositoryGetter))
         @intercept(valid(ctor, 0, "single", false))
+        @intercept(unique(ctor, 0, "single", false, repositoryGetter))
         @authorize(getAccessPermission(ctor, "create"))
         @authenticate("bearer")
         @post(`${basePath}/one`, {
@@ -172,13 +172,13 @@ export function ACLControllerMixin<
             return await repositoryGetter(this as any).count(where);
         }
 
+        @intercept(exist(ctor, 0, repositoryGetter))
         @intercept(
             filter(ctor, "read", 1, "filter", 1, "filter", {
                 arg: 0,
                 property: ctorId as string
             })
         )
-        @intercept(exist(ctor, 0, repositoryGetter))
         @authorize(getAccessPermission(ctor, "read"))
         @authenticate("bearer")
         @get(`${basePath}/{id}`, {
@@ -206,9 +206,9 @@ export function ACLControllerMixin<
         }
 
         /** Update operations */
-        @intercept(filter(ctor, "update", 1, "where", 1, "where"))
-        @intercept(unique(ctor, 0, "single", true, repositoryGetter))
         @intercept(valid(ctor, 0, "single", true))
+        @intercept(unique(ctor, 0, "single", true, repositoryGetter))
+        @intercept(filter(ctor, "update", 1, "where", 1, "where"))
         @authorize(getAccessPermission(ctor, "update"))
         @authenticate("bearer")
         @put(`${basePath}`, {
@@ -241,10 +241,10 @@ export function ACLControllerMixin<
             return await repositoryGetter(this as any).find({ where: where });
         }
 
-        @intercept(filter(ctor, "update", 1, ctorId as string, 2, "where"))
-        @intercept(unique(ctor, 0, "single", false, repositoryGetter))
-        @intercept(exist(ctor, 1, repositoryGetter))
         @intercept(valid(ctor, 0, "single", true))
+        @intercept(exist(ctor, 1, repositoryGetter))
+        @intercept(unique(ctor, 0, "single", false, repositoryGetter))
+        @intercept(filter(ctor, "update", 1, ctorId as string, 2, "where"))
         @authorize(getAccessPermission(ctor, "update"))
         @authenticate("bearer")
         @put(`${basePath}/{id}`, {
@@ -296,8 +296,8 @@ export function ACLControllerMixin<
             return await repositoryGetter(this as any).deleteAll(where);
         }
 
-        @intercept(filter(ctor, "delete", 0, ctorId as string, 1, "where"))
         @intercept(exist(ctor, 0, repositoryGetter))
+        @intercept(filter(ctor, "delete", 0, ctorId as string, 1, "where"))
         @authorize(getAccessPermission(ctor, "delete"))
         @authenticate("bearer")
         @del(`${basePath}/{id}`, {
@@ -317,13 +317,13 @@ export function ACLControllerMixin<
         }
 
         /** History operations */
+        @intercept(exist(ctor, 0, repositoryGetter))
         @intercept(
             filter(ctor, "history", 1, "filter", 1, "filter", {
                 arg: 0,
                 property: ctorId as string
             })
         )
-        @intercept(exist(ctor, 0, repositoryGetter))
         @authorize(getAccessPermission(ctor, "history"))
         @authenticate("bearer")
         @get(`${basePath}/{id}/history`, {
