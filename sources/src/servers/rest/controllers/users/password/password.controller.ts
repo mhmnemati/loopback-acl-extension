@@ -1,13 +1,12 @@
-import { Class } from "@loopback/repository";
-import { Ctor } from "loopback-history-extension";
 import {
     put,
     post,
     param,
     requestBody,
-    getModelSchemaRef,
-    HttpErrors
+    getModelSchemaRef
 } from "@loopback/rest";
+import { Class, EntityNotFoundError } from "@loopback/repository";
+import { Ctor } from "loopback-history-extension";
 
 import { ACLController } from "../../../../../servers";
 import { Code, User } from "../../../../../models";
@@ -59,7 +58,7 @@ export function GenerateUsersPasswordController<
                 where: user as any
             });
             if (!userObject || Object.keys(user).length <= 0) {
-                throw new HttpErrors.NotFound("Resource not found");
+                throw new EntityNotFoundError(userCtor, user);
             }
 
             /** Find activation code object */
@@ -111,7 +110,7 @@ export function GenerateUsersPasswordController<
 
             /** Check activation code object type */
             if (!codeObject || codeObject.type !== "Password") {
-                throw new HttpErrors.NotFound("Resource not found");
+                throw new EntityNotFoundError(codeCtor, code);
             } else {
                 await this.codeRepository.delete(code);
             }

@@ -4,12 +4,14 @@ import {
     InvocationResult,
     ValueOrPromise
 } from "@loopback/context";
-import { HttpErrors } from "@loopback/rest";
+import { Entity, EntityNotFoundError } from "@loopback/repository";
+import { Ctor } from "loopback-history-extension";
 
 import { RepositoryGetter } from "../types";
 import { ACLController } from "../servers";
 
-export function exist<Controller extends ACLController>(
+export function exist<Model extends Entity, Controller extends ACLController>(
+    ctor: Ctor<Model>,
     argIndex: number,
     repositoryGetter: RepositoryGetter<Controller, any>
 ): Interceptor {
@@ -17,12 +19,14 @@ export function exist<Controller extends ACLController>(
         invocationCtx: InvocationContext,
         next: () => ValueOrPromise<InvocationResult>
     ) => {
+        const id = invocationCtx.args[argIndex];
+
         const isExists = await repositoryGetter(
             invocationCtx.target as any
-        ).exists(invocationCtx.args[argIndex]);
+        ).exists(id);
 
         if (!isExists) {
-            throw new HttpErrors.NotFound("Resource not found");
+            throw new EntityNotFoundError(ctor, id);
         }
 
         return next();

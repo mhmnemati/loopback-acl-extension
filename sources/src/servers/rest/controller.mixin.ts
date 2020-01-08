@@ -178,7 +178,7 @@ export function ACLControllerMixin<
                 property: ctorId as string
             })
         )
-        @intercept(exist(0, repositoryGetter))
+        @intercept(exist(ctor, 0, repositoryGetter))
         @authorize(getAccessPermission(ctor, "read"))
         @authenticate("bearer")
         @get(`${basePath}/{id}`, {
@@ -243,7 +243,7 @@ export function ACLControllerMixin<
 
         @intercept(filter(ctor, "update", 1, ctorId as string, 2, "where"))
         @intercept(unique(ctor, 0, "single", false, repositoryGetter))
-        @intercept(exist(1, repositoryGetter))
+        @intercept(exist(ctor, 1, repositoryGetter))
         @intercept(valid(ctor, 0, "single", true))
         @authorize(getAccessPermission(ctor, "update"))
         @authenticate("bearer")
@@ -297,7 +297,7 @@ export function ACLControllerMixin<
         }
 
         @intercept(filter(ctor, "delete", 0, ctorId as string, 1, "where"))
-        @intercept(exist(0, repositoryGetter))
+        @intercept(exist(ctor, 0, repositoryGetter))
         @authorize(getAccessPermission(ctor, "delete"))
         @authenticate("bearer")
         @del(`${basePath}/{id}`, {
@@ -323,7 +323,7 @@ export function ACLControllerMixin<
                 property: ctorId as string
             })
         )
-        @intercept(exist(0, repositoryGetter))
+        @intercept(exist(ctor, 0, repositoryGetter))
         @authorize(getAccessPermission(ctor, "history"))
         @authenticate("bearer")
         @get(`${basePath}/{id}/history`, {
