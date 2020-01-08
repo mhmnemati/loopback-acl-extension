@@ -4,6 +4,7 @@ import {
     InvocationResult,
     ValueOrPromise
 } from "@loopback/context";
+import { HttpErrors } from "@loopback/rest";
 import { Entity } from "@loopback/repository";
 import { Ctor } from "loopback-history-extension";
 
@@ -78,11 +79,9 @@ export function unique<Controller extends ACLController, Model extends Entity>(
         }
 
         if (count.count > 0) {
-            throw {
-                name: "DatabaseError",
-                status: 409,
-                message: `Conflict with unique fields: ${uniqueFields}`
-            };
+            throw new HttpErrors.Conflict(
+                `Conflict with unique fields: ${uniqueFields}`
+            );
         }
 
         return next();

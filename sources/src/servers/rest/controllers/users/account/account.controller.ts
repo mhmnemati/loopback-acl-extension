@@ -1,5 +1,3 @@
-import { Class } from "@loopback/repository";
-import { Ctor } from "loopback-history-extension";
 import {
     post,
     put,
@@ -8,6 +6,8 @@ import {
     requestBody,
     getModelSchemaRef
 } from "@loopback/rest";
+import { Class, EntityNotFoundError } from "@loopback/repository";
+import { Ctor } from "loopback-history-extension";
 
 import { ACLController } from "../../../../../servers";
 import { Code, User, UserRole } from "../../../../../models";
@@ -109,11 +109,7 @@ export function GenerateUsersAccountController<
                 where: user as any
             });
             if (!userObject || Object.keys(user).length <= 0) {
-                throw {
-                    name: "DatabaseError",
-                    status: 404,
-                    message: `Not Found Resource`
-                };
+                throw new EntityNotFoundError(userCtor, user);
             }
 
             /** Find activation code object */
@@ -152,11 +148,7 @@ export function GenerateUsersAccountController<
 
             /** Check activation code object type */
             if (!codeObject || codeObject.type !== "Account") {
-                throw {
-                    name: "DatabaseError",
-                    status: 404,
-                    message: `Not Found Resource`
-                };
+                throw new EntityNotFoundError(codeCtor, code);
             } else {
                 await this.codeRepository.delete(code);
             }
