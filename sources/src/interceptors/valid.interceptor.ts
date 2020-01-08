@@ -4,6 +4,7 @@ import {
     InvocationResult,
     ValueOrPromise
 } from "@loopback/context";
+import { HttpErrors } from "@loopback/rest";
 import { Entity } from "@loopback/repository";
 import { Ctor } from "loopback-history-extension";
 
@@ -17,16 +18,18 @@ export function valid<Model extends Entity>(
         invocationCtx: InvocationContext,
         next: () => ValueOrPromise<InvocationResult>
     ) => {
-        const isExists = await repositoryGetter(
-            invocationCtx.target as any
-        ).exists(invocationCtx.args[argIndex]);
-
-        if (!isExists) {
-            throw {
-                name: "DatabaseError",
-                status: 404,
-                message: `Not Found Resource`
-            };
+        if (argType === "single") {
+            if (!Boolean(invocationCtx.args[argIndex])) {
+                throw new HttpErrors.UnprocessableEntity("Entity is not valid");
+            }
+        } else {
+            invocationCtx.args[argIndex].forEach((item: any) => {
+                if (!Boolean(item)) {
+                    throw new HttpErrors.UnprocessableEntity(
+                        "Entity is not valid"
+                    );
+                }
+            });
         }
 
         return next();

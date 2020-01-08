@@ -4,6 +4,7 @@ import {
     InvocationResult,
     ValueOrPromise
 } from "@loopback/context";
+import { HttpErrors } from "@loopback/rest";
 
 import { RepositoryGetter } from "../types";
 import { ACLController } from "../servers";
@@ -21,11 +22,7 @@ export function exist<Controller extends ACLController>(
         ).exists(invocationCtx.args[argIndex]);
 
         if (!isExists) {
-            throw {
-                name: "DatabaseError",
-                status: 404,
-                message: `Not Found Resource`
-            };
+            throw new HttpErrors.NotFound("Resource not found");
         }
 
         return next();

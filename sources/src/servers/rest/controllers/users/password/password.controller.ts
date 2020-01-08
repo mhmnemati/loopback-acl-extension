@@ -5,7 +5,8 @@ import {
     post,
     param,
     requestBody,
-    getModelSchemaRef
+    getModelSchemaRef,
+    HttpErrors
 } from "@loopback/rest";
 
 import { ACLController } from "../../../../../servers";
@@ -58,11 +59,7 @@ export function GenerateUsersPasswordController<
                 where: user as any
             });
             if (!userObject || Object.keys(user).length <= 0) {
-                throw {
-                    name: "DatabaseError",
-                    status: 404,
-                    message: `Not Found Resource`
-                };
+                throw new HttpErrors.NotFound("Resource not found");
             }
 
             /** Find activation code object */
@@ -114,11 +111,7 @@ export function GenerateUsersPasswordController<
 
             /** Check activation code object type */
             if (!codeObject || codeObject.type !== "Password") {
-                throw {
-                    name: "DatabaseError",
-                    status: 404,
-                    message: `Not Found Resource`
-                };
+                throw new HttpErrors.NotFound("Resource not found");
             } else {
                 await this.codeRepository.delete(code);
             }
