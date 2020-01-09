@@ -8,8 +8,8 @@ export function GenerateRolesUsersController<Model extends UserRole>(
     ctor: Ctor<Model>
 ): Class<ACLController> {
     class RolesUsersController extends ACLControllerMixin<
-        ACLController,
-        UserRole
+        UserRole,
+        ACLController
     >(
         ACLController,
         ctor,

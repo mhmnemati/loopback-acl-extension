@@ -44,7 +44,7 @@ export function GenerateUsersSelfController<UserModel extends User>(
         }
 
         @intercept(
-            unique<ACLController, UserModel>(
+            unique<UserModel, ACLController>(
                 userCtor,
                 0,
                 "single",

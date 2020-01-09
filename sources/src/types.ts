@@ -14,8 +14,6 @@ import { HttpServerOptions } from "@loopback/http-server";
 
 import { BearerTokenService } from "./providers";
 
-import { ACLController } from "./servers";
-
 import { User, Session, Code } from "./models";
 
 /**
@@ -53,10 +51,9 @@ export class ACLPermissions extends PermissionsList {
 }
 
 /** Get Repository From Controller */
-export type RepositoryGetter<
-    Controller extends ACLController,
-    Model extends Entity
-> = (controller: Controller) => DefaultCrudRepository<Model, any, any>;
+export type RepositoryGetter<Controller, Model extends Entity> = (
+    controller: Controller
+) => DefaultCrudRepository<Model, any, any>;
 
 /** Filter Handler */
 export type FilterMethod<Model extends Entity> = (

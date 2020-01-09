@@ -9,9 +9,8 @@ import { Entity } from "@loopback/repository";
 import { Ctor } from "loopback-history-extension";
 
 import { RepositoryGetter } from "../types";
-import { ACLController } from "../servers";
 
-export function unique<Controller extends ACLController, Model extends Entity>(
+export function unique<Model extends Entity, Controller>(
     ctor: Ctor<Model>,
     argIndex: number,
     argType: "single" | "multiple",
