@@ -23,7 +23,7 @@ export function GenerateUsersAccountController<
 >(codeCtor: Ctor<CodeModel>, userCtor: Ctor<UserModel>): Class<ACLController> {
     class UsersAccountController extends ACLController {
         @intercept(
-            unique<ACLController, UserModel>(
+            unique<UserModel, ACLController>(
                 userCtor,
                 0,
                 "single",

@@ -8,9 +8,8 @@ import { Entity, EntityNotFoundError } from "@loopback/repository";
 import { Ctor } from "loopback-history-extension";
 
 import { RepositoryGetter } from "../types";
-import { ACLController } from "../servers";
 
-export function exist<Model extends Entity, Controller extends ACLController>(
+export function exist<Model extends Entity, Controller>(
     ctor: Ctor<Model>,
     argIndex: number,
     repositoryGetter: RepositoryGetter<Controller, any>
