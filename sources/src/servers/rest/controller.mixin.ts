@@ -28,14 +28,22 @@ import { RepositoryGetter } from "../../types";
 
 import { getAccessPermission } from "../../decorators";
 
-export function ACLControllerMixin<Model extends Entity, Controller>(
+export interface Path<Model extends Entity, Controller> {
+    ctorId: keyof Model;
+    repositoryGetter: RepositoryGetter<Model, Controller>;
+    relations: {
+        [relation: string]: Path<Model, Controller>;
+    };
+}
+
+export function CreateControllerMixin<Model extends Entity, Controller>(
     controllerClass: Class<ACLController>,
+    repositoryGetter: RepositoryGetter<Model, Controller>,
     ctor: Ctor<Model>,
-    ctorId: keyof Model,
-    basePath: string,
-    repositoryGetter: RepositoryGetter<Controller, Model>
+    ctorId: string,
+    basePath: string
 ): Class<Controller> {
-    class CRUDController extends controllerClass {
+    class MixedController extends controllerClass {
         /** Create operations */
         @intercept(valid(ctor, 0, "multiple", false))
         @intercept(unique(ctor, 0, "multiple", false, repositoryGetter))
@@ -114,7 +122,18 @@ export function ACLControllerMixin<Model extends Entity, Controller>(
         ): Promise<Model> {
             return await repositoryGetter(this as any).create(model);
         }
+    }
 
+    return MixedController as any;
+}
+export function ReadControllerMixin<Model extends Entity, Controller>(
+    controllerClass: Class<ACLController>,
+    repositoryGetter: RepositoryGetter<Model, Controller>,
+    ctor: Ctor<Model>,
+    ctorId: string,
+    basePath: string
+): Class<Controller> {
+    class MixedController extends controllerClass {
         /** Read operations */
         @intercept(filter(ctor, "read", 0, "filter", 0, "filter"))
         @authorize(getAccessPermission(ctor, "read"))
@@ -201,7 +220,18 @@ export function ACLControllerMixin<Model extends Entity, Controller>(
         ): Promise<Model> {
             return await repositoryGetter(this as any).findOne(filter);
         }
+    }
 
+    return MixedController as any;
+}
+export function UpdateControllerMixin<Model extends Entity, Controller>(
+    controllerClass: Class<ACLController>,
+    repositoryGetter: RepositoryGetter<Model, Controller>,
+    ctor: Ctor<Model>,
+    ctorId: string,
+    basePath: string
+): Class<Controller> {
+    class MixedController extends controllerClass {
         /** Update operations */
         @intercept(valid(ctor, 0, "single", true))
         @intercept(unique(ctor, 0, "single", true, repositoryGetter))
@@ -267,7 +297,18 @@ export function ACLControllerMixin<Model extends Entity, Controller>(
 
             return await repositoryGetter(this as any).findById(id);
         }
+    }
 
+    return MixedController as any;
+}
+export function DeleteControllerMixin<Model extends Entity, Controller>(
+    controllerClass: Class<ACLController>,
+    repositoryGetter: RepositoryGetter<Model, Controller>,
+    ctor: Ctor<Model>,
+    ctorId: string,
+    basePath: string
+): Class<Controller> {
+    class MixedController extends controllerClass {
         /** Delete operations */
         @intercept(filter(ctor, "delete", 0, "where", 0, "where"))
         @authorize(getAccessPermission(ctor, "delete"))
@@ -312,7 +353,18 @@ export function ACLControllerMixin<Model extends Entity, Controller>(
         async deleteOne(@param.path.string("id") id: string): Promise<Count> {
             return await repositoryGetter(this as any).deleteAll(arguments[1]);
         }
+    }
 
+    return MixedController as any;
+}
+export function HistoryControllerMixin<Model extends Entity, Controller>(
+    controllerClass: Class<ACLController>,
+    repositoryGetter: RepositoryGetter<Model, Controller>,
+    ctor: Ctor<Model>,
+    ctorId: string,
+    basePath: string
+): Class<Controller> {
+    class MixedController extends controllerClass {
         /** History operations */
         @intercept(exist(ctor, 0, repositoryGetter))
         @intercept(
@@ -353,5 +405,54 @@ export function ACLControllerMixin<Model extends Entity, Controller>(
         }
     }
 
-    return CRUDController as any;
+    return MixedController as any;
+}
+
+export function ACLControllerMixin<Model extends Entity, Controller>(
+    controllerClass: Class<ACLController>,
+    ctor: Ctor<Model>,
+    basePath: string,
+    paths: Path<Model, Controller>
+): Class<Controller> {
+    controllerClass = CreateControllerMixin(
+        controllerClass,
+        null as any,
+        ctor,
+        "",
+        basePath
+    );
+
+    controllerClass = ReadControllerMixin(
+        controllerClass,
+        null as any,
+        ctor,
+        "",
+        basePath
+    );
+
+    controllerClass = UpdateControllerMixin(
+        controllerClass,
+        null as any,
+        ctor,
+        "",
+        basePath
+    );
+
+    controllerClass = DeleteControllerMixin(
+        controllerClass,
+        null as any,
+        ctor,
+        "",
+        basePath
+    );
+
+    controllerClass = HistoryControllerMixin(
+        controllerClass,
+        null as any,
+        ctor,
+        "",
+        basePath
+    );
+
+    return controllerClass as any;
 }

@@ -15,7 +15,7 @@ export function unique<Model extends Entity, Controller>(
     argIndex: number,
     argType: "single" | "multiple",
     withoutUnqiue: boolean,
-    repositoryGetter: RepositoryGetter<Controller, any>
+    repositoryGetter: RepositoryGetter<any, Controller>
 ): Interceptor {
     return async (
         invocationCtx: InvocationContext,

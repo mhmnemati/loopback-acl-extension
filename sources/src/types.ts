@@ -51,7 +51,7 @@ export class ACLPermissions extends PermissionsList {
 }
 
 /** Get Repository From Controller */
-export type RepositoryGetter<Controller, Model extends Entity> = (
+export type RepositoryGetter<Model extends Entity, Controller> = (
     controller: Controller
 ) => DefaultCrudRepository<Model, any, any>;
 

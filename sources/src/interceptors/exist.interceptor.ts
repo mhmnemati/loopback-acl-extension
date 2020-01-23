@@ -12,7 +12,7 @@ import { RepositoryGetter } from "../types";
 export function exist<Model extends Entity, Controller>(
     ctor: Ctor<Model>,
     argIndex: number,
-    repositoryGetter: RepositoryGetter<Controller, any>
+    repositoryGetter: RepositoryGetter<any, Controller>
 ): Interceptor {
     return async (
         invocationCtx: InvocationContext,
