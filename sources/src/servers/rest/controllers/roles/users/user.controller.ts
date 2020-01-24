@@ -13,9 +13,10 @@ export function GenerateRolesUsersController<Model extends UserRole>(
     >(
         ACLController,
         ctor,
-        "id",
+        // "id",
         "/roles/users",
-        controller => controller.userRoleRepository
+        // controller => controller.userRoleRepository
+        null
     ) {}
 
     return RolesUsersController;

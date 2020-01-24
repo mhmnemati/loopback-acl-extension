@@ -10,9 +10,10 @@ export function GenerateUsersController<Model extends User>(
     class UsersController extends ACLControllerMixin<User, ACLController>(
         ACLController,
         ctor,
-        "id",
+        // "id",
         "/users",
-        controller => controller.userRepository
+        null
+        // controller => controller.userRepository
     ) {}
 
     return UsersController;

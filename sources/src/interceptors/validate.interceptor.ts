@@ -4,11 +4,13 @@ import {
     InvocationResult,
     ValueOrPromise
 } from "@loopback/context";
-import { HttpErrors } from "@loopback/rest";
+import { HttpErrors, requestBody } from "@loopback/rest";
 import { Entity } from "@loopback/repository";
 import { Ctor } from "loopback-history-extension";
 
-export function valid<Model extends Entity>(
+import { ACLController } from "../servers";
+
+export function validate<Model extends Entity>(
     ctor: Ctor<Model>,
     argIndex: number,
     argType: "single" | "multiple",
@@ -18,6 +20,8 @@ export function valid<Model extends Entity>(
         invocationCtx: InvocationContext,
         next: () => ValueOrPromise<InvocationResult>
     ) => {
+        const controller = invocationCtx.target as ACLController;
+
         if (argType === "single") {
             if (!Boolean(invocationCtx.args[argIndex])) {
                 throw new HttpErrors.UnprocessableEntity("Entity is not valid");

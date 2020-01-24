@@ -13,9 +13,10 @@ export function GenerateRolesPermissionsController<
     >(
         ACLController,
         ctor,
-        "id",
+        // "id",
         "/roles/permissions",
-        controller => controller.rolePermissionRepository
+        // controller => controller.rolePermissionRepository
+        null
     ) {}
 
     return RolesPermissionsController;

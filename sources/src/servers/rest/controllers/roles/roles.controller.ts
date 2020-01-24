@@ -10,9 +10,10 @@ export function GenerateRolesController<Model extends Role>(
     class RolesController extends ACLControllerMixin<Role, ACLController>(
         ACLController,
         ctor,
-        "id",
+        // "id",
         "/roles",
-        controller => controller.roleRepository
+        // controller => controller.roleRepository
+        null
     ) {}
 
     return RolesController;

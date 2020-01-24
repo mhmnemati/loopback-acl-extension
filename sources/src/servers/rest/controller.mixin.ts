@@ -23,7 +23,7 @@ import { Ctor } from "loopback-history-extension";
 import { authenticate } from "@loopback/authentication";
 import { authorize } from "loopback-authorization-extension";
 import { intercept } from "@loopback/core";
-import { valid, exist, unique, filter } from "../../interceptors";
+import { validate, unique, filter } from "../../interceptors";
 import { RepositoryGetter } from "../../types";
 
 import { getAccessPermission } from "../../decorators";
@@ -44,8 +44,14 @@ export function CreateControllerMixin<Model extends Entity, Controller>(
     basePath: string
 ): Class<Controller> {
     class MixedController extends controllerClass {
-        /** Create operations */
-        @intercept(valid(ctor, 0, "multiple", false))
+        /**
+         * Create operations
+         *
+         * 1. validate
+         * 2. unique
+         */
+
+        @intercept(validate(ctor, 0, "multiple", false))
         @intercept(unique(ctor, 0, "multiple", false, repositoryGetter))
         @authorize(getAccessPermission(ctor, "create"))
         @authenticate("bearer")
@@ -64,30 +70,11 @@ export function CreateControllerMixin<Model extends Entity, Controller>(
                 }
             }
         })
-        async createAll(
-            @requestBody({
-                content: {
-                    "application/json": {
-                        schema: {
-                            type: "array",
-                            items: getModelSchemaRef(ctor, {
-                                exclude: [
-                                    "uid",
-                                    "beginDate",
-                                    "endDate",
-                                    "id"
-                                ] as any
-                            })
-                        }
-                    }
-                }
-            })
-            models: Model[]
-        ): Promise<Model[]> {
+        async createAll(models: Model[]): Promise<Model[]> {
             return await repositoryGetter(this as any).createAll(models);
         }
 
-        @intercept(valid(ctor, 0, "single", false))
+        @intercept(validate(ctor, 0, "single", false))
         @intercept(unique(ctor, 0, "single", false, repositoryGetter))
         @authorize(getAccessPermission(ctor, "create"))
         @authenticate("bearer")
@@ -103,26 +90,35 @@ export function CreateControllerMixin<Model extends Entity, Controller>(
                 }
             }
         })
-        async createOne(
-            @requestBody({
-                content: {
-                    "application/json": {
-                        schema: getModelSchemaRef(ctor, {
-                            exclude: [
-                                "uid",
-                                "beginDate",
-                                "endDate",
-                                "id"
-                            ] as any
-                        })
-                    }
-                }
-            })
-            model: Model
-        ): Promise<Model> {
+        async createOne(model: Model): Promise<Model> {
             return await repositoryGetter(this as any).create(model);
         }
     }
+
+    /** Decorate createAll arguments */
+    requestBody({
+        content: {
+            "application/json": {
+                schema: {
+                    type: "array",
+                    items: getModelSchemaRef(ctor, {
+                        exclude: ["uid", "beginDate", "endDate", "id"] as any
+                    })
+                }
+            }
+        }
+    })(MixedController.prototype, "createAll", 0);
+
+    /** Decorate createOne arguments */
+    requestBody({
+        content: {
+            "application/json": {
+                schema: getModelSchemaRef(ctor, {
+                    exclude: ["uid", "beginDate", "endDate", "id"] as any
+                })
+            }
+        }
+    })(MixedController.prototype, "createOne", 0);
 
     return MixedController as any;
 }
@@ -134,7 +130,12 @@ export function ReadControllerMixin<Model extends Entity, Controller>(
     basePath: string
 ): Class<Controller> {
     class MixedController extends controllerClass {
-        /** Read operations */
+        /**
+         * Read operations
+         *
+         * 1. filter
+         */
+
         @intercept(filter(ctor, "read", 0, "filter", 0, "filter"))
         @authorize(getAccessPermission(ctor, "read"))
         @authenticate("bearer")
@@ -155,12 +156,7 @@ export function ReadControllerMixin<Model extends Entity, Controller>(
                 }
             }
         })
-        async readAll(
-            @param.query.object("filter", getFilterSchemaFor(ctor), {
-                description: `Filter ${ctor.name}`
-            })
-            filter?: Filter<Model>
-        ): Promise<Model[]> {
+        async readAll(filter?: Filter<Model>): Promise<Model[]> {
             return await repositoryGetter(this as any).find(filter);
         }
 
@@ -179,16 +175,11 @@ export function ReadControllerMixin<Model extends Entity, Controller>(
                 }
             }
         })
-        async countAll(
-            @param.query.object("where", getWhereSchemaFor(ctor), {
-                description: `Where ${ctor.name}`
-            })
-            where?: Where<Model>
-        ): Promise<Count> {
+        async countAll(where?: Where<Model>): Promise<Count> {
             return await repositoryGetter(this as any).count(where);
         }
 
-        @intercept(exist(ctor, 0, repositoryGetter))
+        // @intercept(exist(ctor, 0, repositoryGetter))
         @intercept(
             filter(ctor, "read", 1, "filter", 1, "filter", {
                 arg: 0,
@@ -211,16 +202,26 @@ export function ReadControllerMixin<Model extends Entity, Controller>(
                 }
             }
         })
-        async readOne(
-            @param.path.string("id") id: string,
-            @param.query.object("filter", getFilterSchemaFor(ctor), {
-                description: `Filter ${ctor.name}`
-            })
-            filter?: Filter<Model>
-        ): Promise<Model> {
+        async readOne(id: string, filter?: Filter<Model>): Promise<Model> {
             return await repositoryGetter(this as any).findOne(filter);
         }
     }
+
+    /** Decorate readAll arguments */
+    param.query.object("filter", getFilterSchemaFor(ctor), {
+        description: `Filter ${ctor.name}`
+    })(MixedController.prototype, "readAll", 0);
+
+    /** Decorate countAll arguments */
+    param.query.object("where", getWhereSchemaFor(ctor), {
+        description: `Where ${ctor.name}`
+    })(MixedController.prototype, "countAll", 0);
+
+    /** Decorate readOne arguments */
+    param.path.string("id")(MixedController.prototype, "readOne", 0);
+    param.query.object("filter", getFilterSchemaFor(ctor), {
+        description: `Filter ${ctor.name}`
+    })(MixedController.prototype, "readOne", 1);
 
     return MixedController as any;
 }
@@ -232,8 +233,15 @@ export function UpdateControllerMixin<Model extends Entity, Controller>(
     basePath: string
 ): Class<Controller> {
     class MixedController extends controllerClass {
-        /** Update operations */
-        @intercept(valid(ctor, 0, "single", true))
+        /**
+         * Update operations
+         *
+         * 1. validate
+         * 2. unique
+         * 3. filter
+         */
+
+        @intercept(validate(ctor, 0, "single", true))
         @intercept(unique(ctor, 0, "single", true, repositoryGetter))
         @intercept(filter(ctor, "update", 1, "where", 1, "where"))
         @authorize(getAccessPermission(ctor, "update"))
@@ -249,27 +257,14 @@ export function UpdateControllerMixin<Model extends Entity, Controller>(
                 }
             }
         })
-        async updateAll(
-            @requestBody({
-                content: {
-                    "application/json": {
-                        schema: getModelSchemaRef(ctor, { partial: true })
-                    }
-                }
-            })
-            model: Model,
-            @param.query.object("where", getWhereSchemaFor(ctor), {
-                description: `Where ${ctor.name}`
-            })
-            where?: Where<Model>
-        ): Promise<Model[]> {
+        async updateAll(model: Model, where?: Where<Model>): Promise<Model[]> {
             await repositoryGetter(this as any).updateAll(model, where);
 
             return await repositoryGetter(this as any).find({ where: where });
         }
 
-        @intercept(valid(ctor, 0, "single", true))
-        @intercept(exist(ctor, 1, repositoryGetter))
+        @intercept(validate(ctor, 0, "single", true))
+        // @intercept(exist(ctor, 1, repositoryGetter))
         @intercept(unique(ctor, 0, "single", false, repositoryGetter))
         @intercept(filter(ctor, "update", 1, ctorId as string, 2, "where"))
         @authorize(getAccessPermission(ctor, "update"))
@@ -282,22 +277,34 @@ export function UpdateControllerMixin<Model extends Entity, Controller>(
                 }
             }
         })
-        async updateOne(
-            @requestBody({
-                content: {
-                    "application/json": {
-                        schema: getModelSchemaRef(ctor, { partial: true })
-                    }
-                }
-            })
-            model: Model,
-            @param.path.string("id") id: string
-        ): Promise<Model> {
+        async updateOne(model: Model, id: string): Promise<Model> {
             await repositoryGetter(this as any).updateAll(model, arguments[2]);
 
             return await repositoryGetter(this as any).findById(id);
         }
     }
+
+    /** Decorate updateAll arguments */
+    requestBody({
+        content: {
+            "application/json": {
+                schema: getModelSchemaRef(ctor, { partial: true })
+            }
+        }
+    })(MixedController.prototype, "updateAll", 0);
+    param.query.object("where", getWhereSchemaFor(ctor), {
+        description: `Where ${ctor.name}`
+    })(MixedController.prototype, "updateAll", 1);
+
+    /** Decorate updateOne arguments */
+    requestBody({
+        content: {
+            "application/json": {
+                schema: getModelSchemaRef(ctor, { partial: true })
+            }
+        }
+    })(MixedController.prototype, "updateOne", 0);
+    param.path.string("id")(MixedController.prototype, "updateOne", 1);
 
     return MixedController as any;
 }
@@ -309,7 +316,12 @@ export function DeleteControllerMixin<Model extends Entity, Controller>(
     basePath: string
 ): Class<Controller> {
     class MixedController extends controllerClass {
-        /** Delete operations */
+        /**
+         * Delete operations
+         *
+         * 1. filter
+         */
+
         @intercept(filter(ctor, "delete", 0, "where", 0, "where"))
         @authorize(getAccessPermission(ctor, "delete"))
         @authenticate("bearer")
@@ -325,16 +337,11 @@ export function DeleteControllerMixin<Model extends Entity, Controller>(
                 }
             }
         })
-        async deleteAll(
-            @param.query.object("where", getWhereSchemaFor(ctor), {
-                description: `Where ${ctor.name}`
-            })
-            where?: Where<Model>
-        ): Promise<Count> {
+        async deleteAll(where?: Where<Model>): Promise<Count> {
             return await repositoryGetter(this as any).deleteAll(where);
         }
 
-        @intercept(exist(ctor, 0, repositoryGetter))
+        // @intercept(exist(ctor, 0, repositoryGetter))
         @intercept(filter(ctor, "delete", 0, ctorId as string, 1, "where"))
         @authorize(getAccessPermission(ctor, "delete"))
         @authenticate("bearer")
@@ -350,10 +357,18 @@ export function DeleteControllerMixin<Model extends Entity, Controller>(
                 }
             }
         })
-        async deleteOne(@param.path.string("id") id: string): Promise<Count> {
+        async deleteOne(id: string): Promise<Count> {
             return await repositoryGetter(this as any).deleteAll(arguments[1]);
         }
     }
+
+    /** Decorate deleteAll arguments */
+    param.query.object("where", getWhereSchemaFor(ctor), {
+        description: `Where ${ctor.name}`
+    })(MixedController.prototype, "deleteAll", 0);
+
+    /** Decorate deleteOne arguments */
+    param.path.string("id")(MixedController.prototype, "deleteOne", 0);
 
     return MixedController as any;
 }
@@ -365,8 +380,13 @@ export function HistoryControllerMixin<Model extends Entity, Controller>(
     basePath: string
 ): Class<Controller> {
     class MixedController extends controllerClass {
-        /** History operations */
-        @intercept(exist(ctor, 0, repositoryGetter))
+        /**
+         * History operations
+         *
+         * 1. filter
+         */
+
+        // @intercept(exist(ctor, 0, repositoryGetter))
         @intercept(
             filter(ctor, "history", 1, "filter", 1, "filter", {
                 arg: 0,
@@ -392,18 +412,18 @@ export function HistoryControllerMixin<Model extends Entity, Controller>(
                 }
             }
         })
-        async historyOne(
-            @param.path.string("id") id: string,
-            @param.query.object("filter", getFilterSchemaFor(ctor), {
-                description: `Filter ${ctor.name}`
-            })
-            filter?: Filter<Model>
-        ): Promise<Model[]> {
+        async historyOne(id: string, filter?: Filter<Model>): Promise<Model[]> {
             return await repositoryGetter(this as any).find(filter, {
                 crud: true
             });
         }
     }
+
+    /** Decorate historyOne arguments */
+    param.path.string("id")(MixedController.prototype, "historyOne", 0);
+    param.query.object("filter", getFilterSchemaFor(ctor), {
+        description: `Filter ${ctor.name}`
+    })(MixedController.prototype, "historyOne", 1);
 
     return MixedController as any;
 }
@@ -412,7 +432,7 @@ export function ACLControllerMixin<Model extends Entity, Controller>(
     controllerClass: Class<ACLController>,
     ctor: Ctor<Model>,
     basePath: string,
-    paths: Path<Model, Controller>
+    paths: Path<Model, Controller> | any
 ): Class<Controller> {
     controllerClass = CreateControllerMixin(
         controllerClass,

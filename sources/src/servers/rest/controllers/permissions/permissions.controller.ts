@@ -13,9 +13,10 @@ export function GeneratePermissionsController<Model extends Permission>(
     >(
         ACLController,
         ctor,
-        "id",
+        // "id",
         "/permissions",
-        controller => controller.permissionRepository
+        // controller => controller.permissionRepository
+        null
     ) {}
 
     return PermissionsController;
