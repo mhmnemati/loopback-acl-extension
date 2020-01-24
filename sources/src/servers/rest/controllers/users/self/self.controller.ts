@@ -47,9 +47,8 @@ export function GenerateUsersSelfController<UserModel extends User>(
             unique<UserModel, ACLController>(
                 userCtor,
                 0,
-                "single",
-                false,
-                controller => controller.userRepository
+                controller => controller.userRepository,
+                false
             )
         )
         @authorize<ACLPermissions>("USERS_WRITE_SELF")

@@ -26,9 +26,8 @@ export function GenerateUsersAccountController<
             unique<UserModel, ACLController>(
                 userCtor,
                 0,
-                "single",
-                false,
-                controller => controller.userRepository
+                controller => controller.userRepository,
+                false
             )
         )
         @post("/users/account", {

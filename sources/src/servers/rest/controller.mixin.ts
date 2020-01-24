@@ -51,8 +51,8 @@ export function CreateControllerMixin<Model extends Entity, Controller>(
          * 2. unique
          */
 
-        @intercept(validate(ctor, 0, "multiple", false))
-        @intercept(unique(ctor, 0, "multiple", false, repositoryGetter))
+        @intercept(validate(ctor, 0))
+        @intercept(unique(ctor, 0, repositoryGetter, false))
         @authorize(getAccessPermission(ctor, "create"))
         @authenticate("bearer")
         @post(`${basePath}`, {
@@ -74,8 +74,8 @@ export function CreateControllerMixin<Model extends Entity, Controller>(
             return await repositoryGetter(this as any).createAll(models);
         }
 
-        @intercept(validate(ctor, 0, "single", false))
-        @intercept(unique(ctor, 0, "single", false, repositoryGetter))
+        @intercept(validate(ctor, 0))
+        @intercept(unique(ctor, 0, repositoryGetter, false))
         @authorize(getAccessPermission(ctor, "create"))
         @authenticate("bearer")
         @post(`${basePath}/one`, {
@@ -241,8 +241,8 @@ export function UpdateControllerMixin<Model extends Entity, Controller>(
          * 3. filter
          */
 
-        @intercept(validate(ctor, 0, "single", true))
-        @intercept(unique(ctor, 0, "single", true, repositoryGetter))
+        @intercept(validate(ctor, 0))
+        @intercept(unique(ctor, 0, repositoryGetter, true))
         @intercept(filter(ctor, "update", 1, "where", 1, "where"))
         @authorize(getAccessPermission(ctor, "update"))
         @authenticate("bearer")
@@ -263,9 +263,9 @@ export function UpdateControllerMixin<Model extends Entity, Controller>(
             return await repositoryGetter(this as any).find({ where: where });
         }
 
-        @intercept(validate(ctor, 0, "single", true))
+        @intercept(validate(ctor, 0))
         // @intercept(exist(ctor, 1, repositoryGetter))
-        @intercept(unique(ctor, 0, "single", false, repositoryGetter))
+        @intercept(unique(ctor, 0, repositoryGetter, false))
         @intercept(filter(ctor, "update", 1, ctorId as string, 2, "where"))
         @authorize(getAccessPermission(ctor, "update"))
         @authenticate("bearer")

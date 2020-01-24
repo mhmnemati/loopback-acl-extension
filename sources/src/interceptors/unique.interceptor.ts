@@ -13,22 +13,21 @@ import { RepositoryGetter } from "../types";
 export function unique<Model extends Entity, Controller>(
     ctor: Ctor<Model>,
     argIndex: number,
-    argType: "single" | "multiple",
-    withoutUnqiue: boolean,
-    repositoryGetter: RepositoryGetter<any, Controller>
+    repositoryGetter: RepositoryGetter<any, Controller>,
+    withoutUnqiue: boolean
 ): Interceptor {
     return async (
         invocationCtx: InvocationContext,
         next: () => ValueOrPromise<InvocationResult>
     ) => {
-        /** Get repository */
-        const repository = repositoryGetter(invocationCtx.target as any);
-
-        /** Get models from arguments by arg index number */
+        /** Get model from arguments request body */
         let models: any[] = invocationCtx.args[argIndex];
-        if (argType === "single") {
+        if (!Array.isArray(models)) {
             models = [models];
         }
+
+        /** Get repository */
+        const repository = repositoryGetter(invocationCtx.target as any);
 
         /** Find unique fields of model ctor */
         const uniqueFields = Object.entries(ctor.definition.properties)
