@@ -26,8 +26,6 @@ import { intercept } from "@loopback/core";
 import { validate, unique, filter } from "../../interceptors";
 import { RepositoryGetter } from "../../types";
 
-import { getAccessPermission } from "../../decorators";
-
 export interface Path<Model extends Entity, Controller> {
     ctorId: keyof Model;
     repositoryGetter: RepositoryGetter<Model, Controller>;

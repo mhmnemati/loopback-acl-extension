@@ -6,17 +6,8 @@ import {
     UserRelations as UserModelRelations
 } from "loopback-authorization-extension";
 
-import { access } from "../decorators";
-import { ACLPermissions } from "../types";
 import { UserRole } from "./";
 
-@access<UserWithRelations, ACLPermissions>({
-    create: "USERS_WRITE",
-    read: ["USERS_READ", async (context, filter) => filter],
-    update: ["USERS_WRITE", async (context, filter) => filter],
-    delete: ["USERS_WRITE", async (context, filter) => filter],
-    history: ["USERS_HISTORY", async (context, filter) => filter]
-})
 @relation<UserWithRelations, UserRole>("userRoles", () => UserRole)
 @model({
     settings: {

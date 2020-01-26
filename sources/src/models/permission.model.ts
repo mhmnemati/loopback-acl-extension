@@ -6,25 +6,14 @@ import {
     PermissionRelations as PermissionModelRelations
 } from "loopback-authorization-extension";
 
-import { access } from "../decorators";
-import { ACLPermissions } from "../types";
 import { RolePermission } from "./";
 
-@access<PermissionWithRelations, ACLPermissions>({
-    create: "PERMISSIONS_WRITE",
-    read: ["PERMISSIONS_READ", async (context, filter) => filter],
-    update: ["PERMISSIONS_WRITE", async (context, filter) => filter],
-    delete: ["PERMISSIONS_WRITE", async (context, filter) => filter],
-    history: ["PERMISSIONS_READ", async (context, filter) => filter]
-})
 @relation<PermissionWithRelations, RolePermission>(
     "rolePermissions",
     () => RolePermission
 )
 @model({
-    settings: {
-        access: access
-    }
+    settings: {}
 })
 export class Permission extends PermissionModel {
     constructor(data?: Partial<Permission>) {
