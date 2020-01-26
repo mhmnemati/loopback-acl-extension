@@ -10,12 +10,6 @@ import { authorizeFn } from "loopback-authorization-extension";
 
 import { ACLPermissions } from "../types";
 
-import {
-    getAccessPermission,
-    getAccessFilter,
-    getAccessTarget
-} from "../decorators";
-
 import { ACLController } from "../servers";
 
 export function filter<Model extends Entity>(
@@ -95,53 +89,53 @@ async function filterApply<Model extends Entity>(
     invocationCtx: InvocationContext,
     filter: Filter<Model>
 ): Promise<Filter<Model>> {
-    filter = await getAccessFilter<Model>(ctor, access)(invocationCtx, filter);
+    // filter = await getAccessFilter<Model>(ctor, access)(invocationCtx, filter);
 
-    if (filter.include) {
-        filter.include = (await Promise.all(
-            filter.include.map(async inclusion => {
-                const inclusionRelation = inclusion.relation;
-                const inclusionTarget = getAccessTarget<Model>(
-                    ctor,
-                    inclusionRelation
-                );
-                const inclusionPermission = getAccessPermission<
-                    any,
-                    ACLPermissions
-                >(ctor, access);
-                const inclusionFilter = getFilter<any>(inclusion.scope);
+    // if (filter.include) {
+    //     filter.include = (await Promise.all(
+    //         filter.include.map(async inclusion => {
+    //             const inclusionRelation = inclusion.relation;
+    //             const inclusionTarget = getAccessTarget<Model>(
+    //                 ctor,
+    //                 inclusionRelation
+    //             );
+    //             const inclusionPermission = getAccessPermission<
+    //                 any,
+    //                 ACLPermissions
+    //             >(ctor, access);
+    //             const inclusionFilter = getFilter<any>(inclusion.scope);
 
-                /** Check related model is accessable using current model */
-                if (!inclusionTarget) {
-                    return undefined;
-                }
+    //             /** Check related model is accessable using current model */
+    //             if (!inclusionTarget) {
+    //                 return undefined;
+    //             }
 
-                /** Check user has access permission to related model */
-                if (
-                    !(await authorizeFn<any>(
-                        inclusionPermission,
-                        (invocationCtx.target as ACLController).session
-                            .permissions,
-                        invocationCtx
-                    ))
-                ) {
-                    return undefined;
-                }
+    //             /** Check user has access permission to related model */
+    //             if (
+    //                 !(await authorizeFn<any>(
+    //                     inclusionPermission,
+    //                     (invocationCtx.target as ACLController).session
+    //                         .permissions,
+    //                     invocationCtx
+    //                 ))
+    //             ) {
+    //                 return undefined;
+    //             }
 
-                /** Apply filter over inclusion filter */
-                inclusion.scope = await filterApply<Model>(
-                    inclusionTarget,
-                    access,
-                    invocationCtx,
-                    inclusionFilter
-                );
+    //             /** Apply filter over inclusion filter */
+    //             inclusion.scope = await filterApply<Model>(
+    //                 inclusionTarget,
+    //                 access,
+    //                 invocationCtx,
+    //                 inclusionFilter
+    //             );
 
-                return inclusion;
-            })
-        )) as any[];
+    //             return inclusion;
+    //         })
+    //     )) as any[];
 
-        filter.include = filter.include.filter(inclusion => Boolean(inclusion));
-    }
+    //     filter.include = filter.include.filter(inclusion => Boolean(inclusion));
+    // }
 
     return filter;
 }

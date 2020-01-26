@@ -51,7 +51,7 @@ export function CreateControllerMixin<Model extends Entity, Controller>(
 
         @intercept(validate(ctor, 0))
         @intercept(unique(ctor, 0, repositoryGetter, false))
-        @authorize(getAccessPermission(ctor, "create"))
+        // @authorize(getAccessPermission(ctor, "create"))
         @authenticate("bearer")
         @post(`${basePath}`, {
             responses: {
@@ -74,7 +74,7 @@ export function CreateControllerMixin<Model extends Entity, Controller>(
 
         @intercept(validate(ctor, 0))
         @intercept(unique(ctor, 0, repositoryGetter, false))
-        @authorize(getAccessPermission(ctor, "create"))
+        // @authorize(getAccessPermission(ctor, "create"))
         @authenticate("bearer")
         @post(`${basePath}/one`, {
             responses: {
@@ -135,7 +135,7 @@ export function ReadControllerMixin<Model extends Entity, Controller>(
          */
 
         @intercept(filter(ctor, "read", 0, "filter", 0, "filter"))
-        @authorize(getAccessPermission(ctor, "read"))
+        // @authorize(getAccessPermission(ctor, "read"))
         @authenticate("bearer")
         @get(`${basePath}`, {
             responses: {
@@ -159,7 +159,7 @@ export function ReadControllerMixin<Model extends Entity, Controller>(
         }
 
         @intercept(filter(ctor, "read", 0, "where", 0, "where"))
-        @authorize(getAccessPermission(ctor, "read"))
+        // @authorize(getAccessPermission(ctor, "read"))
         @authenticate("bearer")
         @get(`${basePath}/count`, {
             responses: {
@@ -184,7 +184,7 @@ export function ReadControllerMixin<Model extends Entity, Controller>(
                 property: ctorId as string
             })
         )
-        @authorize(getAccessPermission(ctor, "read"))
+        // @authorize(getAccessPermission(ctor, "read"))
         @authenticate("bearer")
         @get(`${basePath}/{id}`, {
             responses: {
@@ -242,7 +242,7 @@ export function UpdateControllerMixin<Model extends Entity, Controller>(
         @intercept(validate(ctor, 0))
         @intercept(unique(ctor, 0, repositoryGetter, true))
         @intercept(filter(ctor, "update", 1, "where", 1, "where"))
-        @authorize(getAccessPermission(ctor, "update"))
+        // @authorize(getAccessPermission(ctor, "update"))
         @authenticate("bearer")
         @put(`${basePath}`, {
             responses: {
@@ -265,7 +265,7 @@ export function UpdateControllerMixin<Model extends Entity, Controller>(
         // @intercept(exist(ctor, 1, repositoryGetter))
         @intercept(unique(ctor, 0, repositoryGetter, false))
         @intercept(filter(ctor, "update", 1, ctorId as string, 2, "where"))
-        @authorize(getAccessPermission(ctor, "update"))
+        // @authorize(getAccessPermission(ctor, "update"))
         @authenticate("bearer")
         @put(`${basePath}/{id}`, {
             responses: {
@@ -321,7 +321,7 @@ export function DeleteControllerMixin<Model extends Entity, Controller>(
          */
 
         @intercept(filter(ctor, "delete", 0, "where", 0, "where"))
-        @authorize(getAccessPermission(ctor, "delete"))
+        // @authorize(getAccessPermission(ctor, "delete"))
         @authenticate("bearer")
         @del(`${basePath}`, {
             responses: {
@@ -341,7 +341,7 @@ export function DeleteControllerMixin<Model extends Entity, Controller>(
 
         // @intercept(exist(ctor, 0, repositoryGetter))
         @intercept(filter(ctor, "delete", 0, ctorId as string, 1, "where"))
-        @authorize(getAccessPermission(ctor, "delete"))
+        // @authorize(getAccessPermission(ctor, "delete"))
         @authenticate("bearer")
         @del(`${basePath}/{id}`, {
             responses: {
@@ -391,7 +391,7 @@ export function HistoryControllerMixin<Model extends Entity, Controller>(
                 property: ctorId as string
             })
         )
-        @authorize(getAccessPermission(ctor, "history"))
+        // @authorize(getAccessPermission(ctor, "history"))
         @authenticate("bearer")
         @get(`${basePath}/{id}/history`, {
             responses: {
