@@ -10,14 +10,14 @@ import { Ctor } from "loopback-history-extension";
 
 export function validate<Model extends Entity>(
     ctor: Ctor<Model>,
-    argIndex: number
+    argument: number
 ): Interceptor {
     return async (
         invocationCtx: InvocationContext,
         next: () => ValueOrPromise<InvocationResult>
     ) => {
         /** Get model from arguments request body */
-        const model = invocationCtx.args[argIndex];
+        const model = invocationCtx.args[argument];
 
         if (Array.isArray(model)) {
             model.forEach((item: any) => {

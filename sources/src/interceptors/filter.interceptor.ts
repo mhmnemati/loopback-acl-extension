@@ -14,6 +14,8 @@ import { ACLController } from "../servers";
 
 export function filter<Model extends Entity>(
     ctor: Ctor<Model>,
+    argument: number | "",
+
     access: "read" | "update" | "delete" | "history",
     inputArg: number,
     inputFilter: "where" | "filter" | string,

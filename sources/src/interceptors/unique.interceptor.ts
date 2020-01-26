@@ -12,7 +12,7 @@ import { RepositoryGetter } from "../types";
 
 export function unique<Model extends Entity, Controller>(
     ctor: Ctor<Model>,
-    argIndex: number,
+    argument: number,
     repositoryGetter: RepositoryGetter<any, Controller>,
     withoutUnqiue: boolean
 ): Interceptor {
@@ -21,7 +21,7 @@ export function unique<Model extends Entity, Controller>(
         next: () => ValueOrPromise<InvocationResult>
     ) => {
         /** Get model from arguments request body */
-        let models: any[] = invocationCtx.args[argIndex];
+        let models: any[] = invocationCtx.args[argument];
         if (!Array.isArray(models)) {
             models = [models];
         }
