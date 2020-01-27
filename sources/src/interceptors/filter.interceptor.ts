@@ -27,7 +27,7 @@ export function filter<
     ) => {
         let filter = null as any;
 
-        filter = filterFn(ctor, filter, scope, access, invocationCtx);
+        filter = filterFn(ctor, scope, access, filter, invocationCtx);
 
         return next();
     };
@@ -39,9 +39,9 @@ export async function filterFn<
     Controller
 >(
     ctor: Ctor<Model>,
-    filter: Filter<Model> | undefined,
     scope: FilterScope<Model, Permissions, Controller>,
     access: "create" | "read" | "update" | "delete" | "history",
+    filter: Filter<Model> | undefined,
     invocationCtx: InvocationContext
 ): Promise<Filter<Model>> {
     filter = filter || {};
@@ -105,9 +105,9 @@ export async function filterFn<
             filter.include.map(async inclusion => {
                 inclusion.scope = await filterFn<any, Permissions, Controller>(
                     ctor.definition.relations[inclusion.relation].target(),
-                    inclusion.scope,
                     scope.include[inclusion.relation],
                     access,
+                    inclusion.scope,
                     invocationCtx
                 );
 

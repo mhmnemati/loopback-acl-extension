@@ -12,9 +12,9 @@ import { RepositoryGetter } from "../types";
 
 export function unique<Model extends Entity, Controller>(
     ctor: Ctor<Model>,
-    argIndex: number,
     repositoryGetter: RepositoryGetter<any, Controller>,
-    withoutUnqiue: boolean
+    withoutUnqiue: boolean,
+    argIndex: number
 ): Interceptor {
     return async (
         invocationCtx: InvocationContext,
@@ -29,9 +29,9 @@ export function unique<Model extends Entity, Controller>(
         if (
             !(await uniqueFn(
                 ctor,
-                models,
                 repositoryGetter,
                 withoutUnqiue,
+                models,
                 invocationCtx
             ))
         ) {
@@ -46,9 +46,9 @@ export function unique<Model extends Entity, Controller>(
 
 export async function uniqueFn<Model extends Entity, Controller>(
     ctor: Ctor<Model>,
-    models: Model[],
     repositoryGetter: RepositoryGetter<any, Controller>,
     withoutUnqiue: boolean,
+    models: Model[],
     invocationCtx: InvocationContext
 ): Promise<boolean> {
     /** Get repository */
