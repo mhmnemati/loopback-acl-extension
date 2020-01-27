@@ -19,20 +19,32 @@ export function validate<Model extends Entity>(
         /** Get model from arguments request body */
         const model = invocationCtx.args[argIndex];
 
-        if (Array.isArray(model)) {
-            model.forEach((item: any) => {
-                if (!Boolean(item)) {
-                    throw new HttpErrors.UnprocessableEntity(
-                        "Entity is not valid"
-                    );
-                }
-            });
-        } else {
-            if (!Boolean(model)) {
-                throw new HttpErrors.UnprocessableEntity("Entity is not valid");
-            }
+        if (!(await validateFn(ctor, model, invocationCtx))) {
+            throw new HttpErrors.UnprocessableEntity("Entity is not valid");
         }
 
         return next();
     };
+}
+
+export async function validateFn<Model extends Entity>(
+    ctor: Ctor<Model>,
+    model: Model,
+    invocationCtx: InvocationContext
+): Promise<boolean> {
+    let result = true;
+
+    if (Array.isArray(model)) {
+        model.forEach((item: any) => {
+            if (!Boolean(item)) {
+                result = false;
+            }
+        });
+    } else {
+        if (!Boolean(model)) {
+            result = false;
+        }
+    }
+
+    return result;
 }
