@@ -19,15 +19,29 @@ export function filter<
 >(
     ctor: Ctor<Model>,
     scope: FilterScope<Model, Permissions, Controller>,
-    access: "create" | "read" | "update" | "delete" | "history"
+    access: "create" | "read" | "update" | "delete" | "history",
+    argTypes: string | { type: "where" | "filter" } | undefined[],
+    outType: "where" | "filter"
 ): Interceptor {
     return async (
         invocationCtx: InvocationContext,
         next: () => ValueOrPromise<InvocationResult>
     ) => {
+        // TODO: generate filter from argTypes, invocationCtx.args
         let filter = null as any;
 
-        filter = filterFn(ctor, scope, access, filter, invocationCtx);
+        let result: any = await filterFn(
+            ctor,
+            scope,
+            access,
+            filter,
+            invocationCtx
+        );
+        if (outType === "where") {
+            result = result.where;
+        }
+
+        invocationCtx.args.push(result);
 
         return next();
     };
