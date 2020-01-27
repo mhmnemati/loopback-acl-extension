@@ -1,10 +1,10 @@
 import {
     Entity,
     DefaultCrudRepository,
-    Filter,
+    Where,
     Class
 } from "@loopback/repository";
-import { PermissionsList } from "loopback-authorization-extension";
+import { PermissionsList, Condition } from "loopback-authorization-extension";
 import { InvocationContext, Provider } from "@loopback/context";
 import { Ctor } from "loopback-history-extension";
 
@@ -55,11 +55,31 @@ export type RepositoryGetter<Model extends Entity, Controller> = (
     controller: Controller
 ) => DefaultCrudRepository<Model, any, any>;
 
-/** Filter Handler */
-export type FilterMethod<Model extends Entity> = (
+/** Filter Where, filters a Where */
+export type FilterWhere<Model extends Entity> = (
     context: InvocationContext,
-    filter: Filter<Model>
-) => Promise<Filter<Model>>;
+    where: Where<Model>
+) => Promise<Where<Model>>;
+
+/** Filter Scope, passed to filter interceptor for API's business scope definition */
+export interface FilterScope<
+    Model extends Entity,
+    Permissions extends ACLPermissions,
+    Controller
+> {
+    ctorId: keyof Model;
+    repositoryGetter: RepositoryGetter<Model, Controller>;
+
+    create?: [Condition<Permissions>, FilterWhere<Model>];
+    read?: [Condition<Permissions>, FilterWhere<Model>];
+    update?: [Condition<Permissions>, FilterWhere<Model>];
+    delete?: [Condition<Permissions>, FilterWhere<Model>];
+    history?: [Condition<Permissions>, FilterWhere<Model>];
+
+    include: {
+        [relation: string]: FilterScope<Model, Permissions, Controller>;
+    };
+}
 
 /**
  * MessageProvider configs
