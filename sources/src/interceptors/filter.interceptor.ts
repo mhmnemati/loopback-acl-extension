@@ -18,7 +18,7 @@ export function filter<
     Controller
 >(
     ctor: Ctor<Model>,
-    scope: FilterScope<Model, Permissions, Controller>,
+    rootScope: FilterScope<Model, Permissions, Controller>,
     access: "create" | "read" | "update" | "delete" | "history",
     argTypes: string | { type: "where" | "filter" } | undefined[],
     outType: "where" | "filter"

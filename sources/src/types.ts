@@ -61,20 +61,27 @@ export type FilterWhere<Model extends Entity> = (
     where: Where<Model>
 ) => Promise<Where<Model>>;
 
+/** Filter Access, tuple of permission condition and filter where */
+export type FilterAccess<
+    Model extends Entity,
+    Permissions extends ACLPermissions
+> = [Condition<Permissions>, FilterWhere<Model>];
+
 /** Filter Scope, passed to filter interceptor for API's business scope definition */
 export interface FilterScope<
     Model extends Entity,
     Permissions extends ACLPermissions,
     Controller
 > {
+    ctor: Ctor<Model>;
     ctorId: keyof Model;
     repositoryGetter: RepositoryGetter<Model, Controller>;
 
-    create?: [Condition<Permissions>, FilterWhere<Model>];
-    read?: [Condition<Permissions>, FilterWhere<Model>];
-    update?: [Condition<Permissions>, FilterWhere<Model>];
-    delete?: [Condition<Permissions>, FilterWhere<Model>];
-    history?: [Condition<Permissions>, FilterWhere<Model>];
+    create?: FilterAccess<Model, Permissions>;
+    read?: FilterAccess<Model, Permissions>;
+    update?: FilterAccess<Model, Permissions>;
+    delete?: FilterAccess<Model, Permissions>;
+    history?: FilterAccess<Model, Permissions>;
 
     include: {
         [relation: string]: FilterScope<Model, Permissions, Controller>;
