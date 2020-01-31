@@ -1,16 +1,16 @@
-// import {
-//     Interceptor,
-//     InvocationContext,
-//     InvocationResult,
-//     ValueOrPromise
-// } from "@loopback/context";
-// import { Entity, Filter } from "@loopback/repository";
-// import { Ctor } from "loopback-history-extension";
-// import { authorizeFn } from "loopback-authorization-extension";
+import {
+    Interceptor,
+    InvocationContext,
+    InvocationResult,
+    ValueOrPromise
+} from "@loopback/context";
+import { Entity, Filter, RelationType } from "@loopback/repository";
+import { Ctor } from "loopback-history-extension";
+import { authorizeFn } from "loopback-authorization-extension";
 
-// import { ACLPermissions, FilterScope } from "../types";
+import { ACLPermissions, FilterScope } from "../types";
 
-// import { ACLController } from "../servers";
+import { ACLController } from "../servers";
 
 // export function filter<
 //     Model extends Entity,
@@ -132,3 +132,154 @@
 
 //     return filter;
 // }
+
+export interface Path<
+    Model extends Entity,
+    Permissions extends ACLPermissions,
+    Controller
+> {
+    ctor: Ctor<Model>;
+    scope: FilterScope<Model, Permissions, Controller>;
+    relation?: {
+        name: string;
+        type: RelationType;
+    };
+}
+
+/**
+ * Generator example:
+ *
+ * [
+ *  User        -   ()          -   ()          =>  /users
+ *  UserRole    -   (userRoles) -   (hasMany)   =>  /{user_id}/userroles
+ *  Role        -   (role)      -   (belongsTo) =>  /{userrole_id}/role
+ *  RolePerm    -   (rolePerms) -   (hasMany)   =>  /rolepermissions
+ *  Permission  -   (permissio) -   (belongsTo) =>  /{roleperm_id}/permission
+ *  Key         -   (key)       -   (hasOne)    =>  /key
+ *  Data        -   (datas)     -   (hasMany)   =>  /datas
+ *  ...
+ * ].reduce()
+ *
+ * if (previousPath && (
+ *      !previousPath.relation ||
+ *      previousPath.relation.type === hasMany
+ * )) {
+ *      /{model_id}
+ * }
+ *
+ * if (!path.relation || path.relation.type === hasMany) {
+ *      /model{s}
+ * } else {
+ *      /model
+ * }
+ */
+export function getModelPathId<
+    Model extends Entity,
+    Permissions extends ACLPermissions,
+    Controller
+>(path?: Path<Model, Permissions, Controller>) {
+    if (path) {
+        let property = "id";
+        if (!("id" in path.ctor.definition.properties)) {
+            property = path.ctor.getIdProperties()[0];
+        }
+
+        if (path.relation) {
+            if (path.relation.type === RelationType.hasMany) {
+                return {
+                    property: property,
+                    id: `${path.relation.name
+                        .replace(/s$/, "")
+                        .toLowerCase()}_id`
+                };
+            }
+        } else {
+            return {
+                property: property,
+                id: `${path.ctor.name.toLowerCase()}_id`
+            };
+        }
+    }
+
+    return undefined;
+}
+
+export function getModelPathName<
+    Model extends Entity,
+    Permissions extends ACLPermissions,
+    Controller
+>(path: Path<Model, Permissions, Controller>) {
+    if (path.relation) {
+        return `${path.relation.name.toLowerCase()}`;
+    } else {
+        return `${path.ctor.name.toLowerCase()}s`;
+    }
+}
+
+export function generatePath<
+    Model extends Entity,
+    Permissions extends ACLPermissions,
+    Controller
+>(paths: Path<Model, Permissions, Controller>[], basePath: string) {
+    return paths.reduce((accumulate, path, index) => {
+        const pathId = getModelPathId(paths[index - 1]);
+        const pathName = getModelPathName(path);
+
+        if (pathId) {
+            return `${accumulate}/{${pathId.id}}/${pathName}`;
+        } else {
+            return `${accumulate}/${pathName}`;
+        }
+    }, basePath);
+}
+
+export function generateIds<
+    Model extends Entity,
+    Permissions extends ACLPermissions,
+    Controller
+>(paths: Path<Model, Permissions, Controller>[]) {
+    return paths
+        .map((path, index) => getModelPathId(paths[index - 1])?.id)
+        .filter(id => Boolean(id));
+}
+
+export function generateFilter<
+    Model extends Entity,
+    Permissions extends ACLPermissions,
+    Controller
+>(paths: Path<Model, Permissions, Controller>[]) {
+    let filter: Filter<Model> = {};
+
+    paths = [...paths];
+    paths.pop();
+
+    paths.reduce((accumulate, path, index) => {
+        const pathId = getModelPathId(path);
+
+        if (pathId) {
+            accumulate.include = [
+                {
+                    relation: path.relation?.name || "",
+                    scope: {
+                        where: {
+                            [pathId.property]: pathId.id
+                        }
+                    }
+                }
+            ];
+        } else {
+            accumulate.include = [
+                {
+                    relation: path.relation?.name || "",
+                    scope: {}
+                }
+            ];
+        }
+
+        return accumulate.include[0].scope as any;
+    }, filter);
+
+    if (filter.include) {
+        return filter.include[0].scope;
+    }
+}

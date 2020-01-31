@@ -3,9 +3,9 @@ import {
     Entity,
     Count,
     CountSchema,
-    Filter,
     Where,
     Class,
+    Filter,
     RelationType
 } from "@loopback/repository";
 import {
@@ -25,126 +25,20 @@ import { Condition } from "loopback-authorization-extension";
 import { authenticate } from "@loopback/authentication";
 import { authorize } from "loopback-authorization-extension";
 import { intercept } from "@loopback/core";
-import { validate, unique } from "../../interceptors";
+import {
+    validate,
+    unique,
+    Path,
+    generateIds,
+    generatePath,
+    generateFilter
+} from "../../interceptors";
 import {
     RepositoryGetter,
     ValidateModel,
     FilterScope,
     ACLPermissions
 } from "../../types";
-
-export interface Path<
-    Model extends Entity,
-    Permissions extends ACLPermissions,
-    Controller
-> {
-    ctor: Ctor<Model>;
-    scope: FilterScope<Model, Permissions, Controller>;
-    relation?: {
-        name: string;
-        type: RelationType;
-    };
-}
-
-export function generatePath<
-    Model extends Entity,
-    Permissions extends ACLPermissions,
-    Controller
->(paths: Path<Model, Permissions, Controller>[], basePath: string): string {
-    return paths.reduce((accumulate, path, index) => {
-        let modelName = `${path.ctor.name}s`.toLowerCase();
-
-        if (path.relation) {
-            // not first (with relation)
-            modelName = path.relation.name.toLowerCase();
-
-            if (
-                path.relation.type === RelationType.belongsTo ||
-                path.relation.type === RelationType.hasOne
-            ) {
-                // belongsTo, hasOne relations hasn't any filter id
-                index = paths.length - 1;
-            }
-        }
-
-        if (index === paths.length - 1) {
-            // last
-            return `${accumulate}/${modelName}`;
-        } else {
-            // not last
-            return `${accumulate}/${modelName}/{${modelName.replace(
-                /s$/,
-                ""
-            )}_id}`;
-        }
-    }, basePath);
-}
-
-export function generateIds<
-    Model extends Entity,
-    Permissions extends ACLPermissions,
-    Controller
->(paths: Path<Model, Permissions, Controller>[]): string[] {
-    return paths
-        .map((path, index) => {
-            let modelName = `${path.ctor.name}s`.toLowerCase();
-
-            if (path.relation) {
-                // not first (with relation)
-                modelName = path.relation.name.toLowerCase();
-
-                if (
-                    path.relation.type === RelationType.belongsTo ||
-                    path.relation.type === RelationType.hasOne
-                ) {
-                    // belongsTo, hasOne relations hasn't any filter id
-                    index = paths.length - 1;
-                }
-            }
-
-            if (index < paths.length - 1) {
-                // not last
-                return `${modelName.replace(/s$/, "")}_id`;
-            }
-
-            return "";
-        })
-        .filter(id => Boolean(id));
-}
-
-export function generateFilter<
-    Model extends Entity,
-    Permissions extends ACLPermissions,
-    Controller
->(paths: Path<Model, Permissions, Controller>[]): string[] {
-    return paths.map((path, index) => {
-        let modelName = `${path.ctor.name}s`.toLowerCase();
-
-        if (path.relation) {
-            // not first (with relation)
-            modelName = path.relation.name.toLowerCase();
-
-            if (
-                path.relation.type === RelationType.belongsTo ||
-                path.relation.type === RelationType.hasOne
-            ) {
-                // belongsTo, hasOne relations hasn't any filter id
-                index = paths.length - 1;
-            }
-        }
-
-        if (index === paths.length - 1) {
-            // last
-            return `${accumulate}/${modelName}`;
-        } else {
-            // not last
-            return `${accumulate}/${modelName}/{${modelName.replace(
-                /s$/,
-                ""
-            )}_id}`;
-        }
-    });
-}
 
 // export function CreateControllerMixin<
 //     Model extends Entity,
@@ -608,6 +502,13 @@ export function CRUDControllerMixin<
     basePath: string
 ): Class<Controller> {
     const leafPath = paths[paths.length - 1];
+
+    // console.log(paths);
+    // console.log(generateIds(paths));
+    console.log(generatePath(paths, basePath));
+    console.log();
+    console.log(JSON.stringify(generateFilter(paths)));
+    console.log("------------------------------------------------");
 
     // if ("create" in leafPath.scope) {
     //     controllerClass = CreateControllerMixin<Model, Permissions, Controller>(
