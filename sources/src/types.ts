@@ -55,17 +55,17 @@ export type RepositoryGetter<Model extends Entity, Controller> = (
     controller: Controller
 ) => DefaultCrudRepository<Model, any, any>;
 
+/** Validate Model, check model params validity */
+export type ValidateModel<Model extends Entity> = (
+    context: InvocationContext,
+    models: Model[]
+) => Promise<boolean>;
+
 /** Filter Where, filters a Where */
 export type FilterWhere<Model extends Entity> = (
     context: InvocationContext,
     where: Where<Model>
 ) => Promise<Where<Model>>;
-
-/** Filter Access, tuple of permission condition and filter where */
-export type FilterAccess<
-    Model extends Entity,
-    Permissions extends ACLPermissions
-> = [Condition<Permissions>, FilterWhere<Model>];
 
 /** Filter Scope, passed to filter interceptor for API's business scope definition */
 export interface FilterScope<
@@ -73,18 +73,16 @@ export interface FilterScope<
     Permissions extends ACLPermissions,
     Controller
 > {
-    ctor: Ctor<Model>;
-    ctorId: keyof Model;
     repositoryGetter: RepositoryGetter<Model, Controller>;
 
-    create?: FilterAccess<Model, Permissions>;
-    read?: FilterAccess<Model, Permissions>;
-    update?: FilterAccess<Model, Permissions>;
-    delete?: FilterAccess<Model, Permissions>;
-    history?: FilterAccess<Model, Permissions>;
+    read: [Condition<Permissions>, FilterWhere<Model>];
+    create?: [Condition<Permissions>, ValidateModel<Model>];
+    update?: [Condition<Permissions>, ValidateModel<Model>, FilterWhere<Model>];
+    delete?: [Condition<Permissions>, FilterWhere<Model>];
+    history?: [Condition<Permissions>, FilterWhere<Model>];
 
     include: {
-        [relation: string]: FilterScope<Model, Permissions, Controller>;
+        [relation: string]: FilterScope<any, Permissions, Controller>;
     };
 }
 
