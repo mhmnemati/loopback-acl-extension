@@ -40,7 +40,30 @@ export function GenerateUsersController<Model extends User>(
                                         "ROLE_PERMISSIONS_READ",
                                         async (context, where) => where
                                     ],
-                                    include: {}
+                                    include: {
+                                        permission: {
+                                            repositoryGetter: controller =>
+                                                controller.permissionRepository,
+                                            read: [
+                                                "PERMISSIONS_READ",
+                                                async (context, where) => where
+                                            ],
+                                            include: {
+                                                rolePermissions: {
+                                                    repositoryGetter: controller =>
+                                                        controller.rolePermissionRepository,
+                                                    read: [
+                                                        "ROLE_PERMISSIONS_READ",
+                                                        async (
+                                                            context,
+                                                            where
+                                                        ) => where
+                                                    ],
+                                                    include: {}
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }

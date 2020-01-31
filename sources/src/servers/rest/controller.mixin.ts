@@ -46,18 +46,115 @@ export interface Path<
     };
 }
 
+export function generatePath<
+    Model extends Entity,
+    Permissions extends ACLPermissions,
+    Controller
+>(paths: Path<Model, Permissions, Controller>[], basePath: string): string {
+    return paths.reduce((accumulate, path, index) => {
+        let modelName = `${path.ctor.name}s`.toLowerCase();
+
+        if (path.relation) {
+            // not first (with relation)
+            modelName = path.relation.name.toLowerCase();
+
+            if (
+                path.relation.type === RelationType.belongsTo ||
+                path.relation.type === RelationType.hasOne
+            ) {
+                // belongsTo, hasOne relations hasn't any filter id
+                index = paths.length - 1;
+            }
+        }
+
+        if (index === paths.length - 1) {
+            // last
+            return `${accumulate}/${modelName}`;
+        } else {
+            // not last
+            return `${accumulate}/${modelName}/{${modelName.replace(
+                /s$/,
+                ""
+            )}_id}`;
+        }
+    }, basePath);
+}
+
+export function generateIds<
+    Model extends Entity,
+    Permissions extends ACLPermissions,
+    Controller
+>(paths: Path<Model, Permissions, Controller>[]): string[] {
+    return paths
+        .map((path, index) => {
+            let modelName = `${path.ctor.name}s`.toLowerCase();
+
+            if (path.relation) {
+                // not first (with relation)
+                modelName = path.relation.name.toLowerCase();
+
+                if (
+                    path.relation.type === RelationType.belongsTo ||
+                    path.relation.type === RelationType.hasOne
+                ) {
+                    // belongsTo, hasOne relations hasn't any filter id
+                    index = paths.length - 1;
+                }
+            }
+
+            if (index < paths.length - 1) {
+                // not last
+                return `${modelName.replace(/s$/, "")}_id`;
+            }
+
+            return "";
+        })
+        .filter(id => Boolean(id));
+}
+
+export function generateFilter<
+    Model extends Entity,
+    Permissions extends ACLPermissions,
+    Controller
+>(paths: Path<Model, Permissions, Controller>[]): string[] {
+    return paths.map((path, index) => {
+        let modelName = `${path.ctor.name}s`.toLowerCase();
+
+        if (path.relation) {
+            // not first (with relation)
+            modelName = path.relation.name.toLowerCase();
+
+            if (
+                path.relation.type === RelationType.belongsTo ||
+                path.relation.type === RelationType.hasOne
+            ) {
+                // belongsTo, hasOne relations hasn't any filter id
+                index = paths.length - 1;
+            }
+        }
+
+        if (index === paths.length - 1) {
+            // last
+            return `${accumulate}/${modelName}`;
+        } else {
+            // not last
+            return `${accumulate}/${modelName}/{${modelName.replace(
+                /s$/,
+                ""
+            )}_id}`;
+        }
+    });
+}
+
 // export function CreateControllerMixin<
 //     Model extends Entity,
 //     Permissions extends ACLPermissions,
 //     Controller
 // >(
 //     controllerClass: Class<ACLController>,
-//     rootCtor: Ctor<Model>,
-//     rootRepositoryGetter: RepositoryGetter<Model, Controller>,
-//     leafCtor: Ctor<Model>,
-//     leafRepositoryGetter: RepositoryGetter<Model, Controller>,
-//     access: [Condition<Permissions>, ValidateModel<Model>],
-//     basePath: string
+//     paths: Path<Model, Permissions, Controller>[],
+//     basePath: string,
+//     access: [Condition<Permissions>, ValidateModel<Model>]
 // ): Class<Controller> {
 //     class MixedController extends controllerClass {
 //         /**
@@ -511,38 +608,6 @@ export function CRUDControllerMixin<
     basePath: string
 ): Class<Controller> {
     const leafPath = paths[paths.length - 1];
-
-    let modelPath = paths.reduce((accumulate, path, index) => {
-        // const modelPath = (path.relation || path.ctor.name).toLowerCase();
-        if (path.relation) {
-            if (
-                path.relation.type === RelationType.belongsTo ||
-                path.relation.type === RelationType.hasOne
-            ) {
-                if (index < paths.length - 1) {
-                    return `${accumulate}/${path.relation.name.toLowerCase()}`;
-                } else {
-                    return `${accumulate}/${path.relation.name.toLowerCase()}`;
-                }
-            } else if (path.relation.type === RelationType.hasMany) {
-                if (index < paths.length - 1) {
-                    return `${accumulate}/${path.relation.name.toLowerCase()}/{${path.ctor.name
-                        .replace("s$", "")
-                        .toLowerCase()}_id}`;
-                } else {
-                    return `${accumulate}/${path.relation.name.toLowerCase()}`;
-                }
-            }
-        }
-
-        if (index < paths.length - 1) {
-            return `${accumulate}/${path.ctor.name.toLowerCase()}s/{${path.ctor.name.toLowerCase()}_id}`;
-        } else {
-            return `${accumulate}/${path.ctor.name.toLowerCase()}s`;
-        }
-    }, basePath);
-
-    console.log(modelPath);
 
     // if ("create" in leafPath.scope) {
     //     controllerClass = CreateControllerMixin<Model, Permissions, Controller>(
