@@ -29,9 +29,9 @@ import {
     validate,
     unique,
     Path,
-    generateIds,
-    generatePath,
-    generateFilter
+    getIds,
+    getPath,
+    getFilter
 } from "../../interceptors";
 import {
     RepositoryGetter,
@@ -505,9 +505,9 @@ export function CRUDControllerMixin<
 
     // console.log(paths);
     // console.log(generateIds(paths));
-    console.log(generatePath(paths, basePath));
+    console.log(getPath(paths, basePath));
     console.log();
-    console.log(JSON.stringify(generateFilter(paths)));
+    console.log(JSON.stringify(getFilter(paths, [])));
     console.log("------------------------------------------------");
 
     // if ("create" in leafPath.scope) {

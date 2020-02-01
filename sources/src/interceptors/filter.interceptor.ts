@@ -4,134 +4,13 @@ import {
     InvocationResult,
     ValueOrPromise
 } from "@loopback/context";
-import { Entity, Filter, RelationType } from "@loopback/repository";
+import { Entity, Filter, RelationType, hasMany } from "@loopback/repository";
 import { Ctor } from "loopback-history-extension";
 import { authorizeFn } from "loopback-authorization-extension";
 
 import { ACLPermissions, FilterScope } from "../types";
 
 import { ACLController } from "../servers";
-
-// export function filter<
-//     Model extends Entity,
-//     Permissions extends ACLPermissions,
-//     Controller
-// >(
-//     ctor: Ctor<Model>,
-//     rootScope: FilterScope<Model, Permissions, Controller>,
-//     access: "create" | "read" | "update" | "delete" | "history",
-//     argTypes: string | { type: "where" | "filter" } | undefined[],
-//     outType: "where" | "filter"
-// ): Interceptor {
-//     return async (
-//         invocationCtx: InvocationContext,
-//         next: () => ValueOrPromise<InvocationResult>
-//     ) => {
-//         // TODO: generate filter from argTypes, invocationCtx.args
-//         let filter = null as any;
-
-//         let result: any = await filterFn(
-//             ctor,
-//             scope,
-//             access,
-//             filter,
-//             invocationCtx
-//         );
-//         if (outType === "where") {
-//             result = result.where;
-//         }
-
-//         invocationCtx.args.push(result);
-
-//         return next();
-//     };
-// }
-
-// export async function filterFn<
-//     Model extends Entity,
-//     Permissions extends ACLPermissions,
-//     Controller
-// >(
-//     ctor: Ctor<Model>,
-//     scope: FilterScope<Model, Permissions, Controller>,
-//     access: "create" | "read" | "update" | "delete" | "history",
-//     filter: Filter<Model> | undefined,
-//     invocationCtx: InvocationContext
-// ): Promise<Filter<Model>> {
-//     filter = filter || {};
-//     filter.where = filter.where || {};
-
-//     /** Apply filter on `where` by scope and access */
-//     const filterAccess = scope[access];
-//     if (filterAccess) {
-//         const filterCondition = filterAccess[0];
-//         const filterMethod = filterAccess[1];
-
-//         filter.where = await filterMethod(invocationCtx, filter.where);
-//     } else {
-//         return {
-//             where: { id: null }
-//         } as any;
-//     }
-
-//     /** Apply filter on `include` by scope and filter */
-//     if (filter.include) {
-//         /** Remove inclusions that not exist in `model` or `scope` relations */
-//         filter.include = filter.include.filter(
-//             inclusion =>
-//                 inclusion.relation in ctor.definition.relations ||
-//                 inclusion.relation in scope.include
-//         );
-
-//         /**
-//          * Remove inclusions that hasn't access permission
-//          * Remove undefined inclusions
-//          * */
-//         filter.include = (
-//             await Promise.all(
-//                 filter.include.map(async inclusion => {
-//                     const filterAccess =
-//                         scope.include[inclusion.relation][access];
-
-//                     if (filterAccess) {
-//                         const filterCondition = filterAccess[0];
-//                         const filterMethod = filterAccess[1];
-
-//                         if (
-//                             await authorizeFn<any>(
-//                                 filterCondition,
-//                                 (invocationCtx.target as ACLController).session
-//                                     .permissions,
-//                                 invocationCtx
-//                             )
-//                         ) {
-//                             return inclusion;
-//                         }
-//                     }
-
-//                     return undefined;
-//                 })
-//             )
-//         ).filter(inclusion => Boolean(inclusion)) as any[];
-
-//         /** Filter inclusion scope (Filter), recursively */
-//         filter.include = await Promise.all(
-//             filter.include.map(async inclusion => {
-//                 inclusion.scope = await filterFn<any, Permissions, Controller>(
-//                     ctor.definition.relations[inclusion.relation].target(),
-//                     scope.include[inclusion.relation],
-//                     access,
-//                     inclusion.scope,
-//                     invocationCtx
-//                 );
-
-//                 return inclusion;
-//             })
-//         );
-//     }
-
-//     return filter;
-// }
 
 export interface Path<
     Model extends Entity,
@@ -144,6 +23,185 @@ export interface Path<
         name: string;
         type: RelationType;
     };
+}
+
+export function filter<
+    Model extends Entity,
+    Permissions extends ACLPermissions,
+    Controller
+>(
+    path: Path<Model, Permissions, Controller>,
+    access: "read" | "update" | "delete" | "history",
+    argsIndexStart: number,
+    argsIndexLength: number,
+
+    argIndex: number,
+    argType: "",
+
+    argTypes: string | { type: "where" | "filter" } | undefined[],
+    outType: "where" | "filter"
+): Interceptor {
+    return async (
+        invocationCtx: InvocationContext,
+        next: () => ValueOrPromise<InvocationResult>
+    ) => {
+        // TODO: generate filter from argTypes, invocationCtx.args
+        let filter = null as any;
+
+        // find(filterFn(generateFilter(id1, id2, ..., idN)), "read") => idN | idN+1 | idN+2 | ...
+        // filter.where = filterFn({and: [{id: idN+1}, filter.where]})
+
+        let result: any = await filterFn(path, access, filter, invocationCtx);
+
+        if (outType === "where") {
+            result = result.where;
+        }
+
+        invocationCtx.args.push(result);
+
+        return next();
+    };
+}
+
+export async function filterFn<
+    Model extends Entity,
+    Permissions extends ACLPermissions,
+    Controller
+>(
+    path: Path<Model, Permissions, Controller>,
+    access: "read" | "update" | "delete" | "history",
+    filter: Filter<Model> | undefined,
+    invocationCtx: InvocationContext
+): Promise<Filter<Model>> {
+    filter = filter || {};
+    filter.where = filter.where || {};
+
+    /** Apply filter on `where` by scope and access */
+    const filterAccess = path.scope[access];
+
+    if (filterAccess) {
+        const filterMethod = filterAccess[1];
+
+        filter.where = await filterMethod(invocationCtx, filter.where);
+    } else {
+        return {
+            where: { [getIdPropertyByPath(path)]: null }
+        } as any;
+    }
+
+    /** Apply filter on `include` by scope and filter */
+    if (filter.include) {
+        /** Remove inclusions that not exist in `model` or `scope` relations */
+        filter.include = filter.include.filter(
+            inclusion =>
+                inclusion.relation in path.ctor.definition.relations &&
+                inclusion.relation in path.scope.include
+        );
+
+        /**
+         * Remove inclusions that hasn't access permission
+         * Remove undefined inclusions
+         * */
+        filter.include = (
+            await Promise.all(
+                filter.include.map(async inclusion => {
+                    const filterAccess =
+                        path.scope.include[inclusion.relation][access];
+
+                    if (filterAccess) {
+                        const filterCondition = filterAccess[0];
+
+                        if (
+                            await authorizeFn<any>(
+                                filterCondition,
+                                (invocationCtx.target as ACLController).session
+                                    .permissions,
+                                invocationCtx
+                            )
+                        ) {
+                            return inclusion;
+                        }
+                    }
+
+                    return undefined;
+                })
+            )
+        ).filter(inclusion => Boolean(inclusion)) as any[];
+
+        /** Filter inclusion scope (Filter), recursively */
+        filter.include = await Promise.all(
+            filter.include.map(async inclusion => {
+                inclusion.scope = await filterFn<any, Permissions, Controller>(
+                    {
+                        ctor: path.ctor.definition.relations[
+                            inclusion.relation
+                        ].target(),
+                        scope: path.scope.include[inclusion.relation]
+                    },
+                    access,
+                    inclusion.scope,
+                    invocationCtx
+                );
+
+                return inclusion;
+            })
+        );
+    }
+
+    return filter;
+}
+
+/**
+ * Getting id from path using ctor or relation: ctorName_id
+ */
+function getIdNameByPath<
+    Model extends Entity,
+    Permissions extends ACLPermissions,
+    Controller
+>(path?: Path<Model, Permissions, Controller>) {
+    if (path) {
+        if (path.relation) {
+            if (path.relation.type === RelationType.hasMany) {
+                return `${path.relation.name
+                    .replace(/s$/, "")
+                    .toLowerCase()}_id`;
+            }
+        } else {
+            return `${path.ctor.name.toLowerCase()}_id`;
+        }
+    }
+
+    return undefined;
+}
+
+/**
+ * Getting id property from path using ctor: ctor.getIdProperties()[0]
+ */
+function getIdPropertyByPath<
+    Model extends Entity,
+    Permissions extends ACLPermissions,
+    Controller
+>(path: Path<Model, Permissions, Controller>) {
+    if (!("id" in path.ctor.definition.properties)) {
+        return path.ctor.getIdProperties()[0];
+    }
+
+    return "id";
+}
+
+/**
+ * Getting name from path using ctor or relation: ctors
+ */
+function getPathNameByPath<
+    Model extends Entity,
+    Permissions extends ACLPermissions,
+    Controller
+>(path: Path<Model, Permissions, Controller>) {
+    if (path.relation) {
+        return `${path.relation.name.toLowerCase()}`;
+    } else {
+        return `${path.ctor.name.toLowerCase()}s`;
+    }
 }
 
 /**
@@ -173,96 +231,63 @@ export interface Path<
  *      /model
  * }
  */
-export function getModelPathId<
+export function getIds<
     Model extends Entity,
     Permissions extends ACLPermissions,
     Controller
->(path?: Path<Model, Permissions, Controller>) {
-    if (path) {
-        let property = "id";
-        if (!("id" in path.ctor.definition.properties)) {
-            property = path.ctor.getIdProperties()[0];
-        }
-
-        if (path.relation) {
-            if (path.relation.type === RelationType.hasMany) {
-                return {
-                    property: property,
-                    id: `${path.relation.name
-                        .replace(/s$/, "")
-                        .toLowerCase()}_id`
-                };
-            }
-        } else {
-            return {
-                property: property,
-                id: `${path.ctor.name.toLowerCase()}_id`
-            };
-        }
-    }
-
-    return undefined;
+>(paths: Path<Model, Permissions, Controller>[]) {
+    return paths
+        .map((path, index) => getIdNameByPath(paths[index - 1]))
+        .filter(id => Boolean(id));
 }
 
-export function getModelPathName<
-    Model extends Entity,
-    Permissions extends ACLPermissions,
-    Controller
->(path: Path<Model, Permissions, Controller>) {
-    if (path.relation) {
-        return `${path.relation.name.toLowerCase()}`;
-    } else {
-        return `${path.ctor.name.toLowerCase()}s`;
-    }
-}
-
-export function generatePath<
+export function getPath<
     Model extends Entity,
     Permissions extends ACLPermissions,
     Controller
 >(paths: Path<Model, Permissions, Controller>[], basePath: string) {
     return paths.reduce((accumulate, path, index) => {
-        const pathId = getModelPathId(paths[index - 1]);
-        const pathName = getModelPathName(path);
+        const idName = getIdNameByPath(paths[index - 1]);
+        const pathName = getPathNameByPath(path);
 
-        if (pathId) {
-            return `${accumulate}/{${pathId.id}}/${pathName}`;
+        if (idName) {
+            return `${accumulate}/{${idName}}/${pathName}`;
         } else {
             return `${accumulate}/${pathName}`;
         }
     }, basePath);
 }
 
-export function generateIds<
+export function getFilter<
     Model extends Entity,
     Permissions extends ACLPermissions,
     Controller
->(paths: Path<Model, Permissions, Controller>[]) {
-    return paths
-        .map((path, index) => getModelPathId(paths[index - 1])?.id)
-        .filter(id => Boolean(id));
-}
-
-export function generateFilter<
-    Model extends Entity,
-    Permissions extends ACLPermissions,
-    Controller
->(paths: Path<Model, Permissions, Controller>[]) {
+>(paths: Path<Model, Permissions, Controller>[], ids: string[]) {
     let filter: Filter<Model> = {};
 
-    paths = [...paths];
-    paths.pop();
-
+    let idIndex = 0;
     paths.reduce((accumulate, path, index) => {
-        const pathId = getModelPathId(path);
+        const idName = getIdNameByPath(path);
+        const idProperty = getIdPropertyByPath(path);
 
-        if (pathId) {
+        /**
+         * If last path relation is () or (hasMany) don't use it,
+         * we want parent related id
+         *
+         * If last path is (belongsTo) or (hasOne) use it,
+         * we want model id
+         * */
+        if (index === paths.length - 1 && idName) {
+            return accumulate;
+        }
+
+        if (idName) {
             accumulate.include = [
                 {
                     relation: path.relation?.name || "",
                     scope: {
                         where: {
-                            [pathId.property]: pathId.id
+                            [idProperty]: ids[idIndex++] || ""
                         }
                     }
                 }

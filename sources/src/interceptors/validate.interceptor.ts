@@ -8,9 +8,12 @@ import { HttpErrors } from "@loopback/rest";
 import { Entity } from "@loopback/repository";
 import { Ctor } from "loopback-history-extension";
 
+import { ValidateModel } from "../types";
+
 export function validate<Model extends Entity>(
     ctor: Ctor<Model>,
-    argIndex: number
+    argIndex: number,
+    validator: ValidateModel<Model>
 ): Interceptor {
     return async (
         invocationCtx: InvocationContext,
@@ -19,7 +22,7 @@ export function validate<Model extends Entity>(
         /** Get model from arguments request body */
         const model = invocationCtx.args[argIndex];
 
-        if (!(await validateFn(ctor, model, invocationCtx))) {
+        if (!(await validateFn(ctor, model, validator, invocationCtx))) {
             throw new HttpErrors.UnprocessableEntity("Entity is not valid");
         }
 
@@ -30,21 +33,28 @@ export function validate<Model extends Entity>(
 export async function validateFn<Model extends Entity>(
     ctor: Ctor<Model>,
     model: Model,
+    validator: ValidateModel<Model>,
     invocationCtx: InvocationContext
 ): Promise<boolean> {
-    let result = true;
-
     if (Array.isArray(model)) {
-        model.forEach((item: any) => {
+        for (let item of model) {
             if (!Boolean(item)) {
-                result = false;
+                return false;
             }
-        });
+        }
+
+        if (!(await validator(invocationCtx, model))) {
+            return false;
+        }
     } else {
         if (!Boolean(model)) {
-            result = false;
+            return false;
+        }
+
+        if (!(await validator(invocationCtx, [model]))) {
+            return false;
         }
     }
 
-    return result;
+    return true;
 }

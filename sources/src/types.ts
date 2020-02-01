@@ -77,7 +77,7 @@ export interface FilterScope<
 
     read: [Condition<Permissions>, FilterWhere<Model>];
     create?: [Condition<Permissions>, ValidateModel<Model>];
-    update?: [Condition<Permissions>, ValidateModel<Model>, FilterWhere<Model>];
+    update?: [Condition<Permissions>, FilterWhere<Model>, ValidateModel<Model>];
     delete?: [Condition<Permissions>, FilterWhere<Model>];
     history?: [Condition<Permissions>, FilterWhere<Model>];
 
