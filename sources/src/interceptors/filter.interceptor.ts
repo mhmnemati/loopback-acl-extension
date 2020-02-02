@@ -114,7 +114,7 @@ export function filter<
     };
 }
 
-export async function filterFn<
+async function filterFn<
     Model extends Entity,
     Permissions extends ACLPermissions,
     Controller
@@ -206,7 +206,7 @@ function getIdNameByPath<
     Model extends Entity,
     Permissions extends ACLPermissions,
     Controller
->(path?: Path<Model, Permissions, Controller>) {
+>(path?: Path<Model, Permissions, Controller>): string | undefined {
     if (path) {
         if (path.relation) {
             if (path.relation.type === RelationType.hasMany) {
@@ -229,7 +229,7 @@ function getIdPropertyByPath<
     Model extends Entity,
     Permissions extends ACLPermissions,
     Controller
->(path: Path<Model, Permissions, Controller>) {
+>(path: Path<Model, Permissions, Controller>): string {
     if (!("id" in path.ctor.definition.properties)) {
         return path.ctor.getIdProperties()[0];
     }
@@ -244,7 +244,7 @@ function getPathNameByPath<
     Model extends Entity,
     Permissions extends ACLPermissions,
     Controller
->(path: Path<Model, Permissions, Controller>) {
+>(path: Path<Model, Permissions, Controller>): string {
     if (path.relation) {
         return `${path.relation.name.toLowerCase()}`;
     } else {
@@ -283,17 +283,17 @@ export function getIds<
     Model extends Entity,
     Permissions extends ACLPermissions,
     Controller
->(paths: Path<Model, Permissions, Controller>[]) {
+>(paths: Path<Model, Permissions, Controller>[]): string[] {
     return paths
         .map((path, index) => getIdNameByPath(paths[index - 1]))
-        .filter(id => Boolean(id));
+        .filter(id => Boolean(id)) as any;
 }
 
 export function getPath<
     Model extends Entity,
     Permissions extends ACLPermissions,
     Controller
->(paths: Path<Model, Permissions, Controller>[], basePath: string) {
+>(paths: Path<Model, Permissions, Controller>[], basePath: string): string {
     return paths.reduce((accumulate, path, index) => {
         const idName = getIdNameByPath(paths[index - 1]);
         const pathName = getPathNameByPath(path);
@@ -306,11 +306,14 @@ export function getPath<
     }, basePath);
 }
 
-export function getPathFilter<
+function getPathFilter<
     Model extends Entity,
     Permissions extends ACLPermissions,
     Controller
->(paths: Path<Model, Permissions, Controller>[], ids: string[]) {
+>(
+    paths: Path<Model, Permissions, Controller>[],
+    ids: string[]
+): Filter<Model> | undefined {
     let filter: Filter<Model> = {};
 
     let idIndex = 0;
@@ -353,11 +356,11 @@ export function getPathFilter<
     }, filter);
 
     if (filter.include) {
-        return filter.include[0].scope;
+        return filter.include[0].scope as any;
     }
 }
 
-export async function getPathIdValue<
+async function getPathIdValue<
     Model extends Entity,
     Permissions extends ACLPermissions,
     Controller
@@ -365,7 +368,7 @@ export async function getPathIdValue<
     paths: Path<Model, Permissions, Controller>[],
     ids: string[],
     invocationCtx: InvocationContext
-) {
+): Promise<string | undefined> {
     const pathFilter = getPathFilter(paths, ids);
 
     if (!pathFilter) {
@@ -407,7 +410,7 @@ export async function getPathIdValue<
     );
 }
 
-export function getPathIdProperty<
+function getPathIdProperty<
     Model extends Entity,
     Permissions extends ACLPermissions,
     Controller

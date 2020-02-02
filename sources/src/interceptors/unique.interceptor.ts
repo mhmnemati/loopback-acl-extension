@@ -44,7 +44,7 @@ export function unique<Model extends Entity, Controller>(
     };
 }
 
-export async function uniqueFn<Model extends Entity, Controller>(
+async function uniqueFn<Model extends Entity, Controller>(
     ctor: Ctor<Model>,
     models: Model[],
     repositoryGetter: RepositoryGetter<any, Controller>,
@@ -88,10 +88,10 @@ export async function uniqueFn<Model extends Entity, Controller>(
     return count.count <= 0;
 }
 
-export function getUniqueFields<Model extends Entity>(
+function getUniqueFields<Model extends Entity>(
     ctor: Ctor<Model>,
     models: Model[]
-) {
+): string[] {
     /** Find unique fields of model ctor */
     const uniqueFields = Object.entries(ctor.definition.properties)
         .filter(([key, value]) =>

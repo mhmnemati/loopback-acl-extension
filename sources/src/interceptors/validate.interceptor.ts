@@ -30,7 +30,7 @@ export function validate<Model extends Entity>(
     };
 }
 
-export async function validateFn<Model extends Entity>(
+async function validateFn<Model extends Entity>(
     ctor: Ctor<Model>,
     model: Model,
     validator: ValidateModel<Model>,
