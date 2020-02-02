@@ -4,7 +4,7 @@ import {
     InvocationResult,
     ValueOrPromise
 } from "@loopback/context";
-import { Entity, Filter, RelationType, hasMany } from "@loopback/repository";
+import { Entity, Where, Filter, RelationType } from "@loopback/repository";
 import { Ctor } from "loopback-history-extension";
 import { authorizeFn } from "loopback-authorization-extension";
 
@@ -30,31 +30,82 @@ export function filter<
     Permissions extends ACLPermissions,
     Controller
 >(
-    path: Path<Model, Permissions, Controller>,
+    paths: Path<Model, Permissions, Controller>[],
     access: "read" | "update" | "delete" | "history",
-    argsIndexStart: number,
-    argsIndexLength: number,
-
-    argIndex: number,
-    argType: "",
-
-    argTypes: string | { type: "where" | "filter" } | undefined[],
-    outType: "where" | "filter"
+    outputType: "where" | "filter",
+    pathIds?: { begin: number; end: number },
+    modelId?: (controller: Controller) => string | number,
+    modelFilter?: { index: number; type: "where" | "filter" }
 ): Interceptor {
     return async (
         invocationCtx: InvocationContext,
         next: () => ValueOrPromise<InvocationResult>
     ) => {
-        // TODO: generate filter from argTypes, invocationCtx.args
-        let filter = null as any;
+        let idWhere: Where<any> = {};
 
-        // find(filterFn(generateFilter(id1, id2, ..., idN)), "read") => idN | idN+1 | idN+2 | ...
-        // filter.where = filterFn({and: [{id: idN+1}, filter.where]})
+        /** Apply modelId filter */
+        if (modelId) {
+            if (typeof modelId === "number") {
+                idWhere[getIdPropertyByPath(paths[paths.length - 1])] =
+                    invocationCtx.args[modelId];
+            } else {
+                idWhere[getIdPropertyByPath(paths[paths.length - 1])] = modelId(
+                    invocationCtx.target as any
+                );
+            }
+        }
 
-        let result: any = await filterFn(path, access, filter, invocationCtx);
+        /** Apply pathIds filter */
+        if (pathIds && pathIds.end > pathIds.begin) {
+            const idValue = await getPathIdValue(
+                paths,
+                invocationCtx.args.slice(pathIds.begin, pathIds.end),
+                invocationCtx
+            );
 
-        if (outType === "where") {
-            result = result.where;
+            const idProperty = getPathIdProperty(paths);
+
+            if (Array.isArray(idProperty)) {
+                idWhere = {
+                    and: [
+                        idWhere,
+                        {
+                            or: idProperty.map(idPropertyName => ({
+                                [idPropertyName]: idValue
+                            }))
+                        }
+                    ]
+                };
+            } else {
+                idWhere[idProperty] = idValue;
+            }
+        }
+
+        /** Get filter from modelFilter argument */
+        let result: Filter<any> = {};
+        if (modelFilter) {
+            if (modelFilter.type === "where") {
+                result.where = invocationCtx.args[modelFilter.index];
+            } else {
+                result = invocationCtx.args[modelFilter.index] || {};
+            }
+        }
+        if (Boolean(result.where)) {
+            result.where = { and: [idWhere, result.where] };
+        } else {
+            result.where = idWhere;
+        }
+
+        result = await filterFn(
+            paths[paths.length - 1].ctor,
+            paths[paths.length - 1].scope,
+            access,
+            result,
+            invocationCtx
+        );
+
+        if (outputType === "where") {
+            result = result.where as any;
         }
 
         invocationCtx.args.push(result);
@@ -68,7 +119,8 @@ export async function filterFn<
     Permissions extends ACLPermissions,
     Controller
 >(
-    path: Path<Model, Permissions, Controller>,
+    ctor: Ctor<Model>,
+    scope: FilterScope<Model, Permissions, Controller>,
     access: "read" | "update" | "delete" | "history",
     filter: Filter<Model> | undefined,
     invocationCtx: InvocationContext
@@ -77,7 +129,7 @@ export async function filterFn<
     filter.where = filter.where || {};
 
     /** Apply filter on `where` by scope and access */
-    const filterAccess = path.scope[access];
+    const filterAccess = scope[access];
 
     if (filterAccess) {
         const filterMethod = filterAccess[1];
@@ -85,7 +137,7 @@ export async function filterFn<
         filter.where = await filterMethod(invocationCtx, filter.where);
     } else {
         return {
-            where: { [getIdPropertyByPath(path)]: null }
+            where: { [getIdPropertyByPath({ ctor: ctor, scope: scope })]: null }
         } as any;
     }
 
@@ -94,8 +146,8 @@ export async function filterFn<
         /** Remove inclusions that not exist in `model` or `scope` relations */
         filter.include = filter.include.filter(
             inclusion =>
-                inclusion.relation in path.ctor.definition.relations &&
-                inclusion.relation in path.scope.include
+                inclusion.relation in ctor.definition.relations &&
+                inclusion.relation in scope.include
         );
 
         /**
@@ -106,7 +158,7 @@ export async function filterFn<
             await Promise.all(
                 filter.include.map(async inclusion => {
                     const filterAccess =
-                        path.scope.include[inclusion.relation][access];
+                        scope.include[inclusion.relation][access];
 
                     if (filterAccess) {
                         const filterCondition = filterAccess[0];
@@ -132,12 +184,8 @@ export async function filterFn<
         filter.include = await Promise.all(
             filter.include.map(async inclusion => {
                 inclusion.scope = await filterFn<any, Permissions, Controller>(
-                    {
-                        ctor: path.ctor.definition.relations[
-                            inclusion.relation
-                        ].target(),
-                        scope: path.scope.include[inclusion.relation]
-                    },
+                    ctor.definition.relations[inclusion.relation].target(),
+                    scope.include[inclusion.relation],
                     access,
                     inclusion.scope,
                     invocationCtx
@@ -258,7 +306,7 @@ export function getPath<
     }, basePath);
 }
 
-export function getFilter<
+export function getPathFilter<
     Model extends Entity,
     Permissions extends ACLPermissions,
     Controller
@@ -307,4 +355,75 @@ export function getFilter<
     if (filter.include) {
         return filter.include[0].scope;
     }
+}
+
+export async function getPathIdValue<
+    Model extends Entity,
+    Permissions extends ACLPermissions,
+    Controller
+>(
+    paths: Path<Model, Permissions, Controller>[],
+    ids: string[],
+    invocationCtx: InvocationContext
+) {
+    const pathFilter = getPathFilter(paths, ids);
+
+    if (!pathFilter) {
+        return undefined;
+    }
+
+    const filter = await filterFn<any, Permissions, Controller>(
+        paths[0].ctor,
+        paths[0].scope,
+        "read",
+        pathFilter,
+        invocationCtx
+    );
+
+    const model = await paths[0].scope
+        .repositoryGetter(invocationCtx.target as any)
+        .findOne(filter);
+
+    return (
+        paths.reduce((accumulate, path, index) => {
+            if (!Boolean(accumulate)) {
+                return undefined;
+            }
+
+            if (path.relation) {
+                accumulate = accumulate[path.relation.name] || [];
+
+                if (path.relation.type === RelationType.hasMany) {
+                    accumulate = accumulate[0] || {};
+                }
+            }
+
+            if (index === paths.length) {
+                return accumulate[getIdPropertyByPath(path)];
+            } else {
+                return accumulate;
+            }
+        }, model) || ""
+    );
+}
+
+export function getPathIdProperty<
+    Model extends Entity,
+    Permissions extends ACLPermissions,
+    Controller
+>(paths: Path<Model, Permissions, Controller>[]): string | string[] {
+    const leafPath = paths[paths.length - 1];
+    const nodePath = paths[paths.length - 2];
+
+    if (leafPath.relation && leafPath.relation.type === RelationType.hasMany) {
+        // find belongsTo relations related to paths[paths.length - 2]
+        return Object.entries(leafPath.ctor.definition.relations)
+            .filter(
+                ([relation, target]) =>
+                    target.target().name === nodePath.ctor.name
+            )
+            .map(([relation, target]) => relation);
+    }
+
+    return getIdPropertyByPath(leafPath);
 }

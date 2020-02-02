@@ -25,14 +25,7 @@ import { Condition } from "loopback-authorization-extension";
 import { authenticate } from "@loopback/authentication";
 import { authorize } from "loopback-authorization-extension";
 import { intercept } from "@loopback/core";
-import {
-    validate,
-    unique,
-    Path,
-    getIds,
-    getPath,
-    getFilter
-} from "../../interceptors";
+import { validate, unique, filter, Path } from "../../interceptors";
 import {
     RepositoryGetter,
     ValidateModel,
@@ -502,13 +495,6 @@ export function CRUDControllerMixin<
     basePath: string
 ): Class<Controller> {
     const leafPath = paths[paths.length - 1];
-
-    // console.log(paths);
-    // console.log(generateIds(paths));
-    console.log(getPath(paths, basePath));
-    console.log();
-    console.log(JSON.stringify(getFilter(paths, [])));
-    console.log("------------------------------------------------");
 
     // if ("create" in leafPath.scope) {
     //     controllerClass = CreateControllerMixin<Model, Permissions, Controller>(
