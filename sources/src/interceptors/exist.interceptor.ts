@@ -5,7 +5,7 @@ import {
     ValueOrPromise
 } from "@loopback/context";
 import { HttpErrors } from "@loopback/rest";
-import { Entity } from "@loopback/repository";
+import { Entity, Filter, RelationType } from "@loopback/repository";
 import { Ctor } from "loopback-history-extension";
 
 import { RepositoryGetter } from "../types";
@@ -15,30 +15,44 @@ export function exist<Model extends Entity, Controller>(
     argIndexBegin: number,
     argIndexEnd: number,
     repositoryGetter: RepositoryGetter<any, Controller>,
-    withoutUnqiue: boolean
+    relations: string[]
 ): Interceptor {
     return async (
         invocationCtx: InvocationContext,
         next: () => ValueOrPromise<InvocationResult>
     ) => {
-        /** Get model from arguments request body */
-        let models: any[] = invocationCtx.args[argIndex];
-        if (!Array.isArray(models)) {
-            models = [models];
-        }
+        /** Get ids from arguments array */
+        let ids: string[] = invocationCtx.args.slice(
+            argIndexBegin,
+            argIndexEnd
+        );
 
-        if (
-            !(await uniqueFn(
+        const filter = generateFilter(ctor, ids, relations);
+        // TODO
+        // const filter = await filterFn<any, Permissions, Controller>(
+        //     paths[0].ctor,
+        //     paths[0].scope,
+        //     "read",
+        //     pathFilter,
+        //     invocationCtx
+        // );
+
+        if (filter) {
+            const id = await existFn(
                 ctor,
-                models,
+                filter,
                 repositoryGetter,
-                withoutUnqiue,
+                relations,
                 invocationCtx
-            ))
-        ) {
-            throw new HttpErrors.Conflict(
-                `Conflict with unique fields: ${getUniqueFields(ctor, models)}`
             );
+
+            if (!Boolean(id)) {
+                throw new HttpErrors.Forbidden(
+                    "You don't have required filter to access this model!"
+                );
+            } else {
+                invocationCtx.args.push(id);
+            }
         }
 
         return next();
@@ -47,81 +61,83 @@ export function exist<Model extends Entity, Controller>(
 
 async function existFn<Model extends Entity, Controller>(
     ctor: Ctor<Model>,
-    models: Model[],
+    filter: Filter<Model>,
     repositoryGetter: RepositoryGetter<any, Controller>,
-    withoutUnqiue: boolean,
+    relations: string[],
     invocationCtx: InvocationContext
-): Promise<boolean> {
-    /** Get repository */
-    const repository = repositoryGetter(invocationCtx.target as any);
+): Promise<string | undefined> {
+    const model = await repositoryGetter(invocationCtx.target as any).findOne(
+        filter
+    );
 
-    /** Find unique fields of model ctor */
-    const uniqueFields = getUniqueFields<Model>(ctor, models);
-
-    let count = { count: 0 };
-
-    /** Check for without unique, when using updateAll */
-    if (withoutUnqiue) {
-        /** Find count of models unique fields */
-        count = {
-            count: models
-                .map(
-                    model =>
-                        Object.keys(model).filter(
-                            modelKey => uniqueFields.indexOf(modelKey) >= 0
-                        ).length
-                )
-                .reduce((prev, current) => prev + current, 0)
-        };
-    } else if (uniqueFields.length > 0) {
-        /** Find count of models where unique field values are same */
-        count = await repository.count({
-            or: uniqueFields.map(fieldName => ({
-                [fieldName]: {
-                    inq: models
-                        .map((model: any) => model[fieldName])
-                        .filter(fieldValue => Boolean(fieldValue))
-                }
-            }))
-        });
-    }
-
-    return count.count <= 0;
-}
-
-function getPathFilter<
-    Model extends Entity,
-    Permissions extends ACLPermissions,
-    Controller
->(
-    paths: Path<Model, Permissions, Controller>[],
-    ids: string[]
-): Filter<Model> | undefined {
-    let filter: Filter<Model> = {};
-
-    let idIndex = 0;
-    paths.reduce((accumulate, path, index) => {
-        const idName = getIdNameByPath(path);
-        const idProperty = getIdPropertyByPath(path);
-
-        /**
-         * If last path relation is () or (hasMany) don't use it,
-         * we want parent related id
-         *
-         * If last path is (belongsTo) or (hasOne) use it,
-         * we want model id
-         * */
-        if (index === paths.length - 1 && idName) {
-            return accumulate;
+    const lastModel = relations.reduce((accumulate, relation) => {
+        if (!Boolean(accumulate)) {
+            return undefined;
         }
 
-        if (idName) {
+        const modelRelation = ctor.definition.relations[relation];
+
+        ctor = modelRelation.target();
+
+        if (modelRelation.type === RelationType.hasMany) {
+            return accumulate[relation][0];
+        } else {
+            return accumulate[relation];
+        }
+    }, model);
+
+    if (lastModel) {
+        const lastModelIdProperty = ctor.getIdProperties()[
+            ctor.getIdProperties().length - 1
+        ];
+
+        return lastModel[lastModelIdProperty];
+    }
+}
+
+export function generatePath<Model extends Entity>(
+    ctor: Ctor<Model>,
+    relations: string[],
+    basePath: string
+): string {
+    return relations.reduce((accumulate, relation) => {
+        const modelRelation = ctor.definition.relations[relation];
+        const modelIdName = `${ctor.name.toLowerCase()}_id`;
+        const modelRelationName = `${relation.toLowerCase()}`;
+
+        ctor = modelRelation.target();
+
+        if (modelRelation.type === RelationType.hasMany) {
+            return `${accumulate}/{${modelIdName}}/${modelRelationName}`;
+        } else {
+            return `${accumulate}/${modelRelationName}`;
+        }
+    }, `${basePath}/${ctor.name.toLowerCase()}s`);
+}
+
+function generateFilter<Model extends Entity>(
+    ctor: Ctor<Model>,
+    ids: string[],
+    relations: string[]
+): Filter<Model> | undefined {
+    let filter: Filter<any> = {};
+    let idIndex = 0;
+
+    relations.reduce((accumulate, relation) => {
+        const modelRelation = ctor.definition.relations[relation];
+        const modelIdProperty = ctor.getIdProperties()[
+            ctor.getIdProperties().length - 1
+        ];
+
+        ctor = modelRelation.target();
+
+        if (modelRelation.type === RelationType.hasMany) {
             accumulate.include = [
                 {
-                    relation: path.relation?.name || "",
+                    relation: relation,
                     scope: {
                         where: {
-                            [idProperty]: ids[idIndex++] || ""
+                            [modelIdProperty]: ids[idIndex++] || ""
                         }
                     }
                 }
@@ -129,7 +145,7 @@ function getPathFilter<
         } else {
             accumulate.include = [
                 {
-                    relation: path.relation?.name || "",
+                    relation: relation,
                     scope: {}
                 }
             ];
@@ -141,54 +157,4 @@ function getPathFilter<
     if (filter.include) {
         return filter.include[0].scope as any;
     }
-}
-
-async function getPathIdValue<
-    Model extends Entity,
-    Permissions extends ACLPermissions,
-    Controller
->(
-    paths: Path<Model, Permissions, Controller>[],
-    ids: string[],
-    invocationCtx: InvocationContext
-): Promise<string | undefined> {
-    const pathFilter = getPathFilter(paths, ids);
-
-    if (!pathFilter) {
-        return undefined;
-    }
-
-    const filter = await filterFn<any, Permissions, Controller>(
-        paths[0].ctor,
-        paths[0].scope,
-        "read",
-        pathFilter,
-        invocationCtx
-    );
-
-    const model = await paths[0].scope
-        .repositoryGetter(invocationCtx.target as any)
-        .findOne(filter);
-
-    return (
-        paths.reduce((accumulate, path, index) => {
-            if (!Boolean(accumulate)) {
-                return undefined;
-            }
-
-            if (path.relation) {
-                accumulate = accumulate[path.relation.name] || [];
-
-                if (path.relation.type === RelationType.hasMany) {
-                    accumulate = accumulate[0] || {};
-                }
-            }
-
-            if (index === paths.length) {
-                return accumulate[getIdPropertyByPath(path)];
-            } else {
-                return accumulate;
-            }
-        }, model) || ""
-    );
 }

@@ -4,26 +4,13 @@ import {
     InvocationResult,
     ValueOrPromise
 } from "@loopback/context";
-import { Entity, Where, Filter, RelationType } from "@loopback/repository";
+import { Entity, Where, Filter } from "@loopback/repository";
 import { Ctor } from "loopback-history-extension";
 import { authorizeFn } from "loopback-authorization-extension";
 
 import { ACLPermissions, FilterScope } from "../types";
 
 import { ACLController } from "../servers";
-
-export interface Path<
-    Model extends Entity,
-    Permissions extends ACLPermissions,
-    Controller
-> {
-    ctor: Ctor<Model>;
-    scope: FilterScope<Model, Permissions, Controller>;
-    relation?: {
-        name: string;
-        type: RelationType;
-    };
-}
 
 export function filter<
     Model extends Entity,
@@ -114,7 +101,7 @@ export function filter<
     };
 }
 
-export async function filterFn<
+async function filterFn<
     Model extends Entity,
     Permissions extends ACLPermissions,
     Controller
@@ -197,132 +184,4 @@ export async function filterFn<
     }
 
     return filter;
-}
-
-/**
- * Getting id from path using ctor or relation: ctorName_id
- */
-function getIdNameByPath<
-    Model extends Entity,
-    Permissions extends ACLPermissions,
-    Controller
->(path?: Path<Model, Permissions, Controller>): string | undefined {
-    if (path) {
-        if (path.relation) {
-            if (path.relation.type === RelationType.hasMany) {
-                return `${path.relation.name
-                    .replace(/s$/, "")
-                    .toLowerCase()}_id`;
-            }
-        } else {
-            return `${path.ctor.name.toLowerCase()}_id`;
-        }
-    }
-
-    return undefined;
-}
-
-/**
- * Getting id property from path using ctor: ctor.getIdProperties()[0]
- */
-function getIdPropertyByPath<
-    Model extends Entity,
-    Permissions extends ACLPermissions,
-    Controller
->(path: Path<Model, Permissions, Controller>): string {
-    if (!("id" in path.ctor.definition.properties)) {
-        return path.ctor.getIdProperties()[0];
-    }
-
-    return "id";
-}
-
-/**
- * Getting name from path using ctor or relation: ctors
- */
-function getPathNameByPath<
-    Model extends Entity,
-    Permissions extends ACLPermissions,
-    Controller
->(path: Path<Model, Permissions, Controller>): string {
-    if (path.relation) {
-        return `${path.relation.name.toLowerCase()}`;
-    } else {
-        return `${path.ctor.name.toLowerCase()}s`;
-    }
-}
-
-/**
- * Generator example:
- *
- * [
- *  User        -   ()          -   ()          =>  /users
- *  UserRole    -   (userRoles) -   (hasMany)   =>  /{user_id}/userroles
- *  Role        -   (role)      -   (belongsTo) =>  /{userrole_id}/role
- *  RolePerm    -   (rolePerms) -   (hasMany)   =>  /rolepermissions
- *  Permission  -   (permissio) -   (belongsTo) =>  /{roleperm_id}/permission
- *  Key         -   (key)       -   (hasOne)    =>  /key
- *  Data        -   (datas)     -   (hasMany)   =>  /datas
- *  ...
- * ].reduce()
- *
- * if (previousPath && (
- *      !previousPath.relation ||
- *      previousPath.relation.type === hasMany
- * )) {
- *      /{model_id}
- * }
- *
- * if (!path.relation || path.relation.type === hasMany) {
- *      /model{s}
- * } else {
- *      /model
- * }
- */
-export function getIds<
-    Model extends Entity,
-    Permissions extends ACLPermissions,
-    Controller
->(paths: Path<Model, Permissions, Controller>[]): string[] {
-    return paths
-        .map((path, index) => getIdNameByPath(paths[index - 1]))
-        .filter(id => Boolean(id)) as any;
-}
-
-export function getPath<
-    Model extends Entity,
-    Permissions extends ACLPermissions,
-    Controller
->(paths: Path<Model, Permissions, Controller>[], basePath: string): string {
-    return paths.reduce((accumulate, path, index) => {
-        const idName = getIdNameByPath(paths[index - 1]);
-        const pathName = getPathNameByPath(path);
-
-        if (idName) {
-            return `${accumulate}/{${idName}}/${pathName}`;
-        } else {
-            return `${accumulate}/${pathName}`;
-        }
-    }, basePath);
-}
-
-function getPathIdProperty<
-    Model extends Entity,
-    Permissions extends ACLPermissions,
-    Controller
->(paths: Path<Model, Permissions, Controller>[]): string | string[] {
-    const leafPath = paths[paths.length - 1];
-    const nodePath = paths[paths.length - 2];
-
-    if (leafPath.relation && leafPath.relation.type === RelationType.hasMany) {
-        // find belongsTo relations related to paths[paths.length - 2]
-        return Object.entries(leafPath.ctor.definition.relations)
-            .filter(
-                ([relation, target]) =>
-                    target.target().name === nodePath.ctor.name
-            )
-            .map(([relation, target]) => relation);
-    }
-
-    return getIdPropertyByPath(leafPath);
 }
