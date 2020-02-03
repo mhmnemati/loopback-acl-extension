@@ -8,10 +8,17 @@ import { HttpErrors } from "@loopback/rest";
 import { Entity, Filter, RelationType } from "@loopback/repository";
 import { Ctor } from "loopback-history-extension";
 
-import { RepositoryGetter } from "../types";
+import { ACLPermissions, FilterScope, RepositoryGetter } from "../types";
 
-export function exist<Model extends Entity, Controller>(
+import { filterFn } from "./filter.interceptor";
+
+export function exist<
+    Model extends Entity,
+    Permissions extends ACLPermissions,
+    Controller
+>(
     ctor: Ctor<Model>,
+    scope: FilterScope<Model, Permissions, Controller>,
     argIndexBegin: number,
     argIndexEnd: number,
     repositoryGetter: RepositoryGetter<any, Controller>,
@@ -27,17 +34,17 @@ export function exist<Model extends Entity, Controller>(
             argIndexEnd
         );
 
-        const filter = generateFilter(ctor, ids, relations);
-        // TODO
-        // const filter = await filterFn<any, Permissions, Controller>(
-        //     paths[0].ctor,
-        //     paths[0].scope,
-        //     "read",
-        //     pathFilter,
-        //     invocationCtx
-        // );
+        const pathFilter = generateFilter(ctor, ids, relations);
 
-        if (filter) {
+        if (pathFilter) {
+            const filter = await filterFn(
+                ctor,
+                scope,
+                "read",
+                pathFilter,
+                invocationCtx
+            );
+
             const id = await existFn(
                 ctor,
                 filter,

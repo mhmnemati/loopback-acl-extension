@@ -17,10 +17,11 @@ export function filter<
     Permissions extends ACLPermissions,
     Controller
 >(
-    paths: Path<Model, Permissions, Controller>[],
+    ctor: Ctor<Model>,
+    scope: FilterScope<Model, Permissions, Controller>,
     access: "read" | "update" | "delete" | "history",
     outputType: "where" | "filter",
-    pathIds?: { begin: number; end: number },
+    pathId?: number,
     modelId?: (controller: Controller) => string | number,
     modelFilter?: { index: number; type: "where" | "filter" }
 ): Interceptor {
@@ -28,44 +29,42 @@ export function filter<
         invocationCtx: InvocationContext,
         next: () => ValueOrPromise<InvocationResult>
     ) => {
+        const modelIdProperty = ctor.getIdProperties()[
+            ctor.getIdProperties().length - 1
+        ];
+
         let idWhere: Where<any> = {};
 
         /** Apply modelId filter */
         if (modelId) {
             if (typeof modelId === "number") {
-                idWhere[getIdPropertyByPath(paths[paths.length - 1])] =
-                    invocationCtx.args[modelId];
+                idWhere[modelIdProperty] = invocationCtx.args[modelId];
             } else {
-                idWhere[getIdPropertyByPath(paths[paths.length - 1])] = modelId(
-                    invocationCtx.target as any
-                );
+                idWhere[modelIdProperty] = modelId(invocationCtx.target as any);
             }
         }
 
-        /** Apply pathIds filter */
-        if (pathIds && pathIds.end > pathIds.begin) {
-            const idValue = await getPathIdValue(
-                paths,
-                invocationCtx.args.slice(pathIds.begin, pathIds.end),
-                invocationCtx
-            );
+        /** Apply pathId filter */
+        if (pathId) {
+            const id = invocationCtx.args[pathId];
 
-            const idProperty = getPathIdProperty(paths);
+            // TODO
+            // const idProperty = getPathIdProperty(paths);
 
-            if (Array.isArray(idProperty)) {
-                idWhere = {
-                    and: [
-                        idWhere,
-                        {
-                            or: idProperty.map(idPropertyName => ({
-                                [idPropertyName]: idValue
-                            }))
-                        }
-                    ]
-                };
-            } else {
-                idWhere[idProperty] = idValue;
-            }
+            // if (Array.isArray(idProperty)) {
+            //     idWhere = {
+            //         and: [
+            //             idWhere,
+            //             {
+            //                 or: idProperty.map(idPropertyName => ({
+            //                     [idPropertyName]: idValue
+            //                 }))
+            //             }
+            //         ]
+            //     };
+            // } else {
+            //     idWhere[idProperty] = idValue;
+            // }
         }
 
         /** Get filter from modelFilter argument */
@@ -83,13 +82,7 @@ export function filter<
             result.where = idWhere;
         }
 
-        result = await filterFn(
-            paths[paths.length - 1].ctor,
-            paths[paths.length - 1].scope,
-            access,
-            result,
-            invocationCtx
-        );
+        result = await filterFn(ctor, scope, access, result, invocationCtx);
 
         if (outputType === "where") {
             result = result.where as any;
@@ -101,7 +94,7 @@ export function filter<
     };
 }
 
-async function filterFn<
+export async function filterFn<
     Model extends Entity,
     Permissions extends ACLPermissions,
     Controller
@@ -109,24 +102,23 @@ async function filterFn<
     ctor: Ctor<Model>,
     scope: FilterScope<Model, Permissions, Controller>,
     access: "read" | "update" | "delete" | "history",
-    filter: Filter<Model> | undefined,
+    filter: Filter<Model> = {},
     invocationCtx: InvocationContext
 ): Promise<Filter<Model>> {
-    filter = filter || {};
-    filter.where = filter.where || {};
+    const modelAccess = scope[access];
+    const modelIdProperty = ctor.getIdProperties()[
+        ctor.getIdProperties().length - 1
+    ];
 
-    /** Apply filter on `where` by scope and access */
-    const filterAccess = scope[access];
-
-    if (filterAccess) {
-        const filterMethod = filterAccess[1];
-
-        filter.where = await filterMethod(invocationCtx, filter.where);
-    } else {
+    /** Check access object exists */
+    if (!modelAccess) {
         return {
-            where: { [getIdPropertyByPath({ ctor: ctor, scope: scope })]: null }
+            where: { [modelIdProperty]: null }
         } as any;
     }
+
+    /** Apply filter on `where` */
+    filter.where = await modelAccess[1](invocationCtx, filter.where || {});
 
     /** Apply filter on `include` by scope and filter */
     if (filter.include) {
@@ -144,15 +136,13 @@ async function filterFn<
         filter.include = (
             await Promise.all(
                 filter.include.map(async inclusion => {
-                    const filterAccess =
+                    const modelAccess =
                         scope.include[inclusion.relation][access];
 
-                    if (filterAccess) {
-                        const filterCondition = filterAccess[0];
-
+                    if (modelAccess) {
                         if (
                             await authorizeFn<any>(
-                                filterCondition,
+                                modelAccess[0],
                                 (invocationCtx.target as ACLController).session
                                     .permissions,
                                 invocationCtx
