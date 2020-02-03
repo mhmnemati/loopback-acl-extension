@@ -25,7 +25,14 @@ import { Condition } from "loopback-authorization-extension";
 import { authenticate } from "@loopback/authentication";
 import { authorize } from "loopback-authorization-extension";
 import { intercept } from "@loopback/core";
-import { validate, unique, filter, getIds, Path } from "../../interceptors";
+import {
+    validate,
+    unique,
+    exist,
+    filter,
+    generatePath,
+    generateFilter
+} from "../../interceptors";
 import {
     RepositoryGetter,
     ValidateModel,
@@ -33,135 +40,135 @@ import {
     ACLPermissions
 } from "../../types";
 
-export function CreateControllerMixin<
-    Model extends Entity,
-    Permissions extends ACLPermissions,
-    Controller
->(
-    controllerClass: Class<ACLController>,
-    paths: Path<Model, Permissions, Controller>[],
-    basePath: string,
-    access: [Condition<Permissions>, ValidateModel<Model>]
-): Class<Controller> {
-    const leafPath = paths[paths.length - 1];
-    const ids = getIds(paths);
+// export function CreateControllerMixin<
+//     Model extends Entity,
+//     Permissions extends ACLPermissions,
+//     Controller
+// >(
+//     controllerClass: Class<ACLController>,
+//     paths: Path<Model, Permissions, Controller>[],
+//     basePath: string,
+//     access: [Condition<Permissions>, ValidateModel<Model>]
+// ): Class<Controller> {
+//     const leafPath = paths[paths.length - 1];
+//     const ids = getIds(paths);
 
-    class MixedController extends controllerClass {
-        /**
-         * Create operations
-         *
-         * 1. validate
-         * 2. unique
-         */
+//     class MixedController extends controllerClass {
+//         /**
+//          * Create operations
+//          *
+//          * 1. validate
+//          * 2. unique
+//          */
 
-        @intercept(validate(leafPath.ctor, ids.length, access[1]))
-        @intercept(
-            unique(nodeCtor, repositoryGetter, false, relationsIds.length)
-        )
-        // @intercept(filter(ctor, ))
-        @authorize(access[0])
-        @authenticate("bearer")
-        @post(`${basePath}`, {
-            responses: {
-                "200": {
-                    description: `Create multiple ${ctor.name}`,
-                    content: {
-                        "application/json": {
-                            schema: {
-                                type: "array",
-                                items: getModelSchemaRef(ctor)
-                            }
-                        }
-                    }
-                }
-            }
-        })
-        async createAll(...args: any[]): Promise<Model[]> {
-            /**
-             * args[0]: id
-             * args[1]: id
-             * ...
-             * args[n-1]: id
-             * args[n]: Model[]
-             */
+//         @intercept(validate(leafPath.ctor, ids.length, access[1]))
+//         @intercept(
+//             unique(nodeCtor, repositoryGetter, false, relationsIds.length)
+//         )
+//         // @intercept(filter(ctor, ))
+//         @authorize(access[0])
+//         @authenticate("bearer")
+//         @post(`${basePath}`, {
+//             responses: {
+//                 "200": {
+//                     description: `Create multiple ${ctor.name}`,
+//                     content: {
+//                         "application/json": {
+//                             schema: {
+//                                 type: "array",
+//                                 items: getModelSchemaRef(ctor)
+//                             }
+//                         }
+//                     }
+//                 }
+//             }
+//         })
+//         async createAll(...args: any[]): Promise<Model[]> {
+//             /**
+//              * args[0]: id
+//              * args[1]: id
+//              * ...
+//              * args[n-1]: id
+//              * args[n]: Model[]
+//              */
 
-            return await repositoryGetter(this as any).createAll(models);
-        }
+//             return await repositoryGetter(this as any).createAll(models);
+//         }
 
-        @intercept(validate(nodeCtor, relationsIds.length))
-        @intercept(
-            unique(nodeCtor, repositoryGetter, false, relationsIds.length)
-        )
-        @authorize(access[0])
-        @authenticate("bearer")
-        @post(`${basePath}/one`, {
-            responses: {
-                "200": {
-                    description: `Create single ${ctor.name}`,
-                    content: {
-                        "application/json": {
-                            schema: getModelSchemaRef(ctor)
-                        }
-                    }
-                }
-            }
-        })
-        async createOne(...args: any[]): Promise<Model> {
-            /**
-             * args[0]: id
-             * args[1]: id
-             * ...
-             * args[n-1]: id
-             * args[n]: Model
-             */
+//         @intercept(validate(nodeCtor, relationsIds.length))
+//         @intercept(
+//             unique(nodeCtor, repositoryGetter, false, relationsIds.length)
+//         )
+//         @authorize(access[0])
+//         @authenticate("bearer")
+//         @post(`${basePath}/one`, {
+//             responses: {
+//                 "200": {
+//                     description: `Create single ${ctor.name}`,
+//                     content: {
+//                         "application/json": {
+//                             schema: getModelSchemaRef(ctor)
+//                         }
+//                     }
+//                 }
+//             }
+//         })
+//         async createOne(...args: any[]): Promise<Model> {
+//             /**
+//              * args[0]: id
+//              * args[1]: id
+//              * ...
+//              * args[n-1]: id
+//              * args[n]: Model
+//              */
 
-            return await repositoryGetter(this as any).create(model);
-        }
-    }
+//             return await repositoryGetter(this as any).create(model);
+//         }
+//     }
 
-    /** Decorate createAll arguments */
-    relationsIds.forEach((relationId, index) => {
-        param.path.string(relationId)(
-            MixedController.prototype,
-            "createAll",
-            index
-        );
-    });
+//     /** Decorate createAll arguments */
+//     relationsIds.forEach((relationId, index) => {
+//         param.path.string(relationId)(
+//             MixedController.prototype,
+//             "createAll",
+//             index
+//         );
+//     });
 
-    requestBody({
-        content: {
-            "application/json": {
-                schema: {
-                    type: "array",
-                    items: getModelSchemaRef(ctor, {
-                        exclude: ["uid", "beginDate", "endDate", "id"] as any
-                    })
-                }
-            }
-        }
-    })(MixedController.prototype, "createAll", relationsIds.length);
+//     requestBody({
+//         content: {
+//             "application/json": {
+//                 schema: {
+//                     type: "array",
+//                     items: getModelSchemaRef(ctor, {
+//                         exclude: ["uid", "beginDate", "endDate", "id"] as any
+//                     })
+//                 }
+//             }
+//         }
+//     })(MixedController.prototype, "createAll", relationsIds.length);
 
-    /** Decorate createOne arguments */
-    relationsIds.forEach((relationId, index) => {
-        param.path.string(relationId)(
-            MixedController.prototype,
-            "createOne",
-            index
-        );
-    });
+//     /** Decorate createOne arguments */
+//     relationsIds.forEach((relationId, index) => {
+//         param.path.string(relationId)(
+//             MixedController.prototype,
+//             "createOne",
+//             index
+//         );
+//     });
 
-    requestBody({
-        content: {
-            "application/json": {
-                schema: getModelSchemaRef(ctor, {
-                    exclude: ["uid", "beginDate", "endDate", "id"] as any
-                })
-            }
-        }
-    })(MixedController.prototype, "createOne", relationsIds.length);
+//     requestBody({
+//         content: {
+//             "application/json": {
+//                 schema: getModelSchemaRef(ctor, {
+//                     exclude: ["uid", "beginDate", "endDate", "id"] as any
+//                 })
+//             }
+//         }
+//     })(MixedController.prototype, "createOne", relationsIds.length);
 
-    return MixedController as any;
-}
+//     return MixedController as any;
+// }
 // export function ReadControllerMixin<
 //     Model extends Entity,
 //     Permissions extends ACLPermissions,
@@ -494,10 +501,35 @@ export function CRUDControllerMixin<
     Controller
 >(
     controllerClass: Class<ACLController>,
-    paths: Path<Model, Permissions, Controller>[],
+    ctors: Ctor<Model>[],
+    scopes: FilterScope<Model, Permissions, Controller>[],
+    relations: { type: RelationType; name: string }[],
     basePath: string
 ): Class<Controller> {
-    const leafPath = paths[paths.length - 1];
+    const rootCtor = ctors[0];
+    const rootScope = scopes[0];
+
+    const leafCtor = ctors[ctors.length - 1];
+    const leafScope = scopes[scopes.length - 1];
+
+    console.log(
+        generatePath(
+            rootCtor,
+            relations.map(relation => relation.name),
+            basePath
+        )
+    );
+    console.log();
+    console.log(
+        JSON.stringify(
+            generateFilter(
+                rootCtor,
+                [],
+                relations.map(relation => relation.name)
+            )
+        )
+    );
+    console.log("----------------------------------------------------");
 
     // if ("create" in leafPath.scope) {
     //     controllerClass = CreateControllerMixin<Model, Permissions, Controller>(
@@ -572,26 +604,18 @@ export function CRUDControllerMixin<
     //     // );
     // }
 
-    Object.entries(leafPath.scope.include).forEach(([relation, scope]) => {
+    Object.entries(leafScope.include).forEach(([relation, scope]) => {
         /** Check model has relation */
-        if (relation in leafPath.ctor.definition.relations) {
-            const relatedModel = leafPath.ctor.definition.relations[relation];
+        if (relation in leafCtor.definition.relations) {
+            const modelRelation = leafCtor.definition.relations[relation];
 
-            controllerClass = CRUDControllerMixin<any, Permissions, Controller>(
+            controllerClass = CRUDControllerMixin<any, Permissions, any>(
                 controllerClass,
-                [
-                    ...paths,
-                    {
-                        ctor: relatedModel.target(),
-                        scope: scope,
-                        relation: {
-                            name: relation,
-                            type: relatedModel.type
-                        }
-                    }
-                ],
+                [...ctors, modelRelation.target()],
+                [...scopes, scope],
+                [...relations, { type: modelRelation.type, name: relation }],
                 basePath
-            ) as any;
+            );
         }
     });
 
@@ -610,7 +634,9 @@ export function ACLControllerMixin<
 ): Class<Controller> {
     return CRUDControllerMixin<Model, Permissions, Controller>(
         controllerClass,
-        [{ ctor: ctor, scope: scope }],
+        [ctor],
+        [scope],
+        [],
         basePath
     );
 }

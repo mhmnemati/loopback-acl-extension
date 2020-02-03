@@ -36,7 +36,7 @@ export function exist<
 
         const pathFilter = generateFilter(ctor, ids, relations);
 
-        if (pathFilter) {
+        if (Boolean(pathFilter)) {
             const filter = await filterFn(
                 ctor,
                 scope,
@@ -107,14 +107,18 @@ export function generatePath<Model extends Entity>(
     relations: string[],
     basePath: string
 ): string {
-    return relations.reduce((accumulate, relation) => {
+    let lastRelationTypes: RelationType[] = [RelationType.hasMany];
+
+    return relations.reduce((accumulate, relation, index) => {
         const modelRelation = ctor.definition.relations[relation];
         const modelIdName = `${ctor.name.toLowerCase()}_id`;
         const modelRelationName = `${relation.toLowerCase()}`;
 
+        lastRelationTypes = [modelRelation.type, ...lastRelationTypes];
+
         ctor = modelRelation.target();
 
-        if (modelRelation.type === RelationType.hasMany) {
+        if (lastRelationTypes.pop() === RelationType.hasMany) {
             return `${accumulate}/{${modelIdName}}/${modelRelationName}`;
         } else {
             return `${accumulate}/${modelRelationName}`;
@@ -122,7 +126,7 @@ export function generatePath<Model extends Entity>(
     }, `${basePath}/${ctor.name.toLowerCase()}s`);
 }
 
-function generateFilter<Model extends Entity>(
+export function generateFilter<Model extends Entity>(
     ctor: Ctor<Model>,
     ids: string[],
     relations: string[]
@@ -130,38 +134,38 @@ function generateFilter<Model extends Entity>(
     let filter: Filter<any> = {};
     let idIndex = 0;
 
-    relations.reduce((accumulate, relation) => {
+    let lastRelationTypes: RelationType[] = [RelationType.hasMany];
+
+    relations.reduce((accumulate, relation, index) => {
         const modelRelation = ctor.definition.relations[relation];
         const modelIdProperty = ctor.getIdProperties()[
             ctor.getIdProperties().length - 1
         ];
 
+        lastRelationTypes = [modelRelation.type, ...lastRelationTypes];
+
         ctor = modelRelation.target();
 
-        if (modelRelation.type === RelationType.hasMany) {
-            accumulate.include = [
-                {
-                    relation: relation,
-                    scope: {
-                        where: {
-                            [modelIdProperty]: ids[idIndex++] || ""
-                        }
-                    }
-                }
-            ];
-        } else {
+        if (lastRelationTypes.pop() === RelationType.hasMany) {
+            accumulate.where = {
+                [modelIdProperty]: ids[idIndex++] || ""
+            };
+        }
+
+        if (
+            index < relations.length - 1 ||
+            modelRelation.type !== RelationType.hasMany
+        ) {
             accumulate.include = [
                 {
                     relation: relation,
                     scope: {}
                 }
             ];
-        }
 
-        return accumulate.include[0].scope as any;
+            return accumulate.include[0].scope as any;
+        }
     }, filter);
 
-    if (filter.include) {
-        return filter.include[0].scope as any;
-    }
+    return filter;
 }
