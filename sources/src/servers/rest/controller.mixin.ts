@@ -30,8 +30,7 @@ import {
     unique,
     exist,
     filter,
-    generatePath,
-    generateFilter
+    generatePath
 } from "../../interceptors";
 import {
     RepositoryGetter,
@@ -520,15 +519,15 @@ export function CRUDControllerMixin<
         )
     );
     console.log();
-    console.log(
-        JSON.stringify(
-            generateFilter(
-                rootCtor,
-                [],
-                relations.map(relation => relation.name)
-            )
-        )
-    );
+    // console.log(
+    //     JSON.stringify(
+    //         generateFilter(
+    //             rootCtor,
+    //             [],
+    //             relations.map(relation => relation.name)
+    //         )
+    //     )
+    // );
     console.log("----------------------------------------------------");
 
     // if ("create" in leafPath.scope) {

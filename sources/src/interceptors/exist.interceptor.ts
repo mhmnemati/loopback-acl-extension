@@ -77,29 +77,47 @@ async function existFn<Model extends Entity, Controller>(
         filter
     );
 
-    const lastModel = relations.reduce((accumulate, relation) => {
+    let lastCtor: Ctor<Model>;
+
+    return relations.reduce((accumulate, relation, index) => {
         if (!Boolean(accumulate)) {
             return undefined;
         }
 
         const modelRelation = ctor.definition.relations[relation];
 
+        lastCtor = ctor;
         ctor = modelRelation.target();
 
-        if (modelRelation.type === RelationType.hasMany) {
-            return accumulate[relation][0];
+        /** Not last iteration */
+        if (index < relations.length - 1) {
+            if (modelRelation.type === RelationType.hasMany) {
+                return accumulate[relation][0];
+            } else {
+                return accumulate[relation];
+            }
+        }
+
+        /** Last iteration: find relations to parent model */
+        if (modelRelation.type !== RelationType.hasMany) {
+            return {
+                property: ctor.getIdProperties()[
+                    ctor.getIdProperties().length - 1
+                ],
+                value: accumulate[relation]
+            };
         } else {
-            return accumulate[relation];
+            return {
+                property: Object.entries(ctor.definition.relations)
+                    .filter(
+                        ([relation, target]) =>
+                            modelRelation.target().name === lastCtor.name
+                    )
+                    .map(([relation, target]) => relation),
+                value: accumulate
+            };
         }
     }, model);
-
-    if (lastModel) {
-        const lastModelIdProperty = ctor.getIdProperties()[
-            ctor.getIdProperties().length - 1
-        ];
-
-        return lastModel[lastModelIdProperty];
-    }
 }
 
 export function generatePath<Model extends Entity>(
@@ -126,7 +144,7 @@ export function generatePath<Model extends Entity>(
     }, `${basePath}/${ctor.name.toLowerCase()}s`);
 }
 
-export function generateFilter<Model extends Entity>(
+function generateFilter<Model extends Entity>(
     ctor: Ctor<Model>,
     ids: string[],
     relations: string[]
@@ -165,6 +183,8 @@ export function generateFilter<Model extends Entity>(
 
             return accumulate.include[0].scope as any;
         }
+
+        return accumulate;
     }, filter);
 
     return filter;

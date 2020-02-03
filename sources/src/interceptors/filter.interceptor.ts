@@ -48,23 +48,20 @@ export function filter<
         if (pathId) {
             const id = invocationCtx.args[pathId];
 
-            // TODO
-            // const idProperty = getPathIdProperty(paths);
-
-            // if (Array.isArray(idProperty)) {
-            //     idWhere = {
-            //         and: [
-            //             idWhere,
-            //             {
-            //                 or: idProperty.map(idPropertyName => ({
-            //                     [idPropertyName]: idValue
-            //                 }))
-            //             }
-            //         ]
-            //     };
-            // } else {
-            //     idWhere[idProperty] = idValue;
-            // }
+            if (Array.isArray(id.property)) {
+                idWhere = {
+                    and: [
+                        idWhere,
+                        {
+                            or: id.property.map((idProperty: string) => ({
+                                [idProperty]: id.value
+                            }))
+                        }
+                    ]
+                };
+            } else {
+                idWhere[id.property] = id.value;
+            }
         }
 
         /** Get filter from modelFilter argument */
