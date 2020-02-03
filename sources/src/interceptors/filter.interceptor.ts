@@ -59,7 +59,7 @@ export function filter<
                         }
                     ]
                 };
-            } else {
+            } else if (id) {
                 idWhere[id.property] = id.value;
             }
         }

@@ -35,6 +35,7 @@ export function exist<
         );
 
         const pathFilter = generateFilter(ctor, ids, relations);
+        let id;
 
         if (Boolean(pathFilter)) {
             const filter = await filterFn(
@@ -45,7 +46,7 @@ export function exist<
                 invocationCtx
             );
 
-            const id = await existFn(
+            id = await existFn(
                 ctor,
                 filter,
                 repositoryGetter,
@@ -57,10 +58,10 @@ export function exist<
                 throw new HttpErrors.Forbidden(
                     "You don't have required filter to access this model!"
                 );
-            } else {
-                invocationCtx.args.push(id);
             }
         }
+
+        invocationCtx.args.push(id);
 
         return next();
     };
