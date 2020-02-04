@@ -1,13 +1,5 @@
 import { ACLController } from "../../servers";
-import {
-    Entity,
-    Count,
-    CountSchema,
-    Where,
-    Class,
-    Filter,
-    RelationType
-} from "@loopback/repository";
+import { Entity, Count, CountSchema, Class } from "@loopback/repository";
 import {
     get,
     post,
@@ -20,7 +12,6 @@ import {
     getFilterSchemaFor
 } from "@loopback/rest";
 import { Ctor } from "loopback-history-extension";
-import { Condition } from "loopback-authorization-extension";
 
 import { authenticate } from "@loopback/authentication";
 import { authorize } from "loopback-authorization-extension";
@@ -32,467 +23,624 @@ import {
     filter,
     generatePath
 } from "../../interceptors";
-import {
-    RepositoryGetter,
-    ValidateModel,
-    FilterScope,
-    ACLPermissions
-} from "../../types";
+import { FilterScope, ACLPermissions } from "../../types";
 
-// export function CreateControllerMixin<
-//     Model extends Entity,
-//     Permissions extends ACLPermissions,
-//     Controller
-// >(
-//     controllerClass: Class<ACLController>,
-//     paths: Path<Model, Permissions, Controller>[],
-//     basePath: string,
-//     access: [Condition<Permissions>, ValidateModel<Model>]
-// ): Class<Controller> {
-//     const leafPath = paths[paths.length - 1];
-//     const ids = getIds(paths);
+export function CreateControllerMixin<
+    Model extends Entity,
+    Permissions extends ACLPermissions,
+    Controller
+>(
+    controllerClass: Class<ACLController>,
+    rootCtor: Ctor<Model>,
+    rootScope: FilterScope<Model, Permissions, Controller>,
+    leafCtor: Ctor<Model>,
+    leafScope: FilterScope<Model, Permissions, Controller>,
+    relations: string[],
+    basePath: string
+): Class<Controller> {
+    const ids = ["user_id"];
 
-//     class MixedController extends controllerClass {
-//         /**
-//          * Create operations
-//          *
-//          * 1. validate
-//          * 2. unique
-//          */
+    const condition = (leafScope as any).create[0];
+    const validator = (leafScope as any).create[1];
 
-//         @intercept(validate(leafPath.ctor, ids.length, access[1]))
-//         @intercept(
-//             unique(nodeCtor, repositoryGetter, false, relationsIds.length)
-//         )
-//         // @intercept(filter(ctor, ))
-//         @authorize(access[0])
-//         @authenticate("bearer")
-//         @post(`${basePath}`, {
-//             responses: {
-//                 "200": {
-//                     description: `Create multiple ${ctor.name}`,
-//                     content: {
-//                         "application/json": {
-//                             schema: {
-//                                 type: "array",
-//                                 items: getModelSchemaRef(ctor)
-//                             }
-//                         }
-//                     }
-//                 }
-//             }
-//         })
-//         async createAll(...args: any[]): Promise<Model[]> {
-//             /**
-//              * args[0]: id
-//              * args[1]: id
-//              * ...
-//              * args[n-1]: id
-//              * args[n]: Model[]
-//              */
+    class MixedController extends controllerClass {
+        /**
+         * Create operations
+         *
+         * 1. validate
+         * 2. unique
+         * 3. exist
+         */
 
-//             return await repositoryGetter(this as any).createAll(models);
-//         }
+        @intercept(validate(leafCtor, ids.length, validator))
+        @intercept(unique(leafCtor, leafScope, ids.length, false))
+        @intercept(exist(rootCtor, rootScope, 0, ids.length - 1, relations))
+        @authorize(condition)
+        @authenticate("bearer")
+        @post(`${generatePath(rootCtor, relations, basePath)}`, {
+            responses: {
+                "200": {
+                    description: `Create multiple ${leafCtor.name}`,
+                    content: {
+                        "application/json": {
+                            schema: {
+                                type: "array",
+                                items: getModelSchemaRef(leafCtor)
+                            }
+                        }
+                    }
+                }
+            }
+        })
+        async createAll(...args: any[]): Promise<Model[]> {
+            /**
+             * args[0]: id
+             * args[1]: id
+             * ...
+             * args[n-1]: id
+             * args[n]: Model[]
+             */
 
-//         @intercept(validate(nodeCtor, relationsIds.length))
-//         @intercept(
-//             unique(nodeCtor, repositoryGetter, false, relationsIds.length)
-//         )
-//         @authorize(access[0])
-//         @authenticate("bearer")
-//         @post(`${basePath}/one`, {
-//             responses: {
-//                 "200": {
-//                     description: `Create single ${ctor.name}`,
-//                     content: {
-//                         "application/json": {
-//                             schema: getModelSchemaRef(ctor)
-//                         }
-//                     }
-//                 }
-//             }
-//         })
-//         async createOne(...args: any[]): Promise<Model> {
-//             /**
-//              * args[0]: id
-//              * args[1]: id
-//              * ...
-//              * args[n-1]: id
-//              * args[n]: Model
-//              */
+            return await leafScope
+                .repositoryGetter(this as any)
+                .createAll(args[args.length - 2]);
+        }
 
-//             return await repositoryGetter(this as any).create(model);
-//         }
-//     }
+        @intercept(validate(leafCtor, ids.length, validator))
+        @intercept(unique(leafCtor, leafScope, ids.length, false))
+        @intercept(exist(rootCtor, rootScope, 0, ids.length - 1, relations))
+        @authorize(condition)
+        @authenticate("bearer")
+        @post(`${generatePath(rootCtor, relations, basePath)}/one`, {
+            responses: {
+                "200": {
+                    description: `Create single ${leafCtor.name}`,
+                    content: {
+                        "application/json": {
+                            schema: getModelSchemaRef(leafCtor)
+                        }
+                    }
+                }
+            }
+        })
+        async createOne(...args: any[]): Promise<Model> {
+            /**
+             * args[0]: id
+             * args[1]: id
+             * ...
+             * args[n-1]: id
+             * args[n]: Model
+             */
 
-//     /** Decorate createAll arguments */
-//     relationsIds.forEach((relationId, index) => {
-//         param.path.string(relationId)(
-//             MixedController.prototype,
-//             "createAll",
-//             index
-//         );
-//     });
+            return await leafScope
+                .repositoryGetter(this as any)
+                .create(args[args.length - 2]);
+        }
+    }
 
-//     requestBody({
-//         content: {
-//             "application/json": {
-//                 schema: {
-//                     type: "array",
-//                     items: getModelSchemaRef(ctor, {
-//                         exclude: ["uid", "beginDate", "endDate", "id"] as any
-//                     })
-//                 }
-//             }
-//         }
-//     })(MixedController.prototype, "createAll", relationsIds.length);
+    /** Decorate createAll arguments */
+    ids.forEach((id, index) => {
+        param.path.string(id)(MixedController.prototype, "createAll", index);
+    });
 
-//     /** Decorate createOne arguments */
-//     relationsIds.forEach((relationId, index) => {
-//         param.path.string(relationId)(
-//             MixedController.prototype,
-//             "createOne",
-//             index
-//         );
-//     });
+    requestBody({
+        content: {
+            "application/json": {
+                schema: {
+                    type: "array",
+                    items: getModelSchemaRef(leafCtor, {
+                        exclude: ["uid", "beginDate", "endDate", "id"] as any
+                    })
+                }
+            }
+        }
+    })(MixedController.prototype, "createAll", ids.length);
 
-//     requestBody({
-//         content: {
-//             "application/json": {
-//                 schema: getModelSchemaRef(ctor, {
-//                     exclude: ["uid", "beginDate", "endDate", "id"] as any
-//                 })
-//             }
-//         }
-//     })(MixedController.prototype, "createOne", relationsIds.length);
+    /** Decorate createOne arguments */
+    ids.forEach((id, index) => {
+        param.path.string(id)(MixedController.prototype, "createOne", index);
+    });
 
-//     return MixedController as any;
-// }
-// export function ReadControllerMixin<
-//     Model extends Entity,
-//     Permissions extends ACLPermissions,
-//     Controller
-// >(
-//     controllerClass: Class<ACLController>,
-//     ctor: Ctor<Model>,
-//     ctorId: string,
-//     repositoryGetter: RepositoryGetter<Model, Controller>,
-//     access: FilterAccess<Model, Permissions>,
-//     basePath: string
-// ): Class<Controller> {
-//     class MixedController extends controllerClass {
-//         /**
-//          * Read operations
-//          *
-//          * 1. filter
-//          */
+    requestBody({
+        content: {
+            "application/json": {
+                schema: getModelSchemaRef(leafCtor, {
+                    exclude: ["uid", "beginDate", "endDate", "id"] as any
+                })
+            }
+        }
+    })(MixedController.prototype, "createOne", ids.length);
 
-//         @intercept(filter(ctor, "read", 0, "filter", 0, "filter"))
-//         // @authorize(getAccessPermission(ctor, "read"))
-//         @authenticate("bearer")
-//         @get(`${basePath}`, {
-//             responses: {
-//                 "200": {
-//                     description: `Read multiple ${ctor.name} by filter`,
-//                     content: {
-//                         "application/json": {
-//                             schema: {
-//                                 type: "array",
-//                                 items: getModelSchemaRef(ctor, {
-//                                     includeRelations: true
-//                                 })
-//                             }
-//                         }
-//                     }
-//                 }
-//             }
-//         })
-//         async readAll(filter?: Filter<Model>): Promise<Model[]> {
-//             return await repositoryGetter(this as any).find(filter);
-//         }
+    return MixedController as any;
+}
 
-//         @intercept(filter(ctor, "read", 0, "where", 0, "where"))
-//         // @authorize(getAccessPermission(ctor, "read"))
-//         @authenticate("bearer")
-//         @get(`${basePath}/count`, {
-//             responses: {
-//                 "200": {
-//                     description: `Read ${ctor.name} count by where`,
-//                     content: {
-//                         "application/json": {
-//                             schema: CountSchema
-//                         }
-//                     }
-//                 }
-//             }
-//         })
-//         async countAll(where?: Where<Model>): Promise<Count> {
-//             return await repositoryGetter(this as any).count(where);
-//         }
+export function ReadControllerMixin<
+    Model extends Entity,
+    Permissions extends ACLPermissions,
+    Controller
+>(
+    controllerClass: Class<ACLController>,
+    rootCtor: Ctor<Model>,
+    rootScope: FilterScope<Model, Permissions, Controller>,
+    leafCtor: Ctor<Model>,
+    leafScope: FilterScope<Model, Permissions, Controller>,
+    relations: string[],
+    basePath: string
+): Class<Controller> {
+    const ids = ["user_id"];
 
-//         // @intercept(exist(ctor, 0, repositoryGetter))
-//         @intercept(
-//             filter(ctor, "read", 1, "filter", 1, "filter", {
-//                 arg: 0,
-//                 property: ctorId as string
-//             })
-//         )
-//         // @authorize(getAccessPermission(ctor, "read"))
-//         @authenticate("bearer")
-//         @get(`${basePath}/{id}`, {
-//             responses: {
-//                 "200": {
-//                     description: `Read single ${ctor.name} by id`,
-//                     content: {
-//                         "application/json": {
-//                             schema: getModelSchemaRef(ctor, {
-//                                 includeRelations: true
-//                             })
-//                         }
-//                     }
-//                 }
-//             }
-//         })
-//         async readOne(id: string, filter?: Filter<Model>): Promise<Model> {
-//             return await repositoryGetter(this as any).findOne(filter);
-//         }
-//     }
+    const condition = (leafScope as any).read[0];
 
-//     /** Decorate readAll arguments */
-//     param.query.object("filter", getFilterSchemaFor(ctor), {
-//         description: `Filter ${ctor.name}`
-//     })(MixedController.prototype, "readAll", 0);
+    class MixedController extends controllerClass {
+        /**
+         * Read operations
+         *
+         * 1. exist
+         * 2. filter
+         */
 
-//     /** Decorate countAll arguments */
-//     param.query.object("where", getWhereSchemaFor(ctor), {
-//         description: `Where ${ctor.name}`
-//     })(MixedController.prototype, "countAll", 0);
+        @intercept(exist(rootCtor, rootScope, 0, ids.length - 1, relations))
+        @intercept(
+            filter(
+                leafCtor,
+                leafScope,
+                "read",
+                "filter",
+                ids.length + 1,
+                undefined,
+                { index: ids.length, type: "filter" }
+            )
+        )
+        @authorize(condition)
+        @authenticate("bearer")
+        @get(`${generatePath(rootCtor, relations, basePath)}`, {
+            responses: {
+                "200": {
+                    description: `Read multiple ${leafCtor.name} by filter`,
+                    content: {
+                        "application/json": {
+                            schema: {
+                                type: "array",
+                                items: getModelSchemaRef(leafCtor, {
+                                    includeRelations: true
+                                })
+                            }
+                        }
+                    }
+                }
+            }
+        })
+        async readAll(...args: any[]): Promise<Model[]> {
+            return await leafScope
+                .repositoryGetter(this as any)
+                .find(args[args.length - 1]);
+        }
 
-//     /** Decorate readOne arguments */
-//     param.path.string("id")(MixedController.prototype, "readOne", 0);
-//     param.query.object("filter", getFilterSchemaFor(ctor), {
-//         description: `Filter ${ctor.name}`
-//     })(MixedController.prototype, "readOne", 1);
+        @intercept(exist(rootCtor, rootScope, 0, ids.length - 1, relations))
+        @intercept(
+            filter(
+                leafCtor,
+                leafScope,
+                "read",
+                "where",
+                ids.length + 1,
+                undefined,
+                { index: ids.length, type: "where" }
+            )
+        )
+        @authorize(condition)
+        @authenticate("bearer")
+        @get(`${generatePath(rootCtor, relations, basePath)}/count`, {
+            responses: {
+                "200": {
+                    description: `Read ${leafCtor.name} count by where`,
+                    content: {
+                        "application/json": {
+                            schema: CountSchema
+                        }
+                    }
+                }
+            }
+        })
+        async countAll(...args: any[]): Promise<Count> {
+            return await leafScope
+                .repositoryGetter(this as any)
+                .count(args[args.length - 1]);
+        }
 
-//     return MixedController as any;
-// }
-// export function UpdateControllerMixin<
-//     Model extends Entity,
-//     Permissions extends ACLPermissions,
-//     Controller
-// >(
-//     controllerClass: Class<ACLController>,
-//     ctor: Ctor<Model>,
-//     ctorId: string,
-//     repositoryGetter: RepositoryGetter<Model, Controller>,
-//     access: FilterAccess<Model, Permissions>,
-//     basePath: string
-// ): Class<Controller> {
-//     class MixedController extends controllerClass {
-//         /**
-//          * Update operations
-//          *
-//          * 1. validate
-//          * 2. unique
-//          * 3. filter
-//          */
+        @intercept(exist(rootCtor, rootScope, 0, ids.length - 1, relations))
+        @intercept(
+            filter(
+                leafCtor,
+                leafScope,
+                "read",
+                "filter",
+                ids.length + 2,
+                ids.length,
+                { index: ids.length + 1, type: "filter" }
+            )
+        )
+        @authorize(condition)
+        @authenticate("bearer")
+        @get(`${generatePath(rootCtor, relations, basePath)}/{id}`, {
+            responses: {
+                "200": {
+                    description: `Read single ${leafCtor.name} by id`,
+                    content: {
+                        "application/json": {
+                            schema: getModelSchemaRef(leafCtor, {
+                                includeRelations: true
+                            })
+                        }
+                    }
+                }
+            }
+        })
+        async readOne(...args: any[]): Promise<Model> {
+            return await leafScope
+                .repositoryGetter(this as any)
+                .findOne(args[args.length - 1]);
+        }
+    }
 
-//         @intercept(validate(ctor, 0))
-//         @intercept(unique(ctor, repositoryGetter, true, 0))
-//         @intercept(filter(ctor, "update", 1, "where", 1, "where"))
-//         // @authorize(getAccessPermission(ctor, "update"))
-//         @authenticate("bearer")
-//         @put(`${basePath}`, {
-//             responses: {
-//                 "200": {
-//                     description: `Update multiple ${ctor.name} by where`,
-//                     schema: {
-//                         type: "array",
-//                         items: getModelSchemaRef(ctor)
-//                     }
-//                 }
-//             }
-//         })
-//         async updateAll(model: Model, where?: Where<Model>): Promise<Model[]> {
-//             await repositoryGetter(this as any).updateAll(model, where);
+    /** Decorate readAll arguments */
+    ids.forEach((id, index) => {
+        param.path.string(id)(MixedController.prototype, "readAll", index);
+    });
 
-//             return await repositoryGetter(this as any).find({ where: where });
-//         }
+    param.query.object("filter", getFilterSchemaFor(leafCtor), {
+        description: `Filter ${leafCtor.name}`
+    })(MixedController.prototype, "readAll", ids.length);
 
-//         @intercept(validate(ctor, 0))
-//         // @intercept(exist(ctor, 1, repositoryGetter))
-//         @intercept(unique(ctor, 0, repositoryGetter, false))
-//         @intercept(filter(ctor, "update", 1, ctorId as string, 2, "where"))
-//         // @authorize(getAccessPermission(ctor, "update"))
-//         @authenticate("bearer")
-//         @put(`${basePath}/{id}`, {
-//             responses: {
-//                 "200": {
-//                     description: `Update single ${ctor.name} by id`,
-//                     schema: getModelSchemaRef(ctor)
-//                 }
-//             }
-//         })
-//         async updateOne(model: Model, id: string): Promise<Model> {
-//             await repositoryGetter(this as any).updateAll(model, arguments[2]);
+    /** Decorate countAll arguments */
+    ids.forEach((id, index) => {
+        param.path.string(id)(MixedController.prototype, "countAll", index);
+    });
 
-//             return await repositoryGetter(this as any).findById(id);
-//         }
-//     }
+    param.query.object("where", getWhereSchemaFor(leafCtor), {
+        description: `Where ${leafCtor.name}`
+    })(MixedController.prototype, "countAll", ids.length);
 
-//     /** Decorate updateAll arguments */
-//     requestBody({
-//         content: {
-//             "application/json": {
-//                 schema: getModelSchemaRef(ctor, { partial: true })
-//             }
-//         }
-//     })(MixedController.prototype, "updateAll", 0);
-//     param.query.object("where", getWhereSchemaFor(ctor), {
-//         description: `Where ${ctor.name}`
-//     })(MixedController.prototype, "updateAll", 1);
+    /** Decorate readOne arguments */
+    ids.forEach((id, index) => {
+        param.path.string(id)(MixedController.prototype, "readOne", index);
+    });
 
-//     /** Decorate updateOne arguments */
-//     requestBody({
-//         content: {
-//             "application/json": {
-//                 schema: getModelSchemaRef(ctor, { partial: true })
-//             }
-//         }
-//     })(MixedController.prototype, "updateOne", 0);
-//     param.path.string("id")(MixedController.prototype, "updateOne", 1);
+    param.path.string("id")(MixedController.prototype, "readOne", ids.length);
+    param.query.object("filter", getFilterSchemaFor(leafCtor), {
+        description: `Filter ${leafCtor.name}`
+    })(MixedController.prototype, "readOne", ids.length + 1);
 
-//     return MixedController as any;
-// }
-// export function DeleteControllerMixin<
-//     Model extends Entity,
-//     Permissions extends ACLPermissions,
-//     Controller
-// >(
-//     controllerClass: Class<ACLController>,
-//     ctor: Ctor<Model>,
-//     ctorId: string,
-//     repositoryGetter: RepositoryGetter<Model, Controller>,
-//     access: FilterAccess<Model, Permissions>,
-//     basePath: string
-// ): Class<Controller> {
-//     class MixedController extends controllerClass {
-//         /**
-//          * Delete operations
-//          *
-//          * 1. filter
-//          */
+    return MixedController as any;
+}
 
-//         @intercept(filter(ctor, "delete", 0, "where", 0, "where"))
-//         // @authorize(getAccessPermission(ctor, "delete"))
-//         @authenticate("bearer")
-//         @del(`${basePath}`, {
-//             responses: {
-//                 "200": {
-//                     description: `Delete multiple ${ctor.name} by where`,
-//                     content: {
-//                         "application/json": {
-//                             schema: CountSchema
-//                         }
-//                     }
-//                 }
-//             }
-//         })
-//         async deleteAll(where?: Where<Model>): Promise<Count> {
-//             return await repositoryGetter(this as any).deleteAll(where);
-//         }
+export function UpdateControllerMixin<
+    Model extends Entity,
+    Permissions extends ACLPermissions,
+    Controller
+>(
+    controllerClass: Class<ACLController>,
+    rootCtor: Ctor<Model>,
+    rootScope: FilterScope<Model, Permissions, Controller>,
+    leafCtor: Ctor<Model>,
+    leafScope: FilterScope<Model, Permissions, Controller>,
+    relations: string[],
+    basePath: string
+): Class<Controller> {
+    const ids = ["user_id"];
 
-//         // @intercept(exist(ctor, 0, repositoryGetter))
-//         @intercept(filter(ctor, "delete", 0, ctorId as string, 1, "where"))
-//         // @authorize(getAccessPermission(ctor, "delete"))
-//         @authenticate("bearer")
-//         @del(`${basePath}/{id}`, {
-//             responses: {
-//                 "200": {
-//                     description: `Delete single ${ctor.name} by id`,
-//                     content: {
-//                         "application/json": {
-//                             schema: CountSchema
-//                         }
-//                     }
-//                 }
-//             }
-//         })
-//         async deleteOne(id: string): Promise<Count> {
-//             return await repositoryGetter(this as any).deleteAll(arguments[1]);
-//         }
-//     }
+    const condition = (leafScope as any).update[0];
+    const validator = (leafScope as any).update[2];
 
-//     /** Decorate deleteAll arguments */
-//     param.query.object("where", getWhereSchemaFor(ctor), {
-//         description: `Where ${ctor.name}`
-//     })(MixedController.prototype, "deleteAll", 0);
+    class MixedController extends controllerClass {
+        /**
+         * Update operations
+         *
+         * 1. validate
+         * 2. unique
+         * 3. exist
+         * 4. filter
+         */
 
-//     /** Decorate deleteOne arguments */
-//     param.path.string("id")(MixedController.prototype, "deleteOne", 0);
+        @intercept(validate(leafCtor, ids.length, validator))
+        @intercept(unique(leafCtor, leafScope, ids.length, true))
+        @intercept(exist(rootCtor, rootScope, 0, ids.length - 1, relations))
+        @intercept(
+            filter(
+                leafCtor,
+                leafScope,
+                "update",
+                "where",
+                ids.length + 2,
+                undefined,
+                { index: ids.length + 1, type: "where" }
+            )
+        )
+        @authorize(condition)
+        @authenticate("bearer")
+        @put(`${generatePath(rootCtor, relations, basePath)}`, {
+            responses: {
+                "200": {
+                    description: `Update multiple ${leafCtor.name} by where`,
+                    schema: {
+                        type: "array",
+                        items: getModelSchemaRef(leafCtor)
+                    }
+                }
+            }
+        })
+        async updateAll(...args: any[]): Promise<Model[]> {
+            await leafScope
+                .repositoryGetter(this as any)
+                .updateAll(args[args.length - 4], args[args.length - 1]);
 
-//     return MixedController as any;
-// }
-// export function HistoryControllerMixin<
-//     Model extends Entity,
-//     Permissions extends ACLPermissions,
-//     Controller
-// >(
-//     controllerClass: Class<ACLController>,
-//     ctor: Ctor<Model>,
-//     ctorId: string,
-//     repositoryGetter: RepositoryGetter<Model, Controller>,
-//     access: FilterAccess<Model, Permissions>,
-//     basePath: string
-// ): Class<Controller> {
-//     class MixedController extends controllerClass {
-//         /**
-//          * History operations
-//          *
-//          * 1. filter
-//          */
+            return await leafScope
+                .repositoryGetter(this as any)
+                .find(args[args.length - 1]);
+        }
 
-//         // @intercept(exist(ctor, 0, repositoryGetter))
-//         @intercept(
-//             filter(ctor, "history", 1, "filter", 1, "filter", {
-//                 arg: 0,
-//                 property: ctorId as string
-//             })
-//         )
-//         // @authorize(getAccessPermission(ctor, "history"))
-//         @authenticate("bearer")
-//         @get(`${basePath}/{id}/history`, {
-//             responses: {
-//                 "200": {
-//                     description: `Get ${ctor.name} history by filter`,
-//                     content: {
-//                         "application/json": {
-//                             schema: {
-//                                 type: "array",
-//                                 items: getModelSchemaRef(ctor, {
-//                                     includeRelations: true
-//                                 })
-//                             }
-//                         }
-//                     }
-//                 }
-//             }
-//         })
-//         async historyOne(id: string, filter?: Filter<Model>): Promise<Model[]> {
-//             return await repositoryGetter(this as any).find(filter, {
-//                 crud: true
-//             });
-//         }
-//     }
+        @intercept(validate(leafCtor, ids.length, validator))
+        @intercept(unique(leafCtor, leafScope, ids.length, true))
+        @intercept(exist(rootCtor, rootScope, 0, ids.length - 1, relations))
+        @intercept(
+            filter(
+                leafCtor,
+                leafScope,
+                "update",
+                "where",
+                ids.length + 2,
+                ids.length + 1,
+                undefined
+            )
+        )
+        @authorize(condition)
+        @authenticate("bearer")
+        @put(`${generatePath(rootCtor, relations, basePath)}/{id}`, {
+            responses: {
+                "200": {
+                    description: `Update single ${leafCtor.name} by id`,
+                    schema: getModelSchemaRef(leafCtor)
+                }
+            }
+        })
+        async updateOne(...args: any[]): Promise<Model> {
+            await leafScope
+                .repositoryGetter(this as any)
+                .updateAll(args[args.length - 4], args[args.length - 1]);
 
-//     /** Decorate historyOne arguments */
-//     param.path.string("id")(MixedController.prototype, "historyOne", 0);
-//     param.query.object("filter", getFilterSchemaFor(ctor), {
-//         description: `Filter ${ctor.name}`
-//     })(MixedController.prototype, "historyOne", 1);
+            return await leafScope
+                .repositoryGetter(this as any)
+                .findById(args[args.length - 3]);
+        }
+    }
 
-//     return MixedController as any;
-// }
+    /** Decorate updateAll arguments */
+    ids.forEach((id, index) => {
+        param.path.string(id)(MixedController.prototype, "updateAll", index);
+    });
+
+    requestBody({
+        content: {
+            "application/json": {
+                schema: getModelSchemaRef(leafCtor, { partial: true })
+            }
+        }
+    })(MixedController.prototype, "updateAll", ids.length);
+    param.query.object("where", getWhereSchemaFor(leafCtor), {
+        description: `Where ${leafCtor.name}`
+    })(MixedController.prototype, "updateAll", ids.length + 1);
+
+    /** Decorate updateOne arguments */
+    ids.forEach((id, index) => {
+        param.path.string(id)(MixedController.prototype, "updateOne", index);
+    });
+
+    requestBody({
+        content: {
+            "application/json": {
+                schema: getModelSchemaRef(leafCtor, { partial: true })
+            }
+        }
+    })(MixedController.prototype, "updateOne", ids.length);
+    param.path.string("id")(
+        MixedController.prototype,
+        "updateOne",
+        ids.length + 1
+    );
+
+    return MixedController as any;
+}
+
+export function DeleteControllerMixin<
+    Model extends Entity,
+    Permissions extends ACLPermissions,
+    Controller
+>(
+    controllerClass: Class<ACLController>,
+    rootCtor: Ctor<Model>,
+    rootScope: FilterScope<Model, Permissions, Controller>,
+    leafCtor: Ctor<Model>,
+    leafScope: FilterScope<Model, Permissions, Controller>,
+    relations: string[],
+    basePath: string
+): Class<Controller> {
+    const ids = ["user_id"];
+
+    const condition = (leafScope as any).delete[0];
+
+    class MixedController extends controllerClass {
+        /**
+         * Delete operations
+         *
+         * 1. exist
+         * 2. filter
+         */
+
+        @intercept(exist(rootCtor, rootScope, 0, ids.length - 1, relations))
+        @intercept(
+            filter(
+                leafCtor,
+                leafScope,
+                "delete",
+                "where",
+                ids.length + 1,
+                undefined,
+                { index: ids.length, type: "where" }
+            )
+        )
+        @authorize(condition)
+        @authenticate("bearer")
+        @del(`${generatePath(rootCtor, relations, basePath)}`, {
+            responses: {
+                "200": {
+                    description: `Delete multiple ${leafCtor.name} by where`,
+                    content: {
+                        "application/json": {
+                            schema: CountSchema
+                        }
+                    }
+                }
+            }
+        })
+        async deleteAll(...args: any[]): Promise<Count> {
+            return await leafScope
+                .repositoryGetter(this as any)
+                .deleteAll(args[args.length - 1]);
+        }
+
+        @intercept(exist(rootCtor, rootScope, 0, ids.length - 1, relations))
+        @intercept(
+            filter(
+                leafCtor,
+                leafScope,
+                "delete",
+                "where",
+                ids.length + 1,
+                ids.length,
+                undefined
+            )
+        )
+        @authorize(condition)
+        @authenticate("bearer")
+        @del(`${generatePath(rootCtor, relations, basePath)}/{id}`, {
+            responses: {
+                "200": {
+                    description: `Delete single ${leafCtor.name} by id`,
+                    content: {
+                        "application/json": {
+                            schema: CountSchema
+                        }
+                    }
+                }
+            }
+        })
+        async deleteOne(...args: any[]): Promise<Count> {
+            return await leafScope
+                .repositoryGetter(this as any)
+                .deleteAll(args[args.length - 1]);
+        }
+    }
+
+    /** Decorate deleteAll arguments */
+    ids.forEach((id, index) => {
+        param.path.string(id)(MixedController.prototype, "deleteAll", index);
+    });
+
+    param.query.object("where", getWhereSchemaFor(leafCtor), {
+        description: `Where ${leafCtor.name}`
+    })(MixedController.prototype, "deleteAll", ids.length);
+
+    /** Decorate deleteOne arguments */
+    ids.forEach((id, index) => {
+        param.path.string(id)(MixedController.prototype, "deleteOne", index);
+    });
+
+    param.path.string("id")(MixedController.prototype, "deleteOne", ids.length);
+
+    return MixedController as any;
+}
+
+export function HistoryControllerMixin<
+    Model extends Entity,
+    Permissions extends ACLPermissions,
+    Controller
+>(
+    controllerClass: Class<ACLController>,
+    rootCtor: Ctor<Model>,
+    rootScope: FilterScope<Model, Permissions, Controller>,
+    leafCtor: Ctor<Model>,
+    leafScope: FilterScope<Model, Permissions, Controller>,
+    relations: string[],
+    basePath: string
+): Class<Controller> {
+    const ids = ["user_id"];
+
+    const condition = (leafScope as any).history[0];
+
+    class MixedController extends controllerClass {
+        /**
+         * History operations
+         *
+         * 1. exist
+         * 2. filter
+         */
+
+        @intercept(exist(rootCtor, rootScope, 0, ids.length - 1, relations))
+        @intercept(
+            filter(
+                leafCtor,
+                leafScope,
+                "history",
+                "filter",
+                ids.length + 2,
+                ids.length,
+                { index: ids.length + 1, type: "filter" }
+            )
+        )
+        @authorize(condition)
+        @authenticate("bearer")
+        @get(`${generatePath(rootCtor, relations, basePath)}/{id}/history`, {
+            responses: {
+                "200": {
+                    description: `Get ${leafCtor.name} history by filter`,
+                    content: {
+                        "application/json": {
+                            schema: {
+                                type: "array",
+                                items: getModelSchemaRef(leafCtor, {
+                                    includeRelations: true
+                                })
+                            }
+                        }
+                    }
+                }
+            }
+        })
+        async historyOne(...args: any[]): Promise<Model[]> {
+            return await leafScope
+                .repositoryGetter(this as any)
+                .find(args[args.length - 1], {
+                    crud: true
+                });
+        }
+    }
+
+    /** Decorate historyOne arguments */
+    ids.forEach((id, index) => {
+        param.path.string(id)(MixedController.prototype, "historyOne", index);
+    });
+
+    param.path.string("id")(
+        MixedController.prototype,
+        "historyOne",
+        ids.length
+    );
+    param.query.object("filter", getFilterSchemaFor(leafCtor), {
+        description: `Filter ${leafCtor.name}`
+    })(MixedController.prototype, "historyOne", ids.length + 1);
+
+    return MixedController as any;
+}
 
 export function CRUDControllerMixin<
     Model extends Entity,
@@ -502,7 +650,7 @@ export function CRUDControllerMixin<
     controllerClass: Class<ACLController>,
     ctors: Ctor<Model>[],
     scopes: FilterScope<Model, Permissions, Controller>[],
-    relations: { type: RelationType; name: string }[],
+    relations: string[],
     basePath: string
 ): Class<Controller> {
     const rootCtor = ctors[0];
@@ -511,97 +659,67 @@ export function CRUDControllerMixin<
     const leafCtor = ctors[ctors.length - 1];
     const leafScope = scopes[scopes.length - 1];
 
-    console.log(
-        generatePath(
+    if ("create" in leafScope) {
+        controllerClass = CreateControllerMixin<Model, Permissions, Controller>(
+            controllerClass,
             rootCtor,
-            relations.map(relation => relation.name),
+            rootScope,
+            leafCtor,
+            leafScope,
+            relations,
             basePath
-        )
-    );
-    console.log();
-    // console.log(
-    //     JSON.stringify(
-    //         generateFilter(
-    //             rootCtor,
-    //             [],
-    //             relations.map(relation => relation.name)
-    //         )
-    //     )
-    // );
-    console.log("----------------------------------------------------");
+        ) as any;
+    }
 
-    // if ("create" in leafPath.scope) {
-    //     controllerClass = CreateControllerMixin<Model, Permissions, Controller>(
-    //         controllerClass,
-    //         rootCtor,
-    //         rootScope,
-    //         nodeCtor,
-    //         nodeScope,
-    //         null,
-    //         relationsIds,
-    //         modelPath
-    //     ) as any;
-    // }
+    controllerClass = ReadControllerMixin<Model, Permissions, Controller>(
+        controllerClass,
+        rootCtor,
+        rootScope,
+        leafCtor,
+        leafScope,
+        relations,
+        basePath
+    ) as any;
 
-    // if ("read" in leafPath.scope) {
-    //     // controllerClass = ReadControllerMixin<
-    //     //     Model,
-    //     //     Permissions,
-    //     //     ACLController
-    //     // >(
-    //     //     controllerClass,
-    //     //     scope.ctor,
-    //     //     scope.ctorId as any,
-    //     //     scope.repositoryGetter as any,
-    //     //     scope.read as any,
-    //     //     basePath
-    //     // );
-    // }
+    if ("update" in leafScope) {
+        controllerClass = UpdateControllerMixin<Model, Permissions, Controller>(
+            controllerClass,
+            rootCtor,
+            rootScope,
+            leafCtor,
+            leafScope,
+            relations,
+            basePath
+        ) as any;
+    }
 
-    // if ("update" in leafPath.scope) {
-    //     // controllerClass = UpdateControllerMixin<
-    //     //     Model,
-    //     //     Permissions,
-    //     //     ACLController
-    //     // >(
-    //     //     controllerClass,
-    //     //     scope.ctor,
-    //     //     scope.ctorId as any,
-    //     //     scope.repositoryGetter as any,
-    //     //     scope.update as any,
-    //     //     basePath
-    //     // );
-    // }
+    if ("delete" in leafScope) {
+        controllerClass = DeleteControllerMixin<Model, Permissions, Controller>(
+            controllerClass,
+            rootCtor,
+            rootScope,
+            leafCtor,
+            leafScope,
+            relations,
+            basePath
+        ) as any;
+    }
 
-    // if ("delete" in leafPath.scope) {
-    //     // controllerClass = DeleteControllerMixin<
-    //     //     Model,
-    //     //     Permissions,
-    //     //     ACLController
-    //     // >(
-    //     //     controllerClass,
-    //     //     scope.ctor,
-    //     //     scope.ctorId as any,
-    //     //     scope.repositoryGetter as any,
-    //     //     scope.delete as any,
-    //     //     basePath
-    //     // );
-    // }
-
-    // if ("history" in leafPath.scope) {
-    //     // controllerClass = HistoryControllerMixin<
-    //     //     Model,
-    //     //     Permissions,
-    //     //     ACLController
-    //     // >(
-    //     //     controllerClass,
-    //     //     scope.ctor,
-    //     //     scope.ctorId as any,
-    //     //     scope.repositoryGetter as any,
-    //     //     scope.history as any,
-    //     //     basePath
-    //     // );
-    // }
+    if ("history" in leafScope) {
+        controllerClass = HistoryControllerMixin<
+            Model,
+            Permissions,
+            Controller
+        >(
+            controllerClass,
+            rootCtor,
+            rootScope,
+            leafCtor,
+            leafScope,
+            relations,
+            basePath
+        ) as any;
+    }
 
     Object.entries(leafScope.include).forEach(([relation, scope]) => {
         /** Check model has relation */
@@ -612,7 +730,7 @@ export function CRUDControllerMixin<
                 controllerClass,
                 [...ctors, modelRelation.target()],
                 [...scopes, scope],
-                [...relations, { type: modelRelation.type, name: relation }],
+                [...relations, relation],
                 basePath
             );
         }

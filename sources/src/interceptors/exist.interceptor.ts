@@ -21,7 +21,6 @@ export function exist<
     scope: FilterScope<Model, Permissions, Controller>,
     argIndexBegin: number,
     argIndexEnd: number,
-    repositoryGetter: RepositoryGetter<any, Controller>,
     relations: string[]
 ): Interceptor {
     return async (
@@ -48,8 +47,8 @@ export function exist<
 
             id = await existFn(
                 ctor,
+                scope.repositoryGetter,
                 filter,
-                repositoryGetter,
                 relations,
                 invocationCtx
             );
@@ -69,8 +68,8 @@ export function exist<
 
 async function existFn<Model extends Entity, Controller>(
     ctor: Ctor<Model>,
-    filter: Filter<Model>,
     repositoryGetter: RepositoryGetter<any, Controller>,
+    filter: Filter<Model>,
     relations: string[],
     invocationCtx: InvocationContext
 ): Promise<string | undefined> {

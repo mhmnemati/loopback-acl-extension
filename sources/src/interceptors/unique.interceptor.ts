@@ -8,12 +8,16 @@ import { HttpErrors } from "@loopback/rest";
 import { Entity } from "@loopback/repository";
 import { Ctor } from "loopback-history-extension";
 
-import { RepositoryGetter } from "../types";
+import { ACLPermissions, FilterScope, RepositoryGetter } from "../types";
 
-export function unique<Model extends Entity, Controller>(
+export function unique<
+    Model extends Entity,
+    Permissions extends ACLPermissions,
+    Controller
+>(
     ctor: Ctor<Model>,
+    scope: FilterScope<Model, Permissions, Controller>,
     argIndex: number,
-    repositoryGetter: RepositoryGetter<any, Controller>,
     withoutUnqiue: boolean
 ): Interceptor {
     return async (
@@ -29,8 +33,8 @@ export function unique<Model extends Entity, Controller>(
         if (
             !(await uniqueFn(
                 ctor,
+                scope.repositoryGetter,
                 models,
-                repositoryGetter,
                 withoutUnqiue,
                 invocationCtx
             ))
@@ -46,8 +50,8 @@ export function unique<Model extends Entity, Controller>(
 
 async function uniqueFn<Model extends Entity, Controller>(
     ctor: Ctor<Model>,
-    models: Model[],
     repositoryGetter: RepositoryGetter<any, Controller>,
+    models: Model[],
     withoutUnqiue: boolean,
     invocationCtx: InvocationContext
 ): Promise<boolean> {

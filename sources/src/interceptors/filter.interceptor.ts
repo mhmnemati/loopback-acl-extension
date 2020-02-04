@@ -22,7 +22,7 @@ export function filter<
     access: "read" | "update" | "delete" | "history",
     outputType: "where" | "filter",
     pathId?: number,
-    modelId?: (controller: Controller) => string | number,
+    modelId?: number | ((controller: Controller) => string),
     modelFilter?: { index: number; type: "where" | "filter" }
 ): Interceptor {
     return async (
