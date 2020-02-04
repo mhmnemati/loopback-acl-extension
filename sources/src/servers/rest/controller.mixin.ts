@@ -1127,21 +1127,13 @@ export function HistoryControllerMixin<
     const decorateHistoryOneParams = (prototype: any) => {
         /** Decorate historyOne arguments */
         ids.forEach((id, index) => {
-            param.path.string(id)(
-                MixedController.prototype,
-                method("historyOne"),
-                index
-            );
+            param.path.string(id)(prototype, method("historyOne"), index);
         });
 
-        param.path.string("id")(
-            MixedController.prototype,
-            method("historyOne"),
-            ids.length
-        );
+        param.path.string("id")(prototype, method("historyOne"), ids.length);
         param.query.object("filter", getFilterSchemaFor(leafCtor), {
             description: `Filter ${leafCtor.name}`
-        })(MixedController.prototype, method("historyOne"), ids.length + 1);
+        })(prototype, method("historyOne"), ids.length + 1);
     };
     const decorateHistoryOneMetadatas = (prototype: any) => {
         /** Decorate historyOne metadata */
