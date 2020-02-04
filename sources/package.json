@@ -1,6 +1,6 @@
 {
     "name": "loopback-acl-extension",
-    "version": "5.19.0",
+    "version": "5.20.0",
     "description": "Loopback ACL generic implementation based on RBAC",
     "keywords": [
         "loopback-extension",
@@ -54,7 +54,7 @@
     "devDependencies": {
         "@loopback/build": "^3.1.0",
         "@loopback/testlab": "^1.10.2",
-        "@types/node": "^13.7.0",
+        "@types/node": "^10.17.13",
         "nodemon": "^2.0.1",
         "source-map-support": "^0.5.16",
         "typescript": "~3.7.5"
