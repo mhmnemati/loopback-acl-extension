@@ -29,9 +29,9 @@ import {
 
 import {
     GenerateUsersController,
-    // GenerateUsersSelfController,
+    GenerateUsersSelfController,
     GenerateUsersSessionController,
-    // GenerateUsersAccountController,
+    GenerateUsersAccountController,
     GenerateUsersPasswordController,
     GenerateRolesController,
     GeneratePermissionsController
@@ -85,13 +85,13 @@ export class ACLRestServer extends RestServer {
 
         /** Bind users controllers */
         app.controller(GenerateUsersController<User>(userCtor));
-        // app.controller(GenerateUsersSelfController<User>(userCtor));
+        app.controller(GenerateUsersSelfController<User>(userCtor));
         app.controller(
             GenerateUsersSessionController<Session, User>(sessionCtor, userCtor)
         );
-        // app.controller(
-        //     GenerateUsersAccountController<Code, User>(codeCtor, userCtor)
-        // );
+        app.controller(
+            GenerateUsersAccountController<Code, User>(codeCtor, userCtor)
+        );
         app.controller(
             GenerateUsersPasswordController<Code, User>(codeCtor, userCtor)
         );

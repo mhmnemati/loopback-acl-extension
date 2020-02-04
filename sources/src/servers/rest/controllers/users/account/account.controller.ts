@@ -1,241 +1,247 @@
-// import {
-//     post,
-//     put,
-//     del,
-//     param,
-//     requestBody,
-//     getModelSchemaRef
-// } from "@loopback/rest";
-// import { Class, EntityNotFoundError } from "@loopback/repository";
-// import { Ctor } from "loopback-history-extension";
+import {
+    post,
+    put,
+    del,
+    param,
+    requestBody,
+    getModelSchemaRef
+} from "@loopback/rest";
+import { Class, EntityNotFoundError } from "@loopback/repository";
+import { Ctor } from "loopback-history-extension";
 
-// import { ACLController } from "../../../../../servers";
-// import { Code, User, UserRole } from "../../../../../models";
+import { ACLPermissions } from "../../../../../types";
 
-// import { intercept } from "@loopback/core";
-// import { unique } from "../../../../../interceptors";
+import { ACLController } from "../../../../../servers";
+import { Code, User, UserRole } from "../../../../../models";
 
-// const randomize = require("randomatic");
+import { intercept } from "@loopback/core";
+import { unique } from "../../../../../interceptors";
 
-// export function GenerateUsersAccountController<
-//     CodeModel extends Code,
-//     UserModel extends User
-// >(codeCtor: Ctor<CodeModel>, userCtor: Ctor<UserModel>): Class<ACLController> {
-//     class UsersAccountController extends ACLController {
-//         @intercept(
-//             unique<UserModel, ACLController>(
-//                 userCtor,
-//                 0,
-//                 controller => controller.userRepository,
-//                 false
-//             )
-//         )
-//         @post("/users/account", {
-//             responses: {
-//                 "204": {
-//                     description: "Create Account"
-//                 }
-//             }
-//         })
-//         async create(
-//             @requestBody({
-//                 content: {
-//                     "application/json": {
-//                         schema: getModelSchemaRef(userCtor, {
-//                             exclude: [
-//                                 "uid",
-//                                 "beginDate",
-//                                 "endDate",
-//                                 "id",
-//                                 "status"
-//                             ]
-//                         })
-//                     }
-//                 }
-//             })
-//             user: User
-//         ): Promise<void> {
-//             /**
-//              * 1. Create User
-//              * 2. Generate Code And Send
-//              */
+const randomize = require("randomatic");
 
-//             /** Create user */
-//             const userObject = await this.userRepository.create(
-//                 new User({
-//                     ...user,
-//                     status: "Register"
-//                 })
-//             );
+export function GenerateUsersAccountController<
+    CodeModel extends Code,
+    UserModel extends User
+>(codeCtor: Ctor<CodeModel>, userCtor: Ctor<UserModel>): Class<ACLController> {
+    class UsersAccountController extends ACLController {
+        @intercept(
+            unique<User, ACLPermissions, ACLController>(
+                userCtor,
+                {
+                    repositoryGetter: controller => controller.userRepository,
+                    read: ["USERS_READ", async (context, where) => where],
+                    include: {}
+                },
+                0,
+                false
+            )
+        )
+        @post("/users/account", {
+            responses: {
+                "204": {
+                    description: "Create Account"
+                }
+            }
+        })
+        async create(
+            @requestBody({
+                content: {
+                    "application/json": {
+                        schema: getModelSchemaRef(userCtor, {
+                            exclude: [
+                                "uid",
+                                "beginDate",
+                                "endDate",
+                                "id",
+                                "status"
+                            ]
+                        })
+                    }
+                }
+            })
+            user: User
+        ): Promise<void> {
+            /**
+             * 1. Create User
+             * 2. Generate Code And Send
+             */
 
-//             /** Generate Code And Send */
-//             await this.generateCodeAndSend(userObject.id);
-//         }
+            /** Create user */
+            const userObject = await this.userRepository.create(
+                new User({
+                    ...user,
+                    status: "Register"
+                })
+            );
 
-//         @put("/users/account", {
-//             responses: {
-//                 "204": {
-//                     description: "Resend Register Account Code"
-//                 }
-//             }
-//         })
-//         async resend(
-//             @requestBody({
-//                 content: {
-//                     "application/json": {
-//                         schema: getModelSchemaRef(userCtor, {
-//                             partial: true,
-//                             exclude: Object.keys(
-//                                 userCtor.definition.properties
-//                             ).filter(
-//                                 key => key !== "email" && key !== "phone"
-//                             ) as any
-//                         })
-//                     }
-//                 }
-//             })
-//             user: User
-//         ): Promise<void> {
-//             /**
-//              * 1. Find User
-//              * 2. Find Old Code Object
-//              * 3. Invalidate Old Code Object
-//              * 4. Generate Code And Send
-//              */
+            /** Generate Code And Send */
+            await this.generateCodeAndSend(userObject.id);
+        }
 
-//             /** Find user object by username or email */
-//             const userObject = await this.userRepository.findOne({
-//                 where: user as any
-//             });
-//             if (!userObject || Object.keys(user).length <= 0) {
-//                 throw new EntityNotFoundError(userCtor, user);
-//             }
+        @put("/users/account", {
+            responses: {
+                "204": {
+                    description: "Resend Register Account Code"
+                }
+            }
+        })
+        async resend(
+            @requestBody({
+                content: {
+                    "application/json": {
+                        schema: getModelSchemaRef(userCtor, {
+                            partial: true,
+                            exclude: Object.keys(
+                                userCtor.definition.properties
+                            ).filter(
+                                key => key !== "email" && key !== "phone"
+                            ) as any
+                        })
+                    }
+                }
+            })
+            user: User
+        ): Promise<void> {
+            /**
+             * 1. Find User
+             * 2. Find Old Code Object
+             * 3. Invalidate Old Code Object
+             * 4. Generate Code And Send
+             */
 
-//             /** Find activation code object */
-//             for await (const code of this.codeRepository.keys()) {
-//                 const codeObject = await this.codeRepository.get(code);
+            /** Find user object by username or email */
+            const userObject = await this.userRepository.findOne({
+                where: user as any
+            });
+            if (!userObject || Object.keys(user).length <= 0) {
+                throw new EntityNotFoundError(userCtor, user);
+            }
 
-//                 if (
-//                     codeObject.type === "Account" &&
-//                     codeObject.userId === userObject.id
-//                 ) {
-//                     await this.codeRepository.delete(code);
-//                 }
-//             }
+            /** Find activation code object */
+            for await (const code of this.codeRepository.keys()) {
+                const codeObject = await this.codeRepository.get(code);
 
-//             /** Generate Code And Send */
-//             await this.generateCodeAndSend(userObject.id);
-//         }
+                if (
+                    codeObject.type === "Account" &&
+                    codeObject.userId === userObject.id
+                ) {
+                    await this.codeRepository.delete(code);
+                }
+            }
 
-//         @post("/users/account/{code}", {
-//             responses: {
-//                 "204": {
-//                     description: "Activate Account"
-//                 }
-//             }
-//         })
-//         async activate(@param.path.string("code") code: string): Promise<void> {
-//             /**
-//              * 1. Find Code Object
-//              * 2. Check Code Object
-//              * 3. Activate User
-//              * 4. Add User to Users Role
-//              */
+            /** Generate Code And Send */
+            await this.generateCodeAndSend(userObject.id);
+        }
 
-//             /** Find activation code object */
-//             const codeObject = await this.codeRepository.get(code);
+        @post("/users/account/{code}", {
+            responses: {
+                "204": {
+                    description: "Activate Account"
+                }
+            }
+        })
+        async activate(@param.path.string("code") code: string): Promise<void> {
+            /**
+             * 1. Find Code Object
+             * 2. Check Code Object
+             * 3. Activate User
+             * 4. Add User to Users Role
+             */
 
-//             /** Check activation code object type */
-//             if (!codeObject || codeObject.type !== "Account") {
-//                 throw new EntityNotFoundError(codeCtor, code);
-//             } else {
-//                 await this.codeRepository.delete(code);
-//             }
+            /** Find activation code object */
+            const codeObject = await this.codeRepository.get(code);
 
-//             /** Activate user */
-//             await this.userRepository.updateById(
-//                 codeObject.userId,
-//                 new User({
-//                     status: "Active"
-//                 })
-//             );
+            /** Check activation code object type */
+            if (!codeObject || codeObject.type !== "Account") {
+                throw new EntityNotFoundError(codeCtor, code);
+            } else {
+                await this.codeRepository.delete(code);
+            }
 
-//             /** Add user to Users role */
-//             const usersRole = await this.roleRepository.findOne({
-//                 where: {
-//                     name: "Users"
-//                 }
-//             });
-//             if (usersRole) {
-//                 await this.userRoleRepository.create(
-//                     new UserRole({
-//                         userId: codeObject.userId,
-//                         roleId: usersRole.id
-//                     })
-//                 );
-//             }
+            /** Activate user */
+            await this.userRepository.updateById(
+                codeObject.userId,
+                new User({
+                    status: "Active"
+                })
+            );
 
-//             /** Activate handler - default user configs, etc */
-//             await this.activateHandler(codeObject.userId);
-//         }
+            /** Add user to Users role */
+            const usersRole = await this.roleRepository.findOne({
+                where: {
+                    name: "Users"
+                }
+            });
+            if (usersRole) {
+                await this.userRoleRepository.create(
+                    new UserRole({
+                        userId: codeObject.userId,
+                        roleId: usersRole.id
+                    })
+                );
+            }
 
-//         @del("/users/account", {
-//             responses: {
-//                 "204": {
-//                     description: "Delete Account"
-//                 }
-//             }
-//         })
-//         async delete(
-//             @requestBody({
-//                 content: {
-//                     "application/json": {
-//                         schema: getModelSchemaRef(userCtor, {
-//                             exclude: Object.keys(
-//                                 userCtor.definition.properties
-//                             ).filter(
-//                                 key => key !== "username" && key !== "password"
-//                             ) as any
-//                         })
-//                     }
-//                 }
-//             })
-//             user: User
-//         ): Promise<void> {
-//             /** Delete user */
-//             await this.userRepository.deleteAll({
-//                 username: user.username,
-//                 password: user.password
-//             });
-//         }
+            /** Activate handler - default user configs, etc */
+            await this.activateHandler(codeObject.userId);
+        }
 
-//         private async generateCodeAndSend(userId: string) {
-//             /**
-//              * 1. Generate Code
-//              * 2. Save Code Object
-//              * 3. Set Code Object Expire-Time
-//              * 4. Send Activation Email
-//              */
+        @del("/users/account", {
+            responses: {
+                "204": {
+                    description: "Delete Account"
+                }
+            }
+        })
+        async delete(
+            @requestBody({
+                content: {
+                    "application/json": {
+                        schema: getModelSchemaRef(userCtor, {
+                            exclude: Object.keys(
+                                userCtor.definition.properties
+                            ).filter(
+                                key => key !== "username" && key !== "password"
+                            ) as any
+                        })
+                    }
+                }
+            })
+            user: User
+        ): Promise<void> {
+            /** Delete user */
+            await this.userRepository.deleteAll({
+                username: user.username,
+                password: user.password
+            });
+        }
 
-//             /** Generate activation code */
-//             const code = randomize("0", 6);
+        private async generateCodeAndSend(userId: string) {
+            /**
+             * 1. Generate Code
+             * 2. Save Code Object
+             * 3. Set Code Object Expire-Time
+             * 4. Send Activation Email
+             */
 
-//             /** Save activation code object */
-//             await this.codeRepository.set(
-//                 code,
-//                 new Code({
-//                     type: "Account",
-//                     userId: userId
-//                 })
-//             );
+            /** Generate activation code */
+            const code = randomize("0", 6);
 
-//             /** Set activation code object expiration time (in millis) */
-//             await this.codeRepository.expire(code, this.sessionTimeout);
+            /** Save activation code object */
+            await this.codeRepository.set(
+                code,
+                new Code({
+                    type: "Account",
+                    userId: userId
+                })
+            );
 
-//             /** Send activation email */
-//             await this.messageHandler(userId, code, "Account");
-//         }
-//     }
+            /** Set activation code object expiration time (in millis) */
+            await this.codeRepository.expire(code, this.sessionTimeout);
 
-//     return UsersAccountController;
-// }
+            /** Send activation email */
+            await this.messageHandler(userId, code, "Account");
+        }
+    }
+
+    return UsersAccountController;
+}

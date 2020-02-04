@@ -18,8 +18,42 @@ export function GeneratePermissionsController<Model extends Permission>(
         ctor,
         {
             repositoryGetter: controller => controller.permissionRepository,
+
             read: ["PERMISSIONS_READ", async (context, where) => where],
-            include: {}
+
+            include: {
+                rolePermissions: {
+                    repositoryGetter: controller =>
+                        controller.rolePermissionRepository,
+
+                    create: [
+                        "ROLE_PERMISSIONS_WRITE",
+                        async (context, models) => true
+                    ],
+                    read: [
+                        "ROLE_PERMISSIONS_READ",
+                        async (context, where) => where
+                    ],
+                    delete: [
+                        "ROLE_PERMISSIONS_WRITE",
+                        async (context, where) => where
+                    ],
+
+                    include: {
+                        role: {
+                            repositoryGetter: controller =>
+                                controller.roleRepository,
+
+                            read: [
+                                "ROLES_READ",
+                                async (context, where) => where
+                            ],
+
+                            include: {}
+                        }
+                    }
+                }
+            }
         },
         ""
     ) {}
