@@ -475,7 +475,7 @@ export function ReadControllerMixin<
                 .findOne(args[args.length - 1]);
         };
         const methodDescriptor = {
-            value: prototype[method("createOne")],
+            value: prototype[method("readOne")],
             writable: true,
             enumerable: false,
             configurable: true
