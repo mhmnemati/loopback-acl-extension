@@ -41,6 +41,11 @@ export function CreateControllerMixin<
 ): Class<Controller> {
     const ids = generateIds(rootCtor, relations);
 
+    const path = relations.reduce(
+        (accumulate, relation) => accumulate.concat(relation),
+        ""
+    );
+
     const condition = (leafScope as any).create[0];
     const validator = (leafScope as any).create[1];
 
@@ -117,6 +122,8 @@ export function CreateControllerMixin<
                 .repositoryGetter(this as any)
                 .create(args[args.length - 2]);
         }
+
+        [`createOne${relations.reduce(accumulate)}`] = async () => {};
     }
 
     /** Decorate createAll arguments */
