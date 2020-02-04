@@ -11,10 +11,10 @@ import {
 import { authenticate } from "@loopback/authentication";
 import { authorize } from "loopback-authorization-extension";
 
+import { ACLPermissions } from "../../../../../types";
+
 import { ACLController } from "../../../../../servers";
 import { User } from "../../../../../models";
-
-import { ACLPermissions } from "../../../../../types";
 
 import { intercept } from "@loopback/core";
 import { unique, filter } from "../../../../../interceptors";
@@ -44,12 +44,15 @@ export function GenerateUsersSelfController<UserModel extends User>(
         }
 
         @intercept(
-            unique<UserModel, ACLController>(
+            unique<User, ACLPermissions, ACLController>(
                 userCtor,
+                {
+                    repositoryGetter: controller => controller.userRepository,
+                    read: ["USERS_READ", async (context, where) => where],
+                    include: {}
+                },
                 0,
-                "single",
-                false,
-                controller => controller.userRepository
+                false
             )
         )
         @authorize<ACLPermissions>("USERS_WRITE_SELF")
@@ -75,11 +78,20 @@ export function GenerateUsersSelfController<UserModel extends User>(
         }
 
         @intercept(
-            filter(userCtor, "history", 0, "filter", 0, "filter", {
-                arg: context =>
-                    (context.target as ACLController).session.userId,
-                property: "id"
-            })
+            filter<User, ACLPermissions, ACLController>(
+                userCtor,
+                {
+                    repositoryGetter: controller => controller.userRepository,
+                    read: ["USERS_READ", async (context, where) => where],
+                    history: ["USERS_HISTORY", async (context, where) => where],
+                    include: {}
+                },
+                "history",
+                "filter",
+                undefined,
+                controller => controller.session.userId,
+                { index: 0, type: "filter" }
+            )
         )
         @authorize<ACLPermissions>("USERS_HISTORY_SELF")
         @authenticate("bearer")
@@ -106,7 +118,7 @@ export function GenerateUsersSelfController<UserModel extends User>(
             })
             filter?: Filter<UserModel>
         ): Promise<User[]> {
-            return await this.userRepository.find(filter);
+            return await this.userRepository.find(arguments[1]);
         }
     }
 

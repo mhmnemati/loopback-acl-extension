@@ -4,157 +4,171 @@ import {
     InvocationResult,
     ValueOrPromise
 } from "@loopback/context";
-import { Entity, Filter } from "@loopback/repository";
+import { Entity, Where, Filter } from "@loopback/repository";
 import { Ctor } from "loopback-history-extension";
 import { authorizeFn } from "loopback-authorization-extension";
 
-import { ACLPermissions } from "../types";
-
-import {
-    getAccessPermission,
-    getAccessFilter,
-    getAccessTarget
-} from "../decorators";
+import { ACLPermissions, FilterScope } from "../types";
 
 import { ACLController } from "../servers";
 
-export function filter<Model extends Entity>(
+export function filter<
+    Model extends Entity,
+    Permissions extends ACLPermissions,
+    Controller
+>(
     ctor: Ctor<Model>,
+    scope: FilterScope<Model, Permissions, Controller>,
     access: "read" | "update" | "delete" | "history",
-    inputArg: number,
-    inputFilter: "where" | "filter" | string,
-    outputArg: number,
-    outputFilter: "where" | "filter",
-    andId?: {
-        arg: number | ((context: InvocationContext) => string);
-        property: string;
-    }
+    outputType: "where" | "filter",
+    pathId?: number,
+    modelId?: number | ((controller: Controller) => string),
+    modelFilter?: { index: number; type: "where" | "filter" }
 ): Interceptor {
     return async (
         invocationCtx: InvocationContext,
         next: () => ValueOrPromise<InvocationResult>
     ) => {
-        /** Read input argument */
-        let filter = invocationCtx.args[inputArg] || {};
+        const modelIdProperty = ctor.getIdProperties()[
+            ctor.getIdProperties().length - 1
+        ];
 
-        /** Change input filter */
-        if (inputFilter === "where") {
-            filter = {
-                where: filter
-            };
-        } else if (inputFilter === "filter") {
-            filter = {
-                ...filter,
-                where: filter.where || {}
-            };
-        } else {
-            filter = {
-                where: {
-                    [inputFilter]: filter
-                }
-            };
-        }
+        let idWhere: Where<any> = {};
 
-        /** Apply filter */
-        filter = await filterApply<Model>(ctor, access, invocationCtx, filter);
-
-        /** Apply optional id and */
-        if (andId) {
-            if (typeof andId.arg === "number") {
-                filter.where = {
-                    and: [
-                        { [andId.property]: invocationCtx.args[andId.arg] },
-                        filter.where
-                    ]
-                };
+        /** Apply modelId filter */
+        if (modelId) {
+            if (typeof modelId === "number") {
+                idWhere[modelIdProperty] = invocationCtx.args[modelId];
             } else {
-                filter.where = {
-                    and: [
-                        { [andId.property]: andId.arg(invocationCtx) },
-                        filter.where
-                    ]
-                };
+                idWhere[modelIdProperty] = modelId(invocationCtx.target as any);
             }
         }
 
-        /** Change output filter */
-        if (outputFilter === "where") {
-            filter = filter.where;
+        /** Apply pathId filter */
+        if (pathId) {
+            const id = invocationCtx.args[pathId];
+
+            if (Array.isArray(id.property)) {
+                idWhere = {
+                    and: [
+                        idWhere,
+                        {
+                            or: id.property.map((idProperty: string) => ({
+                                [idProperty]: id.value
+                            }))
+                        }
+                    ]
+                };
+            } else if (id) {
+                idWhere[id.property] = id.value;
+            }
         }
 
-        /** Write output argument */
-        invocationCtx.args[outputArg] = filter;
+        /** Get filter from modelFilter argument */
+        let result: Filter<any> = {};
+        if (modelFilter) {
+            if (modelFilter.type === "where") {
+                result.where = invocationCtx.args[modelFilter.index];
+            } else {
+                result = invocationCtx.args[modelFilter.index] || {};
+            }
+        }
+        if (Boolean(result.where)) {
+            result.where = { and: [idWhere, result.where] };
+        } else {
+            result.where = idWhere;
+        }
+
+        result = await filterFn(ctor, scope, access, result, invocationCtx);
+
+        if (outputType === "where") {
+            result = result.where as any;
+        }
+
+        invocationCtx.args.push(result);
 
         return next();
     };
 }
 
-async function filterApply<Model extends Entity>(
+export async function filterFn<
+    Model extends Entity,
+    Permissions extends ACLPermissions,
+    Controller
+>(
     ctor: Ctor<Model>,
+    scope: FilterScope<Model, Permissions, Controller>,
     access: "read" | "update" | "delete" | "history",
-    invocationCtx: InvocationContext,
-    filter: Filter<Model>
+    filter: Filter<Model> = {},
+    invocationCtx: InvocationContext
 ): Promise<Filter<Model>> {
-    filter = await getAccessFilter<Model>(ctor, access)(invocationCtx, filter);
+    const modelAccess = scope[access];
+    const modelIdProperty = ctor.getIdProperties()[
+        ctor.getIdProperties().length - 1
+    ];
 
+    /** Check access object exists */
+    if (!modelAccess) {
+        return {
+            where: { [modelIdProperty]: null }
+        } as any;
+    }
+
+    /** Apply filter on `where` */
+    filter.where = await modelAccess[1](invocationCtx, filter.where || {});
+
+    /** Apply filter on `include` by scope and filter */
     if (filter.include) {
-        filter.include = (await Promise.all(
+        /** Remove inclusions that not exist in `model` or `scope` relations */
+        filter.include = filter.include.filter(
+            inclusion =>
+                inclusion.relation in ctor.definition.relations &&
+                inclusion.relation in scope.include
+        );
+
+        /**
+         * Remove inclusions that hasn't access permission
+         * Remove undefined inclusions
+         * */
+        filter.include = (
+            await Promise.all(
+                filter.include.map(async inclusion => {
+                    const modelAccess =
+                        scope.include[inclusion.relation][access];
+
+                    if (modelAccess) {
+                        if (
+                            await authorizeFn<any>(
+                                modelAccess[0],
+                                (invocationCtx.target as ACLController).session
+                                    .permissions,
+                                invocationCtx
+                            )
+                        ) {
+                            return inclusion;
+                        }
+                    }
+
+                    return undefined;
+                })
+            )
+        ).filter(inclusion => Boolean(inclusion)) as any[];
+
+        /** Filter inclusion scope (Filter), recursively */
+        filter.include = await Promise.all(
             filter.include.map(async inclusion => {
-                const inclusionRelation = inclusion.relation;
-                const inclusionTarget = getAccessTarget<Model>(
-                    ctor,
-                    inclusionRelation
-                );
-                const inclusionPermission = getAccessPermission<
-                    any,
-                    ACLPermissions
-                >(ctor, access);
-                const inclusionFilter = getFilter<any>(inclusion.scope);
-
-                /** Check related model is accessable using current model */
-                if (!inclusionTarget) {
-                    return undefined;
-                }
-
-                /** Check user has access permission to related model */
-                if (
-                    !(await authorizeFn<any>(
-                        inclusionPermission,
-                        (invocationCtx.target as ACLController).session
-                            .permissions,
-                        invocationCtx
-                    ))
-                ) {
-                    return undefined;
-                }
-
-                /** Apply filter over inclusion filter */
-                inclusion.scope = await filterApply<Model>(
-                    inclusionTarget,
+                inclusion.scope = await filterFn<any, Permissions, Controller>(
+                    ctor.definition.relations[inclusion.relation].target(),
+                    scope.include[inclusion.relation],
                     access,
-                    invocationCtx,
-                    inclusionFilter
+                    inclusion.scope,
+                    invocationCtx
                 );
 
                 return inclusion;
             })
-        )) as any[];
-
-        filter.include = filter.include.filter(inclusion => Boolean(inclusion));
+        );
     }
 
     return filter;
-}
-
-function getFilter<Model extends Entity>(
-    filter?: Filter<Model>
-): Filter<Model> {
-    if (filter && filter.where) {
-        return filter;
-    }
-
-    return {
-        where: {},
-        ...filter
-    };
 }

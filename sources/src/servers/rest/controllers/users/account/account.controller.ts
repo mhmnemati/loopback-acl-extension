@@ -9,6 +9,8 @@ import {
 import { Class, EntityNotFoundError } from "@loopback/repository";
 import { Ctor } from "loopback-history-extension";
 
+import { ACLPermissions } from "../../../../../types";
+
 import { ACLController } from "../../../../../servers";
 import { Code, User, UserRole } from "../../../../../models";
 
@@ -23,12 +25,15 @@ export function GenerateUsersAccountController<
 >(codeCtor: Ctor<CodeModel>, userCtor: Ctor<UserModel>): Class<ACLController> {
     class UsersAccountController extends ACLController {
         @intercept(
-            unique<UserModel, ACLController>(
+            unique<User, ACLPermissions, ACLController>(
                 userCtor,
+                {
+                    repositoryGetter: controller => controller.userRepository,
+                    read: ["USERS_READ", async (context, where) => where],
+                    include: {}
+                },
                 0,
-                "single",
-                false,
-                controller => controller.userRepository
+                false
             )
         )
         @post("/users/account", {

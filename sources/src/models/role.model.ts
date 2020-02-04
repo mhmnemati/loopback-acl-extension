@@ -6,17 +6,8 @@ import {
     RoleRelations as RoleModelRelations
 } from "loopback-authorization-extension";
 
-import { access } from "../decorators";
-import { ACLPermissions } from "../types";
 import { UserRole, RolePermission } from "./";
 
-@access<RoleWithRelations, ACLPermissions>({
-    create: "ROLES_WRITE",
-    read: ["ROLES_READ", async (context, filter) => filter],
-    update: ["ROLES_WRITE", async (context, filter) => filter],
-    delete: ["ROLES_WRITE", async (context, filter) => filter],
-    history: ["ROLES_HISTORY", async (context, filter) => filter]
-})
 @relation<RoleWithRelations, Role>("parent", () => Role)
 @relation<RoleWithRelations, Role>("childs", () => Role)
 @relation<RoleWithRelations, UserRole>("userRoles", () => UserRole)
@@ -25,9 +16,7 @@ import { UserRole, RolePermission } from "./";
     () => RolePermission
 )
 @model({
-    settings: {
-        access: access
-    }
+    settings: {}
 })
 export class Role extends RoleModel {
     @property({
