@@ -114,9 +114,10 @@ async function existFn<Model extends Entity, Controller>(
                 property: Object.entries(ctor.definition.relations)
                     .filter(
                         ([relation, target]) =>
-                            modelRelation.target().name === lastCtor.name
+                            target.type === RelationType.belongsTo &&
+                            target.target().name === lastCtor.name
                     )
-                    .map(([relation, target]) => relation),
+                    .map(([relation, target]) => (target as any).keyFrom),
                 value: accumulate
             };
         }
