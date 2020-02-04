@@ -29,9 +29,10 @@ export function filter<
         invocationCtx: InvocationContext,
         next: () => ValueOrPromise<InvocationResult>
     ) => {
-        const modelIdProperty = ctor.getIdProperties()[
-            ctor.getIdProperties().length - 1
-        ];
+        const modelIdProperty =
+            "id" in ctor.definition.properties
+                ? "id"
+                : ctor.getIdProperties()[0];
 
         let idWhere: Where<any> = {};
 
@@ -103,9 +104,8 @@ export async function filterFn<
     invocationCtx: InvocationContext
 ): Promise<Filter<Model>> {
     const modelAccess = scope[access];
-    const modelIdProperty = ctor.getIdProperties()[
-        ctor.getIdProperties().length - 1
-    ];
+    const modelIdProperty =
+        "id" in ctor.definition.properties ? "id" : ctor.getIdProperties()[0];
 
     /** Check access object exists */
     if (!modelAccess) {

@@ -61,11 +61,12 @@ export function CreateControllerMixin<
              * ...
              * args[n-1]: id
              * args[n]: Model[]
+             * args[n+1]: id_exist
              */
 
             return await leafScope
                 .repositoryGetter(this as any)
-                .createAll(args[args.length - 2]);
+                .createAll(args[ids.length]);
         };
 
         const methodDescriptor = {
@@ -164,11 +165,12 @@ export function CreateControllerMixin<
              * ...
              * args[n-1]: id
              * args[n]: Model
+             * args[n+1]: id_exist
              */
 
             return await leafScope
                 .repositoryGetter(this as any)
-                .create(args[args.length - 2]);
+                .create(args[ids.length]);
         };
         const methodDescriptor = {
             value: prototype[method("createOne")],
@@ -299,11 +301,13 @@ export function ReadControllerMixin<
              * ...
              * args[n-1]: id
              * args[n]: Filter
+             * args[n+1]: id_exist
+             * args[n+2]: Filter_filter
              */
 
             return await leafScope
                 .repositoryGetter(this as any)
-                .find(args[args.length - 1]);
+                .find(args[ids.length + 2]);
         };
 
         const methodDescriptor = {
@@ -384,11 +388,13 @@ export function ReadControllerMixin<
              * ...
              * args[n-1]: id
              * args[n]: Where
+             * args[n+1]: id_exist
+             * args[n+2]: Where_filter
              */
 
             return await leafScope
                 .repositoryGetter(this as any)
-                .count(args[args.length - 1]);
+                .count(args[ids.length + 2]);
         };
 
         const methodDescriptor = {
@@ -468,11 +474,13 @@ export function ReadControllerMixin<
              * args[n-1]: id
              * args[n]: id_model
              * args[n+1]: Filter
+             * args[n+2]: id_exist
+             * args[n+3]: Filter_filter
              */
 
             return await leafScope
                 .repositoryGetter(this as any)
-                .findOne(args[args.length - 1]);
+                .findOne(args[ids.length + 3]);
         };
         const methodDescriptor = {
             value: prototype[method("readOne")],
@@ -599,15 +607,17 @@ export function UpdateControllerMixin<
              * args[n-1]: id
              * args[n]: Model
              * args[n+1]: Where
+             * args[n+2]: id_exist,
+             * args[n+3]: Where_filter
              */
 
             await leafScope
                 .repositoryGetter(this as any)
-                .updateAll(args[args.length - 4], args[args.length - 1]);
+                .updateAll(args[ids.length], args[ids.length + 3]);
 
             return await leafScope
                 .repositoryGetter(this as any)
-                .find(args[args.length - 1]);
+                .find({ where: args[ids.length + 3] });
         };
 
         const methodDescriptor = {
@@ -707,15 +717,17 @@ export function UpdateControllerMixin<
              * args[n-1]: id
              * args[n]: Model
              * args[n+1]: id_model
+             * args[n+2]: id_exist
+             * args[n+3]: Where_filter
              */
 
             await leafScope
                 .repositoryGetter(this as any)
-                .updateAll(args[args.length - 4], args[args.length - 1]);
+                .updateAll(args[ids.length], args[ids.length + 3]);
 
             return await leafScope
                 .repositoryGetter(this as any)
-                .findById(args[args.length - 3]);
+                .findById(args[ids.length + 1]);
         };
         const methodDescriptor = {
             value: prototype[method("updateOne")],
@@ -853,11 +865,13 @@ export function DeleteControllerMixin<
              * ...
              * args[n-1]: id
              * args[n]: Where
+             * args[n+1]: id_exist
+             * args[n+2]: Where_filter
              */
 
             return await leafScope
                 .repositoryGetter(this as any)
-                .deleteAll(args[args.length - 1]);
+                .deleteAll(args[ids.length + 2]);
         };
 
         const methodDescriptor = {
@@ -940,11 +954,13 @@ export function DeleteControllerMixin<
              * ...
              * args[n-1]: id
              * args[n]: id_model
+             * args[n+1]: id_exist
+             * args[n+2]: Where_filter
              */
 
             return await leafScope
                 .repositoryGetter(this as any)
-                .deleteAll(args[args.length - 1]);
+                .deleteAll(args[ids.length + 2]);
         };
         const methodDescriptor = {
             value: prototype[method("deleteOne")],
@@ -1068,11 +1084,13 @@ export function HistoryControllerMixin<
              * args[n-1]: id
              * args[n]: id_model
              * args[n+1]: Filter
+             * args[n+2]: id_exist
+             * args[n+3]: Filter_filter
              */
 
             return await leafScope
                 .repositoryGetter(this as any)
-                .find(args[args.length - 1], {
+                .find(args[ids.length + 3], {
                     crud: true
                 });
         };
@@ -1127,21 +1145,13 @@ export function HistoryControllerMixin<
     const decorateHistoryOneParams = (prototype: any) => {
         /** Decorate historyOne arguments */
         ids.forEach((id, index) => {
-            param.path.string(id)(
-                MixedController.prototype,
-                method("historyOne"),
-                index
-            );
+            param.path.string(id)(prototype, method("historyOne"), index);
         });
 
-        param.path.string("id")(
-            MixedController.prototype,
-            method("historyOne"),
-            ids.length
-        );
+        param.path.string("id")(prototype, method("historyOne"), ids.length);
         param.query.object("filter", getFilterSchemaFor(leafCtor), {
             description: `Filter ${leafCtor.name}`
-        })(MixedController.prototype, method("historyOne"), ids.length + 1);
+        })(prototype, method("historyOne"), ids.length + 1);
     };
     const decorateHistoryOneMetadatas = (prototype: any) => {
         /** Decorate historyOne metadata */
