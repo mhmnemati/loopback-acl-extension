@@ -34,7 +34,7 @@ export function exist<
         );
 
         const pathFilter = generateFilter(ctor, ids, relations);
-        let id;
+        let id = undefined;
 
         if (Boolean(pathFilter)) {
             const filter = await filterFn(
@@ -100,13 +100,16 @@ async function existFn<Model extends Entity, Controller>(
 
         /** Last iteration: find relations to parent model */
         if (modelRelation.type !== RelationType.hasMany) {
+            /** property: id */
             return {
-                property: ctor.getIdProperties()[
-                    ctor.getIdProperties().length - 1
-                ],
+                property:
+                    "id" in ctor.definition.properties
+                        ? "id"
+                        : ctor.getIdProperties()[0],
                 value: accumulate[relation]
             };
         } else {
+            /** property: [user, owner, ...] */
             return {
                 property: Object.entries(ctor.definition.relations)
                     .filter(
@@ -180,9 +183,10 @@ function generateFilter<Model extends Entity>(
 
     relations.reduce((accumulate, relation, index) => {
         const modelRelation = ctor.definition.relations[relation];
-        const modelIdProperty = ctor.getIdProperties()[
-            ctor.getIdProperties().length - 1
-        ];
+        const modelIdProperty =
+            "id" in ctor.definition.properties
+                ? "id"
+                : ctor.getIdProperties()[0];
 
         lastRelationTypes = [modelRelation.type, ...lastRelationTypes];
 
