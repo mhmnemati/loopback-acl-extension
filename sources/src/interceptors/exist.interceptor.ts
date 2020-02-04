@@ -120,6 +120,30 @@ async function existFn<Model extends Entity, Controller>(
     }, model);
 }
 
+export function generateIds<Model extends Entity>(
+    ctor: Ctor<Model>,
+    relations: string[]
+): string[] {
+    let lastRelationTypes: RelationType[] = [RelationType.hasMany];
+
+    return relations
+        .map((relation, index) => {
+            const modelRelation = ctor.definition.relations[relation];
+            const modelIdName = `${ctor.name.toLowerCase()}_id`;
+
+            lastRelationTypes = [modelRelation.type, ...lastRelationTypes];
+
+            ctor = modelRelation.target();
+
+            if (lastRelationTypes.pop() === RelationType.hasMany) {
+                return modelIdName;
+            } else {
+                return undefined;
+            }
+        })
+        .filter(idName => Boolean(idName)) as any;
+}
+
 export function generatePath<Model extends Entity>(
     ctor: Ctor<Model>,
     relations: string[],

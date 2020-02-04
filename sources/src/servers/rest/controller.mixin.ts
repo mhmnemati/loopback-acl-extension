@@ -21,6 +21,7 @@ import {
     unique,
     exist,
     filter,
+    generateIds,
     generatePath
 } from "../../interceptors";
 import { FilterScope, ACLPermissions } from "../../types";
@@ -38,7 +39,7 @@ export function CreateControllerMixin<
     relations: string[],
     basePath: string
 ): Class<Controller> {
-    const ids = ["user_id"];
+    const ids = generateIds(rootCtor, relations);
 
     const condition = (leafScope as any).create[0];
     const validator = (leafScope as any).create[1];
@@ -167,7 +168,7 @@ export function ReadControllerMixin<
     relations: string[],
     basePath: string
 ): Class<Controller> {
-    const ids = ["user_id"];
+    const ids = generateIds(rootCtor, relations);
 
     const condition = (leafScope as any).read[0];
 
@@ -327,7 +328,7 @@ export function UpdateControllerMixin<
     relations: string[],
     basePath: string
 ): Class<Controller> {
-    const ids = ["user_id"];
+    const ids = generateIds(rootCtor, relations);
 
     const condition = (leafScope as any).update[0];
     const validator = (leafScope as any).update[2];
@@ -464,7 +465,7 @@ export function DeleteControllerMixin<
     relations: string[],
     basePath: string
 ): Class<Controller> {
-    const ids = ["user_id"];
+    const ids = generateIds(rootCtor, relations);
 
     const condition = (leafScope as any).delete[0];
 
@@ -573,7 +574,7 @@ export function HistoryControllerMixin<
     relations: string[],
     basePath: string
 ): Class<Controller> {
-    const ids = ["user_id"];
+    const ids = generateIds(rootCtor, relations);
 
     const condition = (leafScope as any).history[0];
 
