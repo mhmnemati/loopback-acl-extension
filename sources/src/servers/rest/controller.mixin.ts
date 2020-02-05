@@ -80,7 +80,7 @@ export function CreateControllerMixin<
         };
 
         /** Decorate createAll method */
-        intercept(validate(leafCtor, ids.length, validator))(
+        intercept(exist(rootCtor, rootScope, 0, ids.length - 1, relations))(
             prototype,
             method("createAll"),
             methodDescriptor
@@ -90,17 +90,19 @@ export function CreateControllerMixin<
             method("createAll"),
             methodDescriptor
         );
-        intercept(exist(rootCtor, rootScope, 0, ids.length - 1, relations))(
+        intercept(validate(leafCtor, ids.length, validator))(
             prototype,
             method("createAll"),
             methodDescriptor
         );
+
         authorize(condition)(prototype, method("createAll"), methodDescriptor);
         authenticate("bearer")(
             prototype,
             method("createAll"),
             methodDescriptor
         );
+
         post(`${generatePath(rootCtor, relations, basePath)}`, {
             responses: {
                 "200": {
@@ -183,7 +185,7 @@ export function CreateControllerMixin<
         };
 
         /** Decorate createOne method */
-        intercept(validate(leafCtor, ids.length, validator))(
+        intercept(exist(rootCtor, rootScope, 0, ids.length - 1, relations))(
             prototype,
             method("createOne"),
             methodDescriptor
@@ -193,17 +195,19 @@ export function CreateControllerMixin<
             method("createOne"),
             methodDescriptor
         );
-        intercept(exist(rootCtor, rootScope, 0, ids.length - 1, relations))(
+        intercept(validate(leafCtor, ids.length, validator))(
             prototype,
             method("createOne"),
             methodDescriptor
         );
+
         authorize(condition)(prototype, method("createOne"), methodDescriptor);
         authenticate("bearer")(
             prototype,
             method("createOne"),
             methodDescriptor
         );
+
         post(`${generatePath(rootCtor, relations, basePath)}/one`, {
             responses: {
                 "200": {
@@ -323,11 +327,6 @@ export function ReadControllerMixin<
         };
 
         /** Decorate readAll method */
-        intercept(exist(rootCtor, rootScope, 0, ids.length - 1, relations))(
-            prototype,
-            method("readAll"),
-            methodDescriptor
-        );
         intercept(
             filter(
                 leafCtor,
@@ -339,8 +338,15 @@ export function ReadControllerMixin<
                 { index: ids.length, type: "filter" }
             )
         )(prototype, method("readAll"), methodDescriptor);
+        intercept(exist(rootCtor, rootScope, 0, ids.length - 1, relations))(
+            prototype,
+            method("readAll"),
+            methodDescriptor
+        );
+
         authorize(condition)(prototype, method("readAll"), methodDescriptor);
         authenticate("bearer")(prototype, method("readAll"), methodDescriptor);
+
         get(`${generatePath(rootCtor, relations, basePath)}`, {
             responses: {
                 "200": {
@@ -410,11 +416,6 @@ export function ReadControllerMixin<
         };
 
         /** Decorate countAll method */
-        intercept(exist(rootCtor, rootScope, 0, ids.length - 1, relations))(
-            prototype,
-            method("countAll"),
-            methodDescriptor
-        );
         intercept(
             filter(
                 leafCtor,
@@ -426,8 +427,15 @@ export function ReadControllerMixin<
                 { index: ids.length, type: "where" }
             )
         )(prototype, method("countAll"), methodDescriptor);
+        intercept(exist(rootCtor, rootScope, 0, ids.length - 1, relations))(
+            prototype,
+            method("countAll"),
+            methodDescriptor
+        );
+
         authorize(condition)(prototype, method("countAll"), methodDescriptor);
         authenticate("bearer")(prototype, method("countAll"), methodDescriptor);
+
         get(`${generatePath(rootCtor, relations, basePath)}/count`, {
             responses: {
                 "200": {
@@ -495,11 +503,6 @@ export function ReadControllerMixin<
         };
 
         /** Decorate readOne method */
-        intercept(exist(rootCtor, rootScope, 0, ids.length - 1, relations))(
-            prototype,
-            method("readOne"),
-            methodDescriptor
-        );
         intercept(
             filter(
                 leafCtor,
@@ -511,8 +514,15 @@ export function ReadControllerMixin<
                 { index: ids.length + 1, type: "filter" }
             )
         )(prototype, method("readOne"), methodDescriptor);
+        intercept(exist(rootCtor, rootScope, 0, ids.length - 1, relations))(
+            prototype,
+            method("readOne"),
+            methodDescriptor
+        );
+
         authorize(condition)(prototype, method("readOne"), methodDescriptor);
         authenticate("bearer")(prototype, method("readOne"), methodDescriptor);
+
         get(`${generatePath(rootCtor, relations, basePath)}/{id}`, {
             responses: {
                 "200": {
@@ -635,21 +645,6 @@ export function UpdateControllerMixin<
         };
 
         /** Decorate updateAll method */
-        intercept(validate(leafCtor, ids.length, validator))(
-            prototype,
-            method("updateAll"),
-            methodDescriptor
-        );
-        intercept(unique(leafCtor, leafScope, ids.length, true))(
-            prototype,
-            method("updateAll"),
-            methodDescriptor
-        );
-        intercept(exist(rootCtor, rootScope, 0, ids.length - 1, relations))(
-            prototype,
-            method("updateAll"),
-            methodDescriptor
-        );
         intercept(
             filter(
                 leafCtor,
@@ -661,12 +656,29 @@ export function UpdateControllerMixin<
                 { index: ids.length + 1, type: "where" }
             )
         )(prototype, method("updateAll"), methodDescriptor);
+        intercept(exist(rootCtor, rootScope, 0, ids.length - 1, relations))(
+            prototype,
+            method("updateAll"),
+            methodDescriptor
+        );
+        intercept(unique(leafCtor, leafScope, ids.length, true))(
+            prototype,
+            method("updateAll"),
+            methodDescriptor
+        );
+        intercept(validate(leafCtor, ids.length, validator))(
+            prototype,
+            method("updateAll"),
+            methodDescriptor
+        );
+
         authorize(condition)(prototype, method("updateAll"), methodDescriptor);
         authenticate("bearer")(
             prototype,
             method("updateAll"),
             methodDescriptor
         );
+
         put(`${generatePath(rootCtor, relations, basePath)}`, {
             responses: {
                 "200": {
@@ -744,21 +756,6 @@ export function UpdateControllerMixin<
         };
 
         /** Decorate updateOne method */
-        intercept(validate(leafCtor, ids.length, validator))(
-            prototype,
-            method("updateOne"),
-            methodDescriptor
-        );
-        intercept(unique(leafCtor, leafScope, ids.length, true))(
-            prototype,
-            method("updateOne"),
-            methodDescriptor
-        );
-        intercept(exist(rootCtor, rootScope, 0, ids.length - 1, relations))(
-            prototype,
-            method("updateOne"),
-            methodDescriptor
-        );
         intercept(
             filter(
                 leafCtor,
@@ -770,12 +767,29 @@ export function UpdateControllerMixin<
                 undefined
             )
         )(prototype, method("updateOne"), methodDescriptor);
+        intercept(exist(rootCtor, rootScope, 0, ids.length - 1, relations))(
+            prototype,
+            method("updateOne"),
+            methodDescriptor
+        );
+        intercept(unique(leafCtor, leafScope, ids.length, true))(
+            prototype,
+            method("updateOne"),
+            methodDescriptor
+        );
+        intercept(validate(leafCtor, ids.length, validator))(
+            prototype,
+            method("updateOne"),
+            methodDescriptor
+        );
+
         authorize(condition)(prototype, method("updateOne"), methodDescriptor);
         authenticate("bearer")(
             prototype,
             method("updateOne"),
             methodDescriptor
         );
+
         put(`${generatePath(rootCtor, relations, basePath)}/{id}`, {
             responses: {
                 "200": {
@@ -891,11 +905,6 @@ export function DeleteControllerMixin<
         };
 
         /** Decorate deleteAll method */
-        intercept(exist(rootCtor, rootScope, 0, ids.length - 1, relations))(
-            prototype,
-            method("deleteAll"),
-            methodDescriptor
-        );
         intercept(
             filter(
                 leafCtor,
@@ -907,12 +916,19 @@ export function DeleteControllerMixin<
                 { index: ids.length, type: "where" }
             )
         )(prototype, method("deleteAll"), methodDescriptor);
+        intercept(exist(rootCtor, rootScope, 0, ids.length - 1, relations))(
+            prototype,
+            method("deleteAll"),
+            methodDescriptor
+        );
+
         authorize(condition)(prototype, method("deleteAll"), methodDescriptor);
         authenticate("bearer")(
             prototype,
             method("deleteAll"),
             methodDescriptor
         );
+
         del(`${generatePath(rootCtor, relations, basePath)}`, {
             responses: {
                 "200": {
@@ -979,11 +995,6 @@ export function DeleteControllerMixin<
         };
 
         /** Decorate deleteOne method */
-        intercept(exist(rootCtor, rootScope, 0, ids.length - 1, relations))(
-            prototype,
-            method("deleteOne"),
-            methodDescriptor
-        );
         intercept(
             filter(
                 leafCtor,
@@ -995,12 +1006,19 @@ export function DeleteControllerMixin<
                 undefined
             )
         )(prototype, method("deleteOne"), methodDescriptor);
+        intercept(exist(rootCtor, rootScope, 0, ids.length - 1, relations))(
+            prototype,
+            method("deleteOne"),
+            methodDescriptor
+        );
+
         authorize(condition)(prototype, method("deleteOne"), methodDescriptor);
         authenticate("bearer")(
             prototype,
             method("deleteOne"),
             methodDescriptor
         );
+
         del(`${generatePath(rootCtor, relations, basePath)}/{id}`, {
             responses: {
                 "200": {
@@ -1113,11 +1131,6 @@ export function HistoryControllerMixin<
         };
 
         /** Decorate historyOne method */
-        intercept(exist(rootCtor, rootScope, 0, ids.length - 1, relations))(
-            prototype,
-            method("historyOne"),
-            methodDescriptor
-        );
         intercept(
             filter(
                 leafCtor,
@@ -1129,12 +1142,19 @@ export function HistoryControllerMixin<
                 { index: ids.length + 1, type: "filter" }
             )
         )(prototype, method("historyOne"), methodDescriptor);
+        intercept(exist(rootCtor, rootScope, 0, ids.length - 1, relations))(
+            prototype,
+            method("historyOne"),
+            methodDescriptor
+        );
+
         authorize(condition)(prototype, method("historyOne"), methodDescriptor);
         authenticate("bearer")(
             prototype,
             method("historyOne"),
             methodDescriptor
         );
+
         get(`${generatePath(rootCtor, relations, basePath)}/{id}/history`, {
             responses: {
                 "200": {
