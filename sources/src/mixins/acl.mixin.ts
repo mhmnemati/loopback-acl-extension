@@ -242,43 +242,72 @@ export function ACLMixin<
 
         if (usersRole) {
             /**
-             * Remove old permissions from Users
+             * Get rolePermissions for Users role
              */
-            await rolePermissionRepository.deleteAll({
-                roleId: usersRole.id
+            const rolePermissions = await rolePermissionRepository.find({
+                where: {
+                    roleId: usersRole.id
+                }
             });
+
+            /**
+             * Find addable permissions
+             *
+             * 1. Filter Users permissions
+             * 2. Filter not added permissions
+             */
+            const addablePermissions = permissions
+                .filter(
+                    permission =>
+                        configs.usersPermissions.indexOf(
+                            permission.key as any
+                        ) >= 0
+                )
+                .filter(
+                    permission =>
+                        rolePermissions
+                            .map(rolePermission => rolePermission.permissionId)
+                            .indexOf(permission.id) < 0
+                );
 
             /**
              * Add new permissions to Users
              */
             await rolePermissionRepository.createAll(
-                permissions
-                    .filter(
-                        permission =>
-                            configs.usersPermissions.indexOf(
-                                permission.key as any
-                            ) >= 0
-                    )
-                    .map(permission => ({
-                        roleId: usersRole.id,
-                        permissionId: permission.id
-                    }))
+                addablePermissions.map(permission => ({
+                    roleId: usersRole.id,
+                    permissionId: permission.id
+                }))
             );
         }
 
         if (adminsRole) {
             /**
-             * Remove old permissions from Admins
+             * Get rolePermissions for Admins role
              */
-            await rolePermissionRepository.deleteAll({
-                roleId: adminsRole.id
+            const rolePermissions = await rolePermissionRepository.find({
+                where: {
+                    roleId: adminsRole.id
+                }
             });
+
+            /**
+             * Find addable permissions
+             *
+             * 1. Filter not added permissions
+             */
+            const addablePermissions = permissions.filter(
+                permission =>
+                    rolePermissions
+                        .map(rolePermission => rolePermission.permissionId)
+                        .indexOf(permission.id) < 0
+            );
 
             /**
              * Add new permissions to Admins
              */
             await rolePermissionRepository.createAll(
-                permissions.map(permission => ({
+                addablePermissions.map(permission => ({
                     roleId: adminsRole.id,
                     permissionId: permission.id
                 }))
