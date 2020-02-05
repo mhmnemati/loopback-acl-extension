@@ -1,4 +1,3 @@
-import { ACLController } from "../../servers";
 import { Entity, Count, CountSchema, Class } from "@loopback/repository";
 import {
     get,
@@ -26,12 +25,14 @@ import {
 } from "../../interceptors";
 import { FilterScope, ACLPermissions } from "../../types";
 
+import { ACLController } from "../../servers";
+
 export function CreateControllerMixin<
     Model extends Entity,
     Permissions extends ACLPermissions,
-    Controller
+    Controller extends ACLController
 >(
-    controllerClass: Class<ACLController>,
+    controllerClass: Class<Controller>,
     rootCtor: Ctor<Model>,
     rootScope: FilterScope<Model, Permissions, Controller>,
     leafCtor: Ctor<Model>,
@@ -39,6 +40,8 @@ export function CreateControllerMixin<
     relations: string[],
     basePath: string
 ): Class<Controller> {
+    const parentClass: Class<ACLController> = controllerClass;
+
     const method = (name: string) =>
         relations.reduce(
             (accumulate, relation) => accumulate.concat(relation),
@@ -246,7 +249,7 @@ export function CreateControllerMixin<
         );
     };
 
-    class MixedController extends controllerClass {
+    class MixedController extends parentClass {
         /**
          * Create operations
          *
@@ -270,9 +273,9 @@ export function CreateControllerMixin<
 export function ReadControllerMixin<
     Model extends Entity,
     Permissions extends ACLPermissions,
-    Controller
+    Controller extends ACLController
 >(
-    controllerClass: Class<ACLController>,
+    controllerClass: Class<Controller>,
     rootCtor: Ctor<Model>,
     rootScope: FilterScope<Model, Permissions, Controller>,
     leafCtor: Ctor<Model>,
@@ -280,6 +283,8 @@ export function ReadControllerMixin<
     relations: string[],
     basePath: string
 ): Class<Controller> {
+    const parentClass: Class<ACLController> = controllerClass;
+
     const method = (name: string) =>
         relations.reduce(
             (accumulate, relation) => accumulate.concat(relation),
@@ -547,7 +552,7 @@ export function ReadControllerMixin<
         );
     };
 
-    class MixedController extends controllerClass {
+    class MixedController extends parentClass {
         /**
          * Read operations
          *
@@ -574,9 +579,9 @@ export function ReadControllerMixin<
 export function UpdateControllerMixin<
     Model extends Entity,
     Permissions extends ACLPermissions,
-    Controller
+    Controller extends ACLController
 >(
-    controllerClass: Class<ACLController>,
+    controllerClass: Class<Controller>,
     rootCtor: Ctor<Model>,
     rootScope: FilterScope<Model, Permissions, Controller>,
     leafCtor: Ctor<Model>,
@@ -584,6 +589,8 @@ export function UpdateControllerMixin<
     relations: string[],
     basePath: string
 ): Class<Controller> {
+    const parentClass: Class<ACLController> = controllerClass;
+
     const method = (name: string) =>
         relations.reduce(
             (accumulate, relation) => accumulate.concat(relation),
@@ -809,7 +816,7 @@ export function UpdateControllerMixin<
         );
     };
 
-    class MixedController extends controllerClass {
+    class MixedController extends parentClass {
         /**
          * Update operations
          *
@@ -834,9 +841,9 @@ export function UpdateControllerMixin<
 export function DeleteControllerMixin<
     Model extends Entity,
     Permissions extends ACLPermissions,
-    Controller
+    Controller extends ACLController
 >(
-    controllerClass: Class<ACLController>,
+    controllerClass: Class<Controller>,
     rootCtor: Ctor<Model>,
     rootScope: FilterScope<Model, Permissions, Controller>,
     leafCtor: Ctor<Model>,
@@ -844,6 +851,8 @@ export function DeleteControllerMixin<
     relations: string[],
     basePath: string
 ): Class<Controller> {
+    const parentClass: Class<ACLController> = controllerClass;
+
     const method = (name: string) =>
         relations.reduce(
             (accumulate, relation) => accumulate.concat(relation),
@@ -1029,7 +1038,7 @@ export function DeleteControllerMixin<
         );
     };
 
-    class MixedController extends controllerClass {
+    class MixedController extends parentClass {
         /**
          * Delete operations
          *
@@ -1052,9 +1061,9 @@ export function DeleteControllerMixin<
 export function HistoryControllerMixin<
     Model extends Entity,
     Permissions extends ACLPermissions,
-    Controller
+    Controller extends ACLController
 >(
-    controllerClass: Class<ACLController>,
+    controllerClass: Class<Controller>,
     rootCtor: Ctor<Model>,
     rootScope: FilterScope<Model, Permissions, Controller>,
     leafCtor: Ctor<Model>,
@@ -1062,6 +1071,8 @@ export function HistoryControllerMixin<
     relations: string[],
     basePath: string
 ): Class<Controller> {
+    const parentClass: Class<ACLController> = controllerClass;
+
     const method = (name: string) =>
         relations.reduce(
             (accumulate, relation) => accumulate.concat(relation),
@@ -1169,7 +1180,7 @@ export function HistoryControllerMixin<
         );
     };
 
-    class MixedController extends controllerClass {
+    class MixedController extends parentClass {
         /**
          * History operations
          *
@@ -1188,9 +1199,9 @@ export function HistoryControllerMixin<
 export function CRUDControllerMixin<
     Model extends Entity,
     Permissions extends ACLPermissions,
-    Controller
+    Controller extends ACLController
 >(
-    controllerClass: Class<ACLController>,
+    controllerClass: Class<Controller>,
     ctors: Ctor<Model>[],
     scopes: FilterScope<Model, Permissions, Controller>[],
     relations: string[],
@@ -1285,9 +1296,9 @@ export function CRUDControllerMixin<
 export function ACLControllerMixin<
     Model extends Entity,
     Permissions extends ACLPermissions,
-    Controller
+    Controller extends ACLController
 >(
-    controllerClass: Class<ACLController>,
+    controllerClass: Class<Controller>,
     ctor: Ctor<Model>,
     scope: FilterScope<Model, Permissions, Controller>,
     basePath: string
