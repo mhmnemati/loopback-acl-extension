@@ -36,7 +36,7 @@ export function exist<
         const pathFilter = generateFilter(ctor, ids, relations);
         let id = undefined;
 
-        if (Boolean(pathFilter)) {
+        if (pathFilter) {
             const filter = await filterFn(
                 ctor,
                 scope,
@@ -53,7 +53,7 @@ export function exist<
                 invocationCtx
             );
 
-            if (!Boolean(id)) {
+            if (!id) {
                 throw new HttpErrors.Forbidden(
                     "You don't have required filter to access this model!"
                 );
@@ -80,7 +80,7 @@ async function existFn<Model extends Entity, Controller>(
     let lastCtor: Ctor<Model>;
 
     return relations.reduce((accumulate, relation, index) => {
-        if (!Boolean(accumulate)) {
+        if (!accumulate) {
             return undefined;
         }
 
@@ -145,7 +145,7 @@ export function generateIds<Model extends Entity>(
                 return undefined;
             }
         })
-        .filter(idName => Boolean(idName)) as any;
+        .filter(idName => idName) as any;
 }
 
 export function generatePath<Model extends Entity>(

@@ -49,7 +49,7 @@ export function filter<
         if (pathId) {
             const id = invocationCtx.args[pathId];
 
-            if (Boolean(id)) {
+            if (id) {
                 if (Array.isArray(id.property)) {
                     idWhere = {
                         and: [
@@ -76,7 +76,7 @@ export function filter<
                 result = invocationCtx.args[modelFilter.index] || {};
             }
         }
-        if (Boolean(result.where)) {
+        if (result.where) {
             result.where = { and: [idWhere, result.where] };
         } else {
             result.where = idWhere;
@@ -154,7 +154,7 @@ export async function filterFn<
                     return undefined;
                 })
             )
-        ).filter(inclusion => Boolean(inclusion)) as any[];
+        ).filter(inclusion => inclusion) as any[];
 
         /** Filter inclusion scope (Filter), recursively */
         filter.include = await Promise.all(
