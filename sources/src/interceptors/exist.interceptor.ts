@@ -34,9 +34,10 @@ export function exist<
         );
 
         const pathFilter = generateFilter(ctor, ids, relations);
+
         let id = undefined;
 
-        if (pathFilter) {
+        if (pathFilter && Object.keys(pathFilter).length > 0) {
             const filter = await filterFn(
                 ctor,
                 scope,
