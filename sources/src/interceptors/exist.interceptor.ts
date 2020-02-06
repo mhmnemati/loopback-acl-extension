@@ -128,18 +128,18 @@ export function generateIds<Model extends Entity>(
     ctor: Ctor<Model>,
     relations: string[]
 ): string[] {
-    let lastRelationTypes: RelationType[] = [RelationType.hasMany];
+    let relationTypes = [RelationType.hasMany];
 
     return relations
         .map((relation, index) => {
             const modelRelation = ctor.definition.relations[relation];
             const modelIdName = `${ctor.name.toLowerCase()}_id`;
 
-            lastRelationTypes = [modelRelation.type, ...lastRelationTypes];
+            relationTypes.push(modelRelation.type);
 
             ctor = modelRelation.target();
 
-            if (lastRelationTypes.pop() === RelationType.hasMany) {
+            if (relationTypes.shift() === RelationType.hasMany) {
                 return modelIdName;
             } else {
                 return undefined;
@@ -153,18 +153,18 @@ export function generatePath<Model extends Entity>(
     relations: string[],
     basePath: string
 ): string {
-    let lastRelationTypes: RelationType[] = [RelationType.hasMany];
+    let relationTypes = [RelationType.hasMany];
 
     return relations.reduce((accumulate, relation, index) => {
         const modelRelation = ctor.definition.relations[relation];
         const modelIdName = `${ctor.name.toLowerCase()}_id`;
         const modelRelationName = `${relation.toLowerCase()}`;
 
-        lastRelationTypes = [modelRelation.type, ...lastRelationTypes];
+        relationTypes.push(modelRelation.type);
 
         ctor = modelRelation.target();
 
-        if (lastRelationTypes.pop() === RelationType.hasMany) {
+        if (relationTypes.shift() === RelationType.hasMany) {
             return `${accumulate}/{${modelIdName}}/${modelRelationName}`;
         } else {
             return `${accumulate}/${modelRelationName}`;
@@ -180,7 +180,7 @@ function generateFilter<Model extends Entity>(
     let filter: Filter<any> = {};
     let idIndex = 0;
 
-    let lastRelationTypes: RelationType[] = [RelationType.hasMany];
+    let relationTypes = [RelationType.hasMany];
 
     relations.reduce((accumulate, relation, index) => {
         const modelRelation = ctor.definition.relations[relation];
@@ -189,11 +189,11 @@ function generateFilter<Model extends Entity>(
                 ? "id"
                 : ctor.getIdProperties()[0];
 
-        lastRelationTypes = [modelRelation.type, ...lastRelationTypes];
+        relationTypes.push(modelRelation.type);
 
         ctor = modelRelation.target();
 
-        if (lastRelationTypes.pop() === RelationType.hasMany) {
+        if (relationTypes.shift() === RelationType.hasMany) {
             accumulate.where = {
                 [modelIdProperty]: ids[idIndex++] || ""
             };
