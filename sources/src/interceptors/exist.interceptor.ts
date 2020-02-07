@@ -59,9 +59,9 @@ export function exist<
                     "You don't have required filter to access this model!"
                 );
             }
+        } else {
+            invocationCtx.args.push(undefined);
         }
-
-        invocationCtx.args.push(undefined);
 
         return next();
     };
