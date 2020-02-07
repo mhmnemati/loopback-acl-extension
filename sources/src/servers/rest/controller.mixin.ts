@@ -80,7 +80,7 @@ export function CreateControllerMixin<
         };
 
         /** Decorate createAll method */
-        intercept(exist(rootCtor, rootScope, 0, ids.length - 1, relations))(
+        intercept(exist(rootCtor, rootScope, 0, ids.length, relations))(
             prototype,
             method("createAll"),
             methodDescriptor
@@ -185,7 +185,7 @@ export function CreateControllerMixin<
         };
 
         /** Decorate createOne method */
-        intercept(exist(rootCtor, rootScope, 0, ids.length - 1, relations))(
+        intercept(exist(rootCtor, rootScope, 0, ids.length, relations))(
             prototype,
             method("createOne"),
             methodDescriptor
@@ -338,7 +338,7 @@ export function ReadControllerMixin<
                 { index: ids.length, type: "filter" }
             )
         )(prototype, method("readAll"), methodDescriptor);
-        intercept(exist(rootCtor, rootScope, 0, ids.length - 1, relations))(
+        intercept(exist(rootCtor, rootScope, 0, ids.length, relations))(
             prototype,
             method("readAll"),
             methodDescriptor
@@ -427,7 +427,7 @@ export function ReadControllerMixin<
                 { index: ids.length, type: "where" }
             )
         )(prototype, method("countAll"), methodDescriptor);
-        intercept(exist(rootCtor, rootScope, 0, ids.length - 1, relations))(
+        intercept(exist(rootCtor, rootScope, 0, ids.length, relations))(
             prototype,
             method("countAll"),
             methodDescriptor
@@ -514,7 +514,7 @@ export function ReadControllerMixin<
                 { index: ids.length + 1, type: "filter" }
             )
         )(prototype, method("readOne"), methodDescriptor);
-        intercept(exist(rootCtor, rootScope, 0, ids.length - 1, relations))(
+        intercept(exist(rootCtor, rootScope, 0, ids.length, relations))(
             prototype,
             method("readOne"),
             methodDescriptor
@@ -656,7 +656,7 @@ export function UpdateControllerMixin<
                 { index: ids.length + 1, type: "where" }
             )
         )(prototype, method("updateAll"), methodDescriptor);
-        intercept(exist(rootCtor, rootScope, 0, ids.length - 1, relations))(
+        intercept(exist(rootCtor, rootScope, 0, ids.length, relations))(
             prototype,
             method("updateAll"),
             methodDescriptor
@@ -767,7 +767,7 @@ export function UpdateControllerMixin<
                 undefined
             )
         )(prototype, method("updateOne"), methodDescriptor);
-        intercept(exist(rootCtor, rootScope, 0, ids.length - 1, relations))(
+        intercept(exist(rootCtor, rootScope, 0, ids.length, relations))(
             prototype,
             method("updateOne"),
             methodDescriptor
@@ -916,7 +916,7 @@ export function DeleteControllerMixin<
                 { index: ids.length, type: "where" }
             )
         )(prototype, method("deleteAll"), methodDescriptor);
-        intercept(exist(rootCtor, rootScope, 0, ids.length - 1, relations))(
+        intercept(exist(rootCtor, rootScope, 0, ids.length, relations))(
             prototype,
             method("deleteAll"),
             methodDescriptor
@@ -1006,7 +1006,7 @@ export function DeleteControllerMixin<
                 undefined
             )
         )(prototype, method("deleteOne"), methodDescriptor);
-        intercept(exist(rootCtor, rootScope, 0, ids.length - 1, relations))(
+        intercept(exist(rootCtor, rootScope, 0, ids.length, relations))(
             prototype,
             method("deleteOne"),
             methodDescriptor
@@ -1142,7 +1142,7 @@ export function HistoryControllerMixin<
                 { index: ids.length + 1, type: "filter" }
             )
         )(prototype, method("historyOne"), methodDescriptor);
-        intercept(exist(rootCtor, rootScope, 0, ids.length - 1, relations))(
+        intercept(exist(rootCtor, rootScope, 0, ids.length, relations))(
             prototype,
             method("historyOne"),
             methodDescriptor
