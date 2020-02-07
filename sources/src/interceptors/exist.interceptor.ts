@@ -201,7 +201,7 @@ export function generatePath<Model extends Entity>(
     }, `${basePath}/${ctor.name.toLowerCase()}s`);
 }
 
-export function generateFilter<Model extends Entity>(
+function generateFilter<Model extends Entity>(
     ctor: Ctor<Model>,
     ids: string[],
     relations: string[]
