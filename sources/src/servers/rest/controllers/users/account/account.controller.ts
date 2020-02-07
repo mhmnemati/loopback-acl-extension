@@ -11,7 +11,7 @@ import { Ctor } from "loopback-history-extension";
 
 import { ACLPermissions } from "../../../../../types";
 
-import { ACLController } from "../../../../../servers";
+import { Controller } from "../../../../../servers";
 import { Code, User, UserRole } from "../../../../../models";
 
 import { intercept } from "@loopback/core";
@@ -22,10 +22,10 @@ const randomize = require("randomatic");
 export function GenerateUsersAccountController<
     CodeModel extends Code,
     UserModel extends User
->(codeCtor: Ctor<CodeModel>, userCtor: Ctor<UserModel>): Class<ACLController> {
-    class UsersAccountController extends ACLController {
+>(codeCtor: Ctor<CodeModel>, userCtor: Ctor<UserModel>): Class<Controller> {
+    class UsersAccountController extends Controller {
         @intercept(
-            unique<User, ACLPermissions, ACLController>(
+            unique<User, ACLPermissions, Controller>(
                 userCtor,
                 {
                     repositoryGetter: controller => controller.userRepository,

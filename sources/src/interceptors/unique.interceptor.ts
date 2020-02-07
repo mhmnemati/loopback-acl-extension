@@ -83,7 +83,7 @@ async function uniqueFn<Model extends Entity, Controller>(
                 [fieldName]: {
                     inq: models
                         .map((model: any) => model[fieldName])
-                        .filter(fieldValue => Boolean(fieldValue))
+                        .filter(fieldValue => fieldValue)
                 }
             }))
         });
@@ -98,8 +98,9 @@ function getUniqueFields<Model extends Entity>(
 ): string[] {
     /** Find unique fields of model ctor */
     const uniqueFields = Object.entries(ctor.definition.properties)
-        .filter(([key, value]) =>
-            Boolean(value.unique || (value.index && value.index.unique))
+        .filter(
+            ([key, value]) =>
+                value.unique || (value.index && value.index.unique)
         )
         .map(([key, value]) => key);
 
@@ -108,7 +109,7 @@ function getUniqueFields<Model extends Entity>(
         fieldName =>
             models
                 .map((model: any) => model[fieldName])
-                .filter(uniqueProperty => Boolean(uniqueProperty)).length > 0
+                .filter(uniqueProperty => uniqueProperty).length > 0
     );
 
     return uniqueFieldsWithProperties;

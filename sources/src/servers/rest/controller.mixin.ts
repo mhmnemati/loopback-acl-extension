@@ -1,4 +1,3 @@
-import { ACLController } from "../../servers";
 import { Entity, Count, CountSchema, Class } from "@loopback/repository";
 import {
     get,
@@ -26,12 +25,14 @@ import {
 } from "../../interceptors";
 import { FilterScope, ACLPermissions } from "../../types";
 
+import { ACLController } from "../../servers";
+
 export function CreateControllerMixin<
     Model extends Entity,
     Permissions extends ACLPermissions,
-    Controller
+    Controller extends ACLController
 >(
-    controllerClass: Class<ACLController>,
+    controllerClass: Class<Controller>,
     rootCtor: Ctor<Model>,
     rootScope: FilterScope<Model, Permissions, Controller>,
     leafCtor: Ctor<Model>,
@@ -39,6 +40,8 @@ export function CreateControllerMixin<
     relations: string[],
     basePath: string
 ): Class<Controller> {
+    const parentClass: Class<ACLController> = controllerClass;
+
     const method = (name: string) =>
         relations.reduce(
             (accumulate, relation) => accumulate.concat(relation),
@@ -77,7 +80,7 @@ export function CreateControllerMixin<
         };
 
         /** Decorate createAll method */
-        intercept(validate(leafCtor, ids.length, validator))(
+        intercept(exist(rootCtor, rootScope, 0, ids.length, relations))(
             prototype,
             method("createAll"),
             methodDescriptor
@@ -87,17 +90,19 @@ export function CreateControllerMixin<
             method("createAll"),
             methodDescriptor
         );
-        intercept(exist(rootCtor, rootScope, 0, ids.length - 1, relations))(
+        intercept(validate(leafCtor, ids.length, validator))(
             prototype,
             method("createAll"),
             methodDescriptor
         );
+
         authorize(condition)(prototype, method("createAll"), methodDescriptor);
         authenticate("bearer")(
             prototype,
             method("createAll"),
             methodDescriptor
         );
+
         post(`${generatePath(rootCtor, relations, basePath)}`, {
             responses: {
                 "200": {
@@ -180,7 +185,7 @@ export function CreateControllerMixin<
         };
 
         /** Decorate createOne method */
-        intercept(validate(leafCtor, ids.length, validator))(
+        intercept(exist(rootCtor, rootScope, 0, ids.length, relations))(
             prototype,
             method("createOne"),
             methodDescriptor
@@ -190,17 +195,19 @@ export function CreateControllerMixin<
             method("createOne"),
             methodDescriptor
         );
-        intercept(exist(rootCtor, rootScope, 0, ids.length - 1, relations))(
+        intercept(validate(leafCtor, ids.length, validator))(
             prototype,
             method("createOne"),
             methodDescriptor
         );
+
         authorize(condition)(prototype, method("createOne"), methodDescriptor);
         authenticate("bearer")(
             prototype,
             method("createOne"),
             methodDescriptor
         );
+
         post(`${generatePath(rootCtor, relations, basePath)}/one`, {
             responses: {
                 "200": {
@@ -246,7 +253,7 @@ export function CreateControllerMixin<
         );
     };
 
-    class MixedController extends controllerClass {
+    class MixedController extends parentClass {
         /**
          * Create operations
          *
@@ -270,9 +277,9 @@ export function CreateControllerMixin<
 export function ReadControllerMixin<
     Model extends Entity,
     Permissions extends ACLPermissions,
-    Controller
+    Controller extends ACLController
 >(
-    controllerClass: Class<ACLController>,
+    controllerClass: Class<Controller>,
     rootCtor: Ctor<Model>,
     rootScope: FilterScope<Model, Permissions, Controller>,
     leafCtor: Ctor<Model>,
@@ -280,6 +287,8 @@ export function ReadControllerMixin<
     relations: string[],
     basePath: string
 ): Class<Controller> {
+    const parentClass: Class<ACLController> = controllerClass;
+
     const method = (name: string) =>
         relations.reduce(
             (accumulate, relation) => accumulate.concat(relation),
@@ -318,11 +327,6 @@ export function ReadControllerMixin<
         };
 
         /** Decorate readAll method */
-        intercept(exist(rootCtor, rootScope, 0, ids.length - 1, relations))(
-            prototype,
-            method("readAll"),
-            methodDescriptor
-        );
         intercept(
             filter(
                 leafCtor,
@@ -334,8 +338,15 @@ export function ReadControllerMixin<
                 { index: ids.length, type: "filter" }
             )
         )(prototype, method("readAll"), methodDescriptor);
+        intercept(exist(rootCtor, rootScope, 0, ids.length, relations))(
+            prototype,
+            method("readAll"),
+            methodDescriptor
+        );
+
         authorize(condition)(prototype, method("readAll"), methodDescriptor);
         authenticate("bearer")(prototype, method("readAll"), methodDescriptor);
+
         get(`${generatePath(rootCtor, relations, basePath)}`, {
             responses: {
                 "200": {
@@ -405,11 +416,6 @@ export function ReadControllerMixin<
         };
 
         /** Decorate countAll method */
-        intercept(exist(rootCtor, rootScope, 0, ids.length - 1, relations))(
-            prototype,
-            method("countAll"),
-            methodDescriptor
-        );
         intercept(
             filter(
                 leafCtor,
@@ -421,8 +427,15 @@ export function ReadControllerMixin<
                 { index: ids.length, type: "where" }
             )
         )(prototype, method("countAll"), methodDescriptor);
+        intercept(exist(rootCtor, rootScope, 0, ids.length, relations))(
+            prototype,
+            method("countAll"),
+            methodDescriptor
+        );
+
         authorize(condition)(prototype, method("countAll"), methodDescriptor);
         authenticate("bearer")(prototype, method("countAll"), methodDescriptor);
+
         get(`${generatePath(rootCtor, relations, basePath)}/count`, {
             responses: {
                 "200": {
@@ -490,11 +503,6 @@ export function ReadControllerMixin<
         };
 
         /** Decorate readOne method */
-        intercept(exist(rootCtor, rootScope, 0, ids.length - 1, relations))(
-            prototype,
-            method("readOne"),
-            methodDescriptor
-        );
         intercept(
             filter(
                 leafCtor,
@@ -506,8 +514,15 @@ export function ReadControllerMixin<
                 { index: ids.length + 1, type: "filter" }
             )
         )(prototype, method("readOne"), methodDescriptor);
+        intercept(exist(rootCtor, rootScope, 0, ids.length, relations))(
+            prototype,
+            method("readOne"),
+            methodDescriptor
+        );
+
         authorize(condition)(prototype, method("readOne"), methodDescriptor);
         authenticate("bearer")(prototype, method("readOne"), methodDescriptor);
+
         get(`${generatePath(rootCtor, relations, basePath)}/{id}`, {
             responses: {
                 "200": {
@@ -547,7 +562,7 @@ export function ReadControllerMixin<
         );
     };
 
-    class MixedController extends controllerClass {
+    class MixedController extends parentClass {
         /**
          * Read operations
          *
@@ -574,9 +589,9 @@ export function ReadControllerMixin<
 export function UpdateControllerMixin<
     Model extends Entity,
     Permissions extends ACLPermissions,
-    Controller
+    Controller extends ACLController
 >(
-    controllerClass: Class<ACLController>,
+    controllerClass: Class<Controller>,
     rootCtor: Ctor<Model>,
     rootScope: FilterScope<Model, Permissions, Controller>,
     leafCtor: Ctor<Model>,
@@ -584,6 +599,8 @@ export function UpdateControllerMixin<
     relations: string[],
     basePath: string
 ): Class<Controller> {
+    const parentClass: Class<ACLController> = controllerClass;
+
     const method = (name: string) =>
         relations.reduce(
             (accumulate, relation) => accumulate.concat(relation),
@@ -628,21 +645,6 @@ export function UpdateControllerMixin<
         };
 
         /** Decorate updateAll method */
-        intercept(validate(leafCtor, ids.length, validator))(
-            prototype,
-            method("updateAll"),
-            methodDescriptor
-        );
-        intercept(unique(leafCtor, leafScope, ids.length, true))(
-            prototype,
-            method("updateAll"),
-            methodDescriptor
-        );
-        intercept(exist(rootCtor, rootScope, 0, ids.length - 1, relations))(
-            prototype,
-            method("updateAll"),
-            methodDescriptor
-        );
         intercept(
             filter(
                 leafCtor,
@@ -654,12 +656,29 @@ export function UpdateControllerMixin<
                 { index: ids.length + 1, type: "where" }
             )
         )(prototype, method("updateAll"), methodDescriptor);
+        intercept(exist(rootCtor, rootScope, 0, ids.length, relations))(
+            prototype,
+            method("updateAll"),
+            methodDescriptor
+        );
+        intercept(unique(leafCtor, leafScope, ids.length, true))(
+            prototype,
+            method("updateAll"),
+            methodDescriptor
+        );
+        intercept(validate(leafCtor, ids.length, validator))(
+            prototype,
+            method("updateAll"),
+            methodDescriptor
+        );
+
         authorize(condition)(prototype, method("updateAll"), methodDescriptor);
         authenticate("bearer")(
             prototype,
             method("updateAll"),
             methodDescriptor
         );
+
         put(`${generatePath(rootCtor, relations, basePath)}`, {
             responses: {
                 "200": {
@@ -737,21 +756,6 @@ export function UpdateControllerMixin<
         };
 
         /** Decorate updateOne method */
-        intercept(validate(leafCtor, ids.length, validator))(
-            prototype,
-            method("updateOne"),
-            methodDescriptor
-        );
-        intercept(unique(leafCtor, leafScope, ids.length, true))(
-            prototype,
-            method("updateOne"),
-            methodDescriptor
-        );
-        intercept(exist(rootCtor, rootScope, 0, ids.length - 1, relations))(
-            prototype,
-            method("updateOne"),
-            methodDescriptor
-        );
         intercept(
             filter(
                 leafCtor,
@@ -763,12 +767,29 @@ export function UpdateControllerMixin<
                 undefined
             )
         )(prototype, method("updateOne"), methodDescriptor);
+        intercept(exist(rootCtor, rootScope, 0, ids.length, relations))(
+            prototype,
+            method("updateOne"),
+            methodDescriptor
+        );
+        intercept(unique(leafCtor, leafScope, ids.length, true))(
+            prototype,
+            method("updateOne"),
+            methodDescriptor
+        );
+        intercept(validate(leafCtor, ids.length, validator))(
+            prototype,
+            method("updateOne"),
+            methodDescriptor
+        );
+
         authorize(condition)(prototype, method("updateOne"), methodDescriptor);
         authenticate("bearer")(
             prototype,
             method("updateOne"),
             methodDescriptor
         );
+
         put(`${generatePath(rootCtor, relations, basePath)}/{id}`, {
             responses: {
                 "200": {
@@ -809,7 +830,7 @@ export function UpdateControllerMixin<
         );
     };
 
-    class MixedController extends controllerClass {
+    class MixedController extends parentClass {
         /**
          * Update operations
          *
@@ -834,9 +855,9 @@ export function UpdateControllerMixin<
 export function DeleteControllerMixin<
     Model extends Entity,
     Permissions extends ACLPermissions,
-    Controller
+    Controller extends ACLController
 >(
-    controllerClass: Class<ACLController>,
+    controllerClass: Class<Controller>,
     rootCtor: Ctor<Model>,
     rootScope: FilterScope<Model, Permissions, Controller>,
     leafCtor: Ctor<Model>,
@@ -844,6 +865,8 @@ export function DeleteControllerMixin<
     relations: string[],
     basePath: string
 ): Class<Controller> {
+    const parentClass: Class<ACLController> = controllerClass;
+
     const method = (name: string) =>
         relations.reduce(
             (accumulate, relation) => accumulate.concat(relation),
@@ -882,11 +905,6 @@ export function DeleteControllerMixin<
         };
 
         /** Decorate deleteAll method */
-        intercept(exist(rootCtor, rootScope, 0, ids.length - 1, relations))(
-            prototype,
-            method("deleteAll"),
-            methodDescriptor
-        );
         intercept(
             filter(
                 leafCtor,
@@ -898,12 +916,19 @@ export function DeleteControllerMixin<
                 { index: ids.length, type: "where" }
             )
         )(prototype, method("deleteAll"), methodDescriptor);
+        intercept(exist(rootCtor, rootScope, 0, ids.length, relations))(
+            prototype,
+            method("deleteAll"),
+            methodDescriptor
+        );
+
         authorize(condition)(prototype, method("deleteAll"), methodDescriptor);
         authenticate("bearer")(
             prototype,
             method("deleteAll"),
             methodDescriptor
         );
+
         del(`${generatePath(rootCtor, relations, basePath)}`, {
             responses: {
                 "200": {
@@ -970,11 +995,6 @@ export function DeleteControllerMixin<
         };
 
         /** Decorate deleteOne method */
-        intercept(exist(rootCtor, rootScope, 0, ids.length - 1, relations))(
-            prototype,
-            method("deleteOne"),
-            methodDescriptor
-        );
         intercept(
             filter(
                 leafCtor,
@@ -986,12 +1006,19 @@ export function DeleteControllerMixin<
                 undefined
             )
         )(prototype, method("deleteOne"), methodDescriptor);
+        intercept(exist(rootCtor, rootScope, 0, ids.length, relations))(
+            prototype,
+            method("deleteOne"),
+            methodDescriptor
+        );
+
         authorize(condition)(prototype, method("deleteOne"), methodDescriptor);
         authenticate("bearer")(
             prototype,
             method("deleteOne"),
             methodDescriptor
         );
+
         del(`${generatePath(rootCtor, relations, basePath)}/{id}`, {
             responses: {
                 "200": {
@@ -1029,7 +1056,7 @@ export function DeleteControllerMixin<
         );
     };
 
-    class MixedController extends controllerClass {
+    class MixedController extends parentClass {
         /**
          * Delete operations
          *
@@ -1052,9 +1079,9 @@ export function DeleteControllerMixin<
 export function HistoryControllerMixin<
     Model extends Entity,
     Permissions extends ACLPermissions,
-    Controller
+    Controller extends ACLController
 >(
-    controllerClass: Class<ACLController>,
+    controllerClass: Class<Controller>,
     rootCtor: Ctor<Model>,
     rootScope: FilterScope<Model, Permissions, Controller>,
     leafCtor: Ctor<Model>,
@@ -1062,6 +1089,8 @@ export function HistoryControllerMixin<
     relations: string[],
     basePath: string
 ): Class<Controller> {
+    const parentClass: Class<ACLController> = controllerClass;
+
     const method = (name: string) =>
         relations.reduce(
             (accumulate, relation) => accumulate.concat(relation),
@@ -1102,11 +1131,6 @@ export function HistoryControllerMixin<
         };
 
         /** Decorate historyOne method */
-        intercept(exist(rootCtor, rootScope, 0, ids.length - 1, relations))(
-            prototype,
-            method("historyOne"),
-            methodDescriptor
-        );
         intercept(
             filter(
                 leafCtor,
@@ -1118,12 +1142,19 @@ export function HistoryControllerMixin<
                 { index: ids.length + 1, type: "filter" }
             )
         )(prototype, method("historyOne"), methodDescriptor);
+        intercept(exist(rootCtor, rootScope, 0, ids.length, relations))(
+            prototype,
+            method("historyOne"),
+            methodDescriptor
+        );
+
         authorize(condition)(prototype, method("historyOne"), methodDescriptor);
         authenticate("bearer")(
             prototype,
             method("historyOne"),
             methodDescriptor
         );
+
         get(`${generatePath(rootCtor, relations, basePath)}/{id}/history`, {
             responses: {
                 "200": {
@@ -1169,7 +1200,7 @@ export function HistoryControllerMixin<
         );
     };
 
-    class MixedController extends controllerClass {
+    class MixedController extends parentClass {
         /**
          * History operations
          *
@@ -1188,9 +1219,9 @@ export function HistoryControllerMixin<
 export function CRUDControllerMixin<
     Model extends Entity,
     Permissions extends ACLPermissions,
-    Controller
+    Controller extends ACLController
 >(
-    controllerClass: Class<ACLController>,
+    controllerClass: Class<Controller>,
     ctors: Ctor<Model>[],
     scopes: FilterScope<Model, Permissions, Controller>[],
     relations: string[],
@@ -1285,9 +1316,9 @@ export function CRUDControllerMixin<
 export function ACLControllerMixin<
     Model extends Entity,
     Permissions extends ACLPermissions,
-    Controller
+    Controller extends ACLController
 >(
-    controllerClass: Class<ACLController>,
+    controllerClass: Class<Controller>,
     ctor: Ctor<Model>,
     scope: FilterScope<Model, Permissions, Controller>,
     basePath: string

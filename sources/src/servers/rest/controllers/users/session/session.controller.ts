@@ -3,7 +3,7 @@ import { Ctor } from "loopback-history-extension";
 import { post, get, del, requestBody, getModelSchemaRef } from "@loopback/rest";
 import { authenticate } from "@loopback/authentication";
 
-import { ACLController } from "../../../../../servers";
+import { Controller } from "../../../../../servers";
 import { Session, User } from "../../../../../models";
 
 export function GenerateUsersSessionController<
@@ -12,8 +12,8 @@ export function GenerateUsersSessionController<
 >(
     sessionCtor: Ctor<SessionModel>,
     userCtor: Ctor<UserModel>
-): Class<ACLController> {
-    class UsersSessionController extends ACLController {
+): Class<Controller> {
+    class UsersSessionController extends Controller {
         @post("/users/session", {
             responses: {
                 "200": {

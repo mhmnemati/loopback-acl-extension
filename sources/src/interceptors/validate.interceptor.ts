@@ -38,7 +38,7 @@ async function validateFn<Model extends Entity>(
 ): Promise<boolean> {
     if (Array.isArray(model)) {
         for (let item of model) {
-            if (!Boolean(item)) {
+            if (!item) {
                 return false;
             }
         }
@@ -47,7 +47,7 @@ async function validateFn<Model extends Entity>(
             return false;
         }
     } else {
-        if (!Boolean(model)) {
+        if (!model) {
             return false;
         }
 

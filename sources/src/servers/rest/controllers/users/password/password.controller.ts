@@ -8,7 +8,7 @@ import {
 import { Class, EntityNotFoundError } from "@loopback/repository";
 import { Ctor } from "loopback-history-extension";
 
-import { ACLController } from "../../../../../servers";
+import { Controller } from "../../../../../servers";
 import { Code, User } from "../../../../../models";
 
 const randomize = require("randomatic");
@@ -16,8 +16,8 @@ const randomize = require("randomatic");
 export function GenerateUsersPasswordController<
     CodeModel extends Code,
     UserModel extends User
->(codeCtor: Ctor<CodeModel>, userCtor: Ctor<UserModel>): Class<ACLController> {
-    class UsersPasswordController extends ACLController {
+>(codeCtor: Ctor<CodeModel>, userCtor: Ctor<UserModel>): Class<Controller> {
+    class UsersPasswordController extends Controller {
         @put("/users/password", {
             responses: {
                 "204": {

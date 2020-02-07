@@ -29,15 +29,15 @@ export function filter<
         invocationCtx: InvocationContext,
         next: () => ValueOrPromise<InvocationResult>
     ) => {
-        const modelIdProperty =
-            "id" in ctor.definition.properties
-                ? "id"
-                : ctor.getIdProperties()[0];
-
         let idWhere: Where<any> = {};
 
         /** Apply modelId filter */
         if (modelId) {
+            const modelIdProperty =
+                "id" in ctor.definition.properties
+                    ? "id"
+                    : ctor.getIdProperties()[0];
+
             if (typeof modelId === "number") {
                 idWhere[modelIdProperty] = invocationCtx.args[modelId];
             } else {
@@ -47,22 +47,24 @@ export function filter<
 
         /** Apply pathId filter */
         if (pathId) {
-            const id = invocationCtx.args[pathId];
+            const existId = invocationCtx.args[pathId];
 
-            if (Boolean(id)) {
-                if (Array.isArray(id.property)) {
+            if (existId) {
+                if (Array.isArray(existId.property)) {
                     idWhere = {
                         and: [
                             idWhere,
                             {
-                                or: id.property.map((idProperty: string) => ({
-                                    [idProperty]: id.value
-                                }))
+                                or: existId.property.map(
+                                    (idProperty: string) => ({
+                                        [idProperty]: existId.value
+                                    })
+                                )
                             }
                         ]
                     };
                 } else {
-                    idWhere[id.property] = id.value;
+                    idWhere[existId.property] = existId.value;
                 }
             }
         }
@@ -76,7 +78,7 @@ export function filter<
                 result = invocationCtx.args[modelFilter.index] || {};
             }
         }
-        if (Boolean(result.where)) {
+        if (result.where) {
             result.where = { and: [idWhere, result.where] };
         } else {
             result.where = idWhere;
@@ -154,13 +156,16 @@ export async function filterFn<
                     return undefined;
                 })
             )
-        ).filter(inclusion => Boolean(inclusion)) as any[];
+        ).filter(inclusion => inclusion) as any[];
 
         /** Filter inclusion scope (Filter), recursively */
         filter.include = await Promise.all(
             filter.include.map(async inclusion => {
+                const modelRelation =
+                    ctor.definition.relations[inclusion.relation];
+
                 inclusion.scope = await filterFn<any, Permissions, Controller>(
-                    ctor.definition.relations[inclusion.relation].target(),
+                    modelRelation.target(),
                     scope.include[inclusion.relation],
                     access,
                     inclusion.scope,

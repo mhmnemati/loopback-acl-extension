@@ -13,7 +13,7 @@ import { authorize } from "loopback-authorization-extension";
 
 import { ACLPermissions } from "../../../../../types";
 
-import { ACLController } from "../../../../../servers";
+import { Controller } from "../../../../../servers";
 import { User } from "../../../../../models";
 
 import { intercept } from "@loopback/core";
@@ -21,8 +21,8 @@ import { unique, filter } from "../../../../../interceptors";
 
 export function GenerateUsersSelfController<UserModel extends User>(
     userCtor: Ctor<UserModel>
-): Class<ACLController> {
-    class UsersSelfController extends ACLController {
+): Class<Controller> {
+    class UsersSelfController extends Controller {
         @authorize<ACLPermissions>("USERS_READ_SELF")
         @authenticate("bearer")
         @get("/users/self", {
@@ -44,7 +44,7 @@ export function GenerateUsersSelfController<UserModel extends User>(
         }
 
         @intercept(
-            unique<User, ACLPermissions, ACLController>(
+            unique<User, ACLPermissions, Controller>(
                 userCtor,
                 {
                     repositoryGetter: controller => controller.userRepository,
@@ -78,7 +78,7 @@ export function GenerateUsersSelfController<UserModel extends User>(
         }
 
         @intercept(
-            filter<User, ACLPermissions, ACLController>(
+            filter<User, ACLPermissions, Controller>(
                 userCtor,
                 {
                     repositoryGetter: controller => controller.userRepository,

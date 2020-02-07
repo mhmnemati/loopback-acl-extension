@@ -3,18 +3,18 @@ import { Ctor } from "loopback-history-extension";
 
 import { ACLPermissions } from "../../../../types";
 
-import { ACLController, ACLControllerMixin } from "../../../../servers";
+import { Controller, ACLControllerMixin } from "../../../../servers";
 import { Role } from "../../../../models";
 
 export function GenerateRolesController<Model extends Role>(
     ctor: Ctor<Model>
-): Class<ACLController> {
+): Class<Controller> {
     class RolesController extends ACLControllerMixin<
         Role,
         ACLPermissions,
-        ACLController
+        Controller
     >(
-        ACLController,
+        Controller,
         ctor,
         {
             repositoryGetter: controller => controller.roleRepository,

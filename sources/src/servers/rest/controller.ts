@@ -20,13 +20,22 @@ import { Session, Code } from "../../models";
 
 export class ACLController {
     constructor(
-        @inject(PrivateACLBindings.SESSION_TIMEOUT_CONSTANT)
-        public sessionTimeout: number,
+        @inject(RestBindings.Http.REQUEST)
+        public request: Request,
+        @inject(AuthenticationBindings.CURRENT_USER, { optional: true })
+        public session: Session
+    ) {}
+}
 
+export class Controller extends ACLController {
+    constructor(
         @inject(RestBindings.Http.REQUEST)
         public request: Request,
         @inject(AuthenticationBindings.CURRENT_USER, { optional: true })
         public session: Session,
+
+        @inject(PrivateACLBindings.SESSION_TIMEOUT_CONSTANT)
+        public sessionTimeout: number,
 
         @inject(PrivateACLBindings.TOKEN_PROVIDER)
         public tokenService: BearerTokenService,
@@ -49,5 +58,7 @@ export class ACLController {
         public sessionRepository: SessionRepository<Session>,
         @inject(ACLBindings.CODE_REPOSITORY)
         public codeRepository: CodeRepository<Code>
-    ) {}
+    ) {
+        super(request, session);
+    }
 }

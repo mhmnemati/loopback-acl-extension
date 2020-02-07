@@ -34,9 +34,8 @@ export function exist<
         );
 
         const pathFilter = generateFilter(ctor, ids, relations);
-        let id = undefined;
 
-        if (Boolean(pathFilter)) {
+        if (pathFilter && Object.keys(pathFilter).length > 0) {
             const filter = await filterFn(
                 ctor,
                 scope,
@@ -45,7 +44,7 @@ export function exist<
                 invocationCtx
             );
 
-            id = await existFn(
+            const id = await existFn(
                 ctor,
                 scope.repositoryGetter,
                 filter,
@@ -53,14 +52,16 @@ export function exist<
                 invocationCtx
             );
 
-            if (!Boolean(id)) {
+            if (id) {
+                invocationCtx.args.push(id);
+            } else {
                 throw new HttpErrors.Forbidden(
                     "You don't have required filter to access this model!"
                 );
             }
+        } else {
+            invocationCtx.args.push(undefined);
         }
-
-        invocationCtx.args.push(id);
 
         return next();
     };
@@ -72,80 +73,104 @@ async function existFn<Model extends Entity, Controller>(
     filter: Filter<Model>,
     relations: string[],
     invocationCtx: InvocationContext
-): Promise<string | undefined> {
+): Promise<{ property: string | string[]; value: string } | undefined> {
     const model = await repositoryGetter(invocationCtx.target as any).findOne(
         filter
     );
 
-    let lastCtor: Ctor<Model>;
+    let ctors = [ctor];
 
-    return relations.reduce((accumulate, relation, index) => {
-        if (!Boolean(accumulate)) {
+    let internalModel = relations.reduce((accumulate, relation, index) => {
+        const modelRelation = ctor.definition.relations[relation];
+
+        if (!accumulate) {
             return undefined;
         }
 
-        const modelRelation = ctor.definition.relations[relation];
-
-        lastCtor = ctor;
+        /** Get next related model */
         ctor = modelRelation.target();
 
-        /** Not last iteration */
-        if (index < relations.length - 1) {
-            if (modelRelation.type === RelationType.hasMany) {
-                return accumulate[relation][0];
-            } else {
-                return accumulate[relation];
-            }
+        /** If last relation and type is hasMany, return current model */
+        if (
+            index == relations.length - 1 &&
+            modelRelation.type === RelationType.hasMany
+        ) {
+            return accumulate;
+        } else {
+            /** Push next model to queue */
+            ctors.push(ctor);
         }
 
-        /** Last iteration: find relations to parent model */
-        if (modelRelation.type !== RelationType.hasMany) {
-            /** property: id */
-            return {
-                property:
-                    "id" in ctor.definition.properties
-                        ? "id"
-                        : ctor.getIdProperties()[0],
-                value: accumulate[relation]
-            };
-        } else {
-            /** property: [user, owner, ...] */
-            return {
-                property: Object.entries(ctor.definition.relations)
-                    .filter(
-                        ([relation, target]) =>
-                            target.type === RelationType.belongsTo &&
-                            target.target().name === lastCtor.name
-                    )
-                    .map(([relation, target]) => (target as any).keyFrom),
-                value: accumulate
-            };
+        /** Get related model */
+        accumulate = accumulate[relation];
+        if (Array.isArray(accumulate)) {
+            accumulate = accumulate[0];
         }
+
+        return accumulate;
     }, model);
+
+    const lastCtor = ctors.pop();
+
+    if (!internalModel) {
+        return undefined;
+    }
+
+    /** Read id from related model and properties from foreign keys to lastCtor */
+    if (lastCtor && lastCtor.name !== ctor.name) {
+        const modelIdProperty =
+            "id" in lastCtor.definition.properties
+                ? "id"
+                : lastCtor.getIdProperties()[0];
+
+        return {
+            property: Object.entries(ctor.definition.relations)
+                .filter(
+                    ([relation, target]) =>
+                        target.type === RelationType.belongsTo &&
+                        target.target().name === lastCtor.name
+                )
+                .map(([relation, target]) => (target as any).keyFrom),
+            value: internalModel[modelIdProperty]
+        };
+    }
+
+    /** Read id from model and properties from model id property */
+    const modelIdProperty =
+        "id" in ctor.definition.properties ? "id" : ctor.getIdProperties()[0];
+
+    return {
+        property: modelIdProperty,
+        value: internalModel[modelIdProperty]
+    };
 }
 
 export function generateIds<Model extends Entity>(
     ctor: Ctor<Model>,
     relations: string[]
 ): string[] {
-    let lastRelationTypes: RelationType[] = [RelationType.hasMany];
+    let relationTypes = [RelationType.hasMany];
 
     return relations
         .map((relation, index) => {
             const modelRelation = ctor.definition.relations[relation];
             const modelIdName = `${ctor.name.toLowerCase()}_id`;
+            let result = undefined;
 
-            lastRelationTypes = [modelRelation.type, ...lastRelationTypes];
+            /** Push previous model relation type to current model to queue */
+            relationTypes.push(modelRelation.type);
 
+            /** Get next related model */
             ctor = modelRelation.target();
 
-            if (lastRelationTypes.pop() === RelationType.hasMany) {
-                return modelIdName;
-            } else {
-                return undefined;
+            /** Check previous model relation */
+            if (relationTypes.shift() === RelationType.hasMany) {
+                result = modelIdName;
             }
+
+            return result;
         })
-        .filter(idName => Boolean(idName)) as any;
+        .filter(idName => idName) as any;
 }
 
 export function generatePath<Model extends Entity>(
@@ -153,22 +178,26 @@ export function generatePath<Model extends Entity>(
     relations: string[],
     basePath: string
 ): string {
-    let lastRelationTypes: RelationType[] = [RelationType.hasMany];
+    let relationTypes = [RelationType.hasMany];
 
     return relations.reduce((accumulate, relation, index) => {
         const modelRelation = ctor.definition.relations[relation];
         const modelIdName = `${ctor.name.toLowerCase()}_id`;
         const modelRelationName = `${relation.toLowerCase()}`;
+        let result = `${accumulate}/${modelRelationName}`;
 
-        lastRelationTypes = [modelRelation.type, ...lastRelationTypes];
+        /** Push previous model relation type to current model to queue */
+        relationTypes.push(modelRelation.type);
 
+        /** Get next related model */
         ctor = modelRelation.target();
 
-        if (lastRelationTypes.pop() === RelationType.hasMany) {
-            return `${accumulate}/{${modelIdName}}/${modelRelationName}`;
-        } else {
-            return `${accumulate}/${modelRelationName}`;
+        /** Check previous model relation */
+        if (relationTypes.shift() === RelationType.hasMany) {
+            result = `${accumulate}/{${modelIdName}}/${modelRelationName}`;
         }
+
+        return result;
     }, `${basePath}/${ctor.name.toLowerCase()}s`);
 }
 
@@ -178,9 +207,10 @@ function generateFilter<Model extends Entity>(
     relations: string[]
 ): Filter<Model> | undefined {
     let filter: Filter<any> = {};
-    let idIndex = 0;
 
-    let lastRelationTypes: RelationType[] = [RelationType.hasMany];
+    let relationTypes = [RelationType.hasMany];
+
+    ids = [...ids];
 
     relations.reduce((accumulate, relation, index) => {
         const modelRelation = ctor.definition.relations[relation];
@@ -189,31 +219,34 @@ function generateFilter<Model extends Entity>(
                 ? "id"
                 : ctor.getIdProperties()[0];
 
-        lastRelationTypes = [modelRelation.type, ...lastRelationTypes];
+        /** Push previous model relation type to current model to queue */
+        relationTypes.push(modelRelation.type);
 
+        /** Get next related model */
         ctor = modelRelation.target();
 
-        if (lastRelationTypes.pop() === RelationType.hasMany) {
+        /** Check previous model relation */
+        if (relationTypes.shift() === RelationType.hasMany) {
             accumulate.where = {
-                [modelIdProperty]: ids[idIndex++] || ""
+                [modelIdProperty]: ids.shift() || ""
             };
         }
 
+        /** If last relation and current relation type is hasMany, filter by model foreign key */
         if (
-            index < relations.length - 1 ||
-            modelRelation.type !== RelationType.hasMany
+            index === relations.length - 1 &&
+            relationTypes.shift() === RelationType.hasMany
         ) {
-            accumulate.include = [
-                {
-                    relation: relation,
-                    scope: {}
-                }
-            ];
-
-            return accumulate.include[0].scope as any;
+            return accumulate;
         }
 
-        return accumulate;
+        accumulate.include = [
+            {
+                relation: relation,
+                scope: {}
+            }
+        ];
+        return accumulate.include[0].scope as any;
     }, filter);
 
     return filter;
