@@ -2,7 +2,7 @@
 
 Creating `User`, `Role`, `Permission` models and repositories and crud controllers in any application is a repetitive and futile task.
 
-Using this extension your can bind them to your application using a simple and optional configurations.
+Using this extension you can bind them to your application using a simple and optional configurations.
 
 ## Installation
 
