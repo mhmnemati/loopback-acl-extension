@@ -109,10 +109,10 @@ export interface ACLMixinConfig<Permissions extends ACLPermissions> {
     tokenStrategy?: Class<AuthenticationStrategy>;
     messageProvider?: Class<Provider<MessageHandler>>;
     activateProvider?: Class<Provider<ActivateHandler>>;
-    administrator: User;
-    usersPermissions: (keyof Permissions)[];
     codeTimeout: number;
     sessionTimeout: number;
+    adminUser?: User;
+    usersRolePermissions?: (keyof Permissions)[];
 }
 
 /**

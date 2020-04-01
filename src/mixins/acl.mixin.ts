@@ -101,10 +101,7 @@ export function ACLMixin<
         }
     };
 
-    const migrateUsers = async (
-        ctx: Context,
-        configs: ACLMixinConfig<Permissions>
-    ) => {
+    const migrateUsers = async (ctx: Context, adminUser: User) => {
         const userRepository = ctx.getSync(ACLBindings.USER_REPOSITORY);
 
         /**
@@ -113,11 +110,11 @@ export function ACLMixin<
         if (
             !(await userRepository.findOne({
                 where: {
-                    username: configs.administrator.username
+                    username: adminUser.username
                 }
             }))
         ) {
-            await userRepository.create(configs.administrator);
+            await userRepository.create(adminUser);
         }
     };
 
@@ -161,10 +158,7 @@ export function ACLMixin<
         }
     };
 
-    const migrateUsersRoles = async (
-        ctx: Context,
-        configs: ACLMixinConfig<Permissions>
-    ) => {
+    const migrateUsersRoles = async (ctx: Context, adminUser: User) => {
         const userRepository = ctx.getSync(ACLBindings.USER_REPOSITORY);
         const roleRepository = ctx.getSync(ACLBindings.ROLE_REPOSITORY);
         const userRoleRepository = ctx.getSync(
@@ -176,7 +170,7 @@ export function ACLMixin<
          */
         const administratorUser = await userRepository.findOne({
             where: {
-                username: configs.administrator.username
+                username: adminUser.username
             }
         });
 
@@ -211,7 +205,7 @@ export function ACLMixin<
 
     const migrateRolesPermissions = async (
         ctx: Context,
-        configs: ACLMixinConfig<Permissions>
+        usersRolePermissions: (keyof Permissions)[]
     ) => {
         const roleRepository = ctx.getSync(ACLBindings.ROLE_REPOSITORY);
         const permissionRepository = ctx.getSync(
@@ -263,9 +257,7 @@ export function ACLMixin<
             const addablePermissions = permissions
                 .filter(
                     permission =>
-                        configs.usersPermissions.indexOf(
-                            permission.key as any
-                        ) >= 0
+                        usersRolePermissions.indexOf(permission.key as any) >= 0
                 )
                 .filter(
                     permission =>
@@ -321,15 +313,6 @@ export function ACLMixin<
 
     return class extends superClass {
         public aclConfigs: ACLMixinConfig<Permissions> = {
-            administrator: new User({
-                username: "administrator",
-                password: "administrator",
-                email: "admin@admin.com",
-                firstName: "System",
-                lastName: "Administrator",
-                status: "Active"
-            }),
-            usersPermissions: [],
             codeTimeout: 300e3,
             sessionTimeout: 300e3
         };
@@ -349,10 +332,18 @@ export function ACLMixin<
         async migrateSchema(options?: SchemaMigrationOptions) {
             await super.migrateSchema(options);
 
-            await migrateUsers(this as any, this.aclConfigs);
-            await migrateRoles(this as any);
-            await migrateUsersRoles(this as any, this.aclConfigs);
-            await migrateRolesPermissions(this as any, this.aclConfigs);
+            if (
+                this.aclConfigs.adminUser &&
+                this.aclConfigs.usersRolePermissions
+            ) {
+                await migrateUsers(this as any, this.aclConfigs.adminUser);
+                await migrateRoles(this as any);
+                await migrateUsersRoles(this as any, this.aclConfigs.adminUser);
+                await migrateRolesPermissions(
+                    this as any,
+                    this.aclConfigs.usersRolePermissions
+                );
+            }
         }
     };
 }
