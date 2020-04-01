@@ -127,12 +127,15 @@ export function CreateControllerMixin<
                     schema: {
                         type: "array",
                         items: getModelSchemaRef(leafCtor, {
-                            exclude: [
-                                "uid",
-                                "beginDate",
-                                "endDate",
-                                "id"
-                            ] as any
+                            exclude: Object.keys(
+                                leafCtor.definition.properties
+                            ).filter(
+                                key =>
+                                    key === "uid" ||
+                                    key === "beginDate" ||
+                                    key === "endDate" ||
+                                    key === "id"
+                            ) as any
                         })
                     }
                 }
@@ -223,7 +226,15 @@ export function CreateControllerMixin<
             content: {
                 "application/json": {
                     schema: getModelSchemaRef(leafCtor, {
-                        exclude: ["uid", "beginDate", "endDate", "id"] as any
+                        exclude: Object.keys(
+                            leafCtor.definition.properties
+                        ).filter(
+                            key =>
+                                key === "uid" ||
+                                key === "beginDate" ||
+                                key === "endDate" ||
+                                key === "id"
+                        ) as any
                     })
                 }
             }

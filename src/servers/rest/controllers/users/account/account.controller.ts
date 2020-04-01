@@ -48,13 +48,16 @@ export function GenerateUsersAccountController<
                 content: {
                     "application/json": {
                         schema: getModelSchemaRef(userCtor, {
-                            exclude: [
-                                "uid",
-                                "beginDate",
-                                "endDate",
-                                "id",
-                                "status"
-                            ]
+                            exclude: Object.keys(
+                                userCtor.definition.properties
+                            ).filter(
+                                key =>
+                                    key === "uid" ||
+                                    key === "beginDate" ||
+                                    key === "endDate" ||
+                                    key === "id" ||
+                                    key === "status"
+                            ) as any
                         })
                     }
                 }
