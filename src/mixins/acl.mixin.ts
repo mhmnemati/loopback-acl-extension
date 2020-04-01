@@ -9,7 +9,7 @@ import { ACLMixinConfig, ACLPermissions } from "../types";
 
 import {
     ACLTokenService,
-    ACLAuthenticationStrategy,
+    ACLTokenStrategy,
     MessageProvider,
     ActivateProvider
 } from "../providers";
@@ -50,7 +50,7 @@ export function ACLMixin<
             configs.activateProvider || ActivateProvider
         );
 
-        registerAuthenticationStrategy(ctx, ACLAuthenticationStrategy);
+        registerAuthenticationStrategy(ctx, ACLTokenStrategy);
     };
 
     const bootConstants = (
@@ -66,8 +66,6 @@ export function ACLMixin<
         let cacheDataSource = findACL(ctx, "CacheDataSource");
         if (cacheDataSource) {
             ctx.bind(PrivateACLBindings.CACHE_DATASOURCE).to(cacheDataSource);
-        } else {
-            throw new Error("ACLComponent: Cache dataSource not found!");
         }
     };
 

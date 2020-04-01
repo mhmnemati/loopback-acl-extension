@@ -5,7 +5,7 @@ import { UserProfile } from "@loopback/security";
 
 import { PrivateACLBindings } from "../../keys";
 
-export class ACLAuthenticationStrategy implements AuthenticationStrategy {
+export class ACLTokenStrategy implements AuthenticationStrategy {
     name: string = "bearer";
 
     constructor(
