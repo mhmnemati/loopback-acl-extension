@@ -34,15 +34,15 @@ export class ACLGraphQLServer extends Context implements Server {
     async start() {
         const restServer = this.getSync<ACLRestServer>("servers.ACLRestServer");
 
-        let openApiSpec: any = restServer.getApiSpec();
+        let openApiSpec = await restServer.getApiSpec();
 
         /** hotfix: openapi default servers not added */
-        openApiSpec.servers = [{ url: restServer.url }];
+        openApiSpec.servers = [{ url: restServer.url || "/" }];
 
         /** hotfix: rest put methods don't return data */
         openApiSpec.paths = Object.entries(openApiSpec.paths)
             .map(pair => {
-                const value: any = pair[1];
+                const value = pair[1];
                 if (value.put && value.put.responses["200"]) {
                     delete value.put.responses["200"].schema;
                 }
@@ -56,9 +56,12 @@ export class ACLGraphQLServer extends Context implements Server {
             }, {});
 
         /** get OpenAPI specs from restServer and bind REST url to it */
-        const { schema, report } = await createGraphQlSchema(openApiSpec, {
-            fillEmptyResponses: true
-        });
+        const { schema, report } = await createGraphQlSchema(
+            openApiSpec as any,
+            {
+                fillEmptyResponses: true
+            }
+        );
 
         this._server = new ApolloServer({ schema });
 
