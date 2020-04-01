@@ -33,6 +33,8 @@ export class Controller extends ACLController {
         @inject(AuthenticationBindings.CURRENT_USER, { optional: true })
         public session: Session,
 
+        @inject(PrivateACLBindings.CODE_TIMEOUT_CONSTANT)
+        public codeTimeout: number,
         @inject(PrivateACLBindings.SESSION_TIMEOUT_CONSTANT)
         public sessionTimeout: number,
 

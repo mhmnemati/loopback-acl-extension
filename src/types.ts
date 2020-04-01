@@ -111,6 +111,7 @@ export interface ACLMixinConfig<Permissions extends ACLPermissions> {
     activateProvider?: Class<Provider<ActivateHandler>>;
     administrator: User;
     usersPermissions: (keyof Permissions)[];
+    codeTimeout: number;
     sessionTimeout: number;
 }
 

@@ -29,12 +29,6 @@ export class Session extends Entity {
     })
     date: Date;
 
-    @property({
-        type: "number",
-        required: true
-    })
-    ttl: number;
-
     @property.array(String)
     permissions: string[];
 

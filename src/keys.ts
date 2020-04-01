@@ -141,8 +141,12 @@ export namespace PrivateACLBindings {
     /**
      * Constant key
      *
-     * 1. SessionTimeoutConstant
+     * 1. CodeTimeoutConstant
+     * 2. SessionTimeoutConstant
      */
+    export const CODE_TIMEOUT_CONSTANT = BindingKey.create<number>(
+        "private.acl.constants.codeTimeout"
+    );
     export const SESSION_TIMEOUT_CONSTANT = BindingKey.create<number>(
         "private.acl.constants.sessionTimeout"
     );

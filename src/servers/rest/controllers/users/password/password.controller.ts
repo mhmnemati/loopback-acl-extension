@@ -145,7 +145,7 @@ export function GenerateUsersPasswordController<
             );
 
             /** Set activation code object expiration time (in millis) */
-            await this.codeRepository.expire(code, this.sessionTimeout);
+            await this.codeRepository.expire(code, this.codeTimeout);
 
             /** Send activation email */
             await this.messageHandler(userId, code, "ResetPassword");

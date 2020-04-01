@@ -45,7 +45,7 @@ export class ACLTokenService implements TokenService {
         }
 
         /** Update session expiration per request */
-        await this.sessionRepository.expire(token, session.ttl);
+        await this.sessionRepository.expire(token, this.sessionTimeout);
 
         return session;
     }
@@ -86,7 +86,6 @@ export class ACLTokenService implements TokenService {
             token: token,
             ip: ip,
             date: new Date(),
-            ttl: this.sessionTimeout,
             device: device,
             permissions: permissions
         });

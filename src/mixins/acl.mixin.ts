@@ -60,6 +60,9 @@ export function ACLMixin<
         ctx: Context,
         configs: ACLMixinConfig<Permissions>
     ) => {
+        ctx.bind(PrivateACLBindings.CODE_TIMEOUT_CONSTANT).to(
+            configs.codeTimeout
+        );
         ctx.bind(PrivateACLBindings.SESSION_TIMEOUT_CONSTANT).to(
             configs.sessionTimeout
         );
@@ -327,6 +330,7 @@ export function ACLMixin<
                 status: "Active"
             }),
             usersPermissions: [],
+            codeTimeout: 300e3,
             sessionTimeout: 300e3
         };
 
