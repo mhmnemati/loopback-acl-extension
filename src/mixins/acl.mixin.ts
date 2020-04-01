@@ -40,8 +40,8 @@ export function ACLMixin<
         ctx: Context,
         configs: ACLMixinConfig<Permissions>
     ) => {
-        ctx.bind(PrivateACLBindings.TOKEN_PROVIDER).toClass(
-            configs.tokenProvider || ACLTokenService
+        ctx.bind(PrivateACLBindings.TOKEN_SERVICE).toClass(
+            configs.tokenService || ACLTokenService
         );
         ctx.bind(PrivateACLBindings.MESSAGE_PROVIDER).toProvider(
             configs.messageProvider || MessageProvider
@@ -50,7 +50,10 @@ export function ACLMixin<
             configs.activateProvider || ActivateProvider
         );
 
-        registerAuthenticationStrategy(ctx, ACLTokenStrategy);
+        registerAuthenticationStrategy(
+            ctx,
+            configs.tokenStrategy || ACLTokenStrategy
+        );
     };
 
     const bootConstants = (

@@ -36,7 +36,7 @@ export class Controller extends ACLController {
         @inject(PrivateACLBindings.SESSION_TIMEOUT_CONSTANT)
         public sessionTimeout: number,
 
-        @inject(PrivateACLBindings.TOKEN_PROVIDER)
+        @inject(PrivateACLBindings.TOKEN_SERVICE)
         public tokenService: TokenService,
         @inject(PrivateACLBindings.MESSAGE_PROVIDER)
         public messageHandler: MessageHandler,

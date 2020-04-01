@@ -52,7 +52,7 @@ export function GenerateUsersSessionController<
             return this.sessionRepository.get(token);
         }
 
-        @authenticate("bearer")
+        @authenticate("acl")
         @get("/users/session", {
             responses: {
                 "200": {
@@ -71,7 +71,7 @@ export function GenerateUsersSessionController<
             return this.session;
         }
 
-        @authenticate("bearer")
+        @authenticate("acl")
         @del("/users/session", {
             responses: {
                 "204": {

@@ -24,7 +24,7 @@ export function GenerateUsersSelfController<UserModel extends User>(
 ): Class<Controller> {
     class UsersSelfController extends Controller {
         @authorize<ACLPermissions>("USERS_READ_SELF")
-        @authenticate("bearer")
+        @authenticate("acl")
         @get("/users/self", {
             responses: {
                 "200": {
@@ -56,7 +56,7 @@ export function GenerateUsersSelfController<UserModel extends User>(
             )
         )
         @authorize<ACLPermissions>("USERS_WRITE_SELF")
-        @authenticate("bearer")
+        @authenticate("acl")
         @put("/users/self", {
             responses: {
                 "204": {
@@ -94,7 +94,7 @@ export function GenerateUsersSelfController<UserModel extends User>(
             )
         )
         @authorize<ACLPermissions>("USERS_HISTORY_SELF")
-        @authenticate("bearer")
+        @authenticate("acl")
         @get("/users/self/history", {
             responses: {
                 "200": {

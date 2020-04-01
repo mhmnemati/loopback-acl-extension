@@ -97,11 +97,7 @@ export function CreateControllerMixin<
         );
 
         authorize(condition)(prototype, method("createAll"), methodDescriptor);
-        authenticate("bearer")(
-            prototype,
-            method("createAll"),
-            methodDescriptor
-        );
+        authenticate("acl")(prototype, method("createAll"), methodDescriptor);
 
         post(`${generatePath(rootCtor, relations, basePath)}`, {
             responses: {
@@ -202,11 +198,7 @@ export function CreateControllerMixin<
         );
 
         authorize(condition)(prototype, method("createOne"), methodDescriptor);
-        authenticate("bearer")(
-            prototype,
-            method("createOne"),
-            methodDescriptor
-        );
+        authenticate("acl")(prototype, method("createOne"), methodDescriptor);
 
         post(`${generatePath(rootCtor, relations, basePath)}/one`, {
             responses: {
@@ -345,7 +337,7 @@ export function ReadControllerMixin<
         );
 
         authorize(condition)(prototype, method("readAll"), methodDescriptor);
-        authenticate("bearer")(prototype, method("readAll"), methodDescriptor);
+        authenticate("acl")(prototype, method("readAll"), methodDescriptor);
 
         get(`${generatePath(rootCtor, relations, basePath)}`, {
             responses: {
@@ -434,7 +426,7 @@ export function ReadControllerMixin<
         );
 
         authorize(condition)(prototype, method("countAll"), methodDescriptor);
-        authenticate("bearer")(prototype, method("countAll"), methodDescriptor);
+        authenticate("acl")(prototype, method("countAll"), methodDescriptor);
 
         get(`${generatePath(rootCtor, relations, basePath)}/count`, {
             responses: {
@@ -521,7 +513,7 @@ export function ReadControllerMixin<
         );
 
         authorize(condition)(prototype, method("readOne"), methodDescriptor);
-        authenticate("bearer")(prototype, method("readOne"), methodDescriptor);
+        authenticate("acl")(prototype, method("readOne"), methodDescriptor);
 
         get(`${generatePath(rootCtor, relations, basePath)}/{id}`, {
             responses: {
@@ -673,11 +665,7 @@ export function UpdateControllerMixin<
         );
 
         authorize(condition)(prototype, method("updateAll"), methodDescriptor);
-        authenticate("bearer")(
-            prototype,
-            method("updateAll"),
-            methodDescriptor
-        );
+        authenticate("acl")(prototype, method("updateAll"), methodDescriptor);
 
         put(`${generatePath(rootCtor, relations, basePath)}`, {
             responses: {
@@ -784,11 +772,7 @@ export function UpdateControllerMixin<
         );
 
         authorize(condition)(prototype, method("updateOne"), methodDescriptor);
-        authenticate("bearer")(
-            prototype,
-            method("updateOne"),
-            methodDescriptor
-        );
+        authenticate("acl")(prototype, method("updateOne"), methodDescriptor);
 
         put(`${generatePath(rootCtor, relations, basePath)}/{id}`, {
             responses: {
@@ -923,11 +907,7 @@ export function DeleteControllerMixin<
         );
 
         authorize(condition)(prototype, method("deleteAll"), methodDescriptor);
-        authenticate("bearer")(
-            prototype,
-            method("deleteAll"),
-            methodDescriptor
-        );
+        authenticate("acl")(prototype, method("deleteAll"), methodDescriptor);
 
         del(`${generatePath(rootCtor, relations, basePath)}`, {
             responses: {
@@ -1013,11 +993,7 @@ export function DeleteControllerMixin<
         );
 
         authorize(condition)(prototype, method("deleteOne"), methodDescriptor);
-        authenticate("bearer")(
-            prototype,
-            method("deleteOne"),
-            methodDescriptor
-        );
+        authenticate("acl")(prototype, method("deleteOne"), methodDescriptor);
 
         del(`${generatePath(rootCtor, relations, basePath)}/{id}`, {
             responses: {
@@ -1149,11 +1125,7 @@ export function HistoryControllerMixin<
         );
 
         authorize(condition)(prototype, method("historyOne"), methodDescriptor);
-        authenticate("bearer")(
-            prototype,
-            method("historyOne"),
-            methodDescriptor
-        );
+        authenticate("acl")(prototype, method("historyOne"), methodDescriptor);
 
         get(`${generatePath(rootCtor, relations, basePath)}/{id}/history`, {
             responses: {

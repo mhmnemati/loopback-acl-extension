@@ -6,10 +6,10 @@ import { UserProfile } from "@loopback/security";
 import { PrivateACLBindings } from "../../keys";
 
 export class ACLTokenStrategy implements AuthenticationStrategy {
-    name: string = "bearer";
+    name: string = "acl";
 
     constructor(
-        @inject(PrivateACLBindings.TOKEN_PROVIDER)
+        @inject(PrivateACLBindings.TOKEN_SERVICE)
         public tokenService: TokenService
     ) {}
 

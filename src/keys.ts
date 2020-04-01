@@ -124,11 +124,11 @@ export namespace PrivateACLBindings {
     /**
      * Provider key
      *
-     * 1. TokenProvider
+     * 1. TokenService
      * 2. MessageProvider
      * 3. ActivateProvider
      */
-    export const TOKEN_PROVIDER = BindingKey.create<TokenService>(
+    export const TOKEN_SERVICE = BindingKey.create<TokenService>(
         "private.acl.providers.token"
     );
     export const MESSAGE_PROVIDER = BindingKey.create<MessageHandler>(

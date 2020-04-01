@@ -11,7 +11,7 @@ import { Ctor } from "loopback-history-extension";
 import { ApplicationConfig } from "@loopback/core";
 import { RestServerConfig } from "@loopback/rest";
 import { HttpServerOptions } from "@loopback/http-server";
-import { TokenService } from "@loopback/authentication";
+import { TokenService, AuthenticationStrategy } from "@loopback/authentication";
 
 import { User, Session, Code } from "./models";
 
@@ -105,7 +105,8 @@ export type ActivateHandler = (userId: string) => Promise<void>;
 export interface ACLMixinConfig<Permissions extends ACLPermissions> {
     sessionModel?: Ctor<Session>;
     codeModel?: Ctor<Code>;
-    tokenProvider?: Class<TokenService>;
+    tokenService?: Class<TokenService>;
+    tokenStrategy?: Class<AuthenticationStrategy>;
     messageProvider?: Class<Provider<MessageHandler>>;
     activateProvider?: Class<Provider<ActivateHandler>>;
     administrator: User;
