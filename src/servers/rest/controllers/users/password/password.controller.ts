@@ -148,7 +148,7 @@ export function GenerateUsersPasswordController<
             await this.codeRepository.expire(code, this.sessionTimeout);
 
             /** Send activation email */
-            await this.messageHandler(userId, code, "Password");
+            await this.messageHandler(userId, code, "ResetPassword");
         }
     }
 

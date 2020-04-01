@@ -2,13 +2,13 @@ import { Context, BindingKey, bind } from "@loopback/context";
 import { Ctor } from "loopback-history-extension";
 import { juggler } from "@loopback/repository";
 import { CoreBindings } from "@loopback/core";
+import { TokenService } from "@loopback/authentication";
 
 import {
     AuthorizationBindings,
     PrivateAuthorizationBindings
 } from "loopback-authorization-extension";
 
-import { BearerTokenService } from "./providers";
 import { MessageHandler, ActivateHandler } from "./types";
 
 import {
@@ -128,7 +128,7 @@ export namespace PrivateACLBindings {
      * 2. MessageProvider
      * 3. ActivateProvider
      */
-    export const TOKEN_PROVIDER = BindingKey.create<BearerTokenService>(
+    export const TOKEN_PROVIDER = BindingKey.create<TokenService>(
         "private.acl.providers.token"
     );
     export const MESSAGE_PROVIDER = BindingKey.create<MessageHandler>(

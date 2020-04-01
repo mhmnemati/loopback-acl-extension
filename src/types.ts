@@ -11,8 +11,7 @@ import { Ctor } from "loopback-history-extension";
 import { ApplicationConfig } from "@loopback/core";
 import { RestServerConfig } from "@loopback/rest";
 import { HttpServerOptions } from "@loopback/http-server";
-
-import { BearerTokenService } from "./providers";
+import { TokenService } from "@loopback/authentication";
 
 import { User, Session, Code } from "./models";
 
@@ -92,7 +91,7 @@ export interface FilterScope<
 export type MessageHandler = (
     userId: string,
     code: string,
-    type: "Account" | "Password"
+    type: "ActivateAccount" | "ResetPassword"
 ) => Promise<void>;
 
 /**
@@ -106,7 +105,7 @@ export type ActivateHandler = (userId: string) => Promise<void>;
 export interface ACLMixinConfig<Permissions extends ACLPermissions> {
     sessionModel?: Ctor<Session>;
     codeModel?: Ctor<Code>;
-    tokenProvider?: Class<BearerTokenService>;
+    tokenProvider?: Class<TokenService>;
     messageProvider?: Class<Provider<MessageHandler>>;
     activateProvider?: Class<Provider<ActivateHandler>>;
     administrator: User;

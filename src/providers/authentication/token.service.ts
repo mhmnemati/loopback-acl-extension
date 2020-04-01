@@ -7,20 +7,17 @@ import {
     GetUserPermissionsFn
 } from "loopback-authorization-extension";
 
-import { ACLBindings, PrivateACLBindings } from "../../../keys";
-import { ACLPermissions } from "../../../types";
+import { ACLBindings, PrivateACLBindings } from "../../keys";
+import { ACLPermissions } from "../../types";
 
-import { Session, User } from "../../../models";
-import {
-    SessionRepository,
-    DefaultUserRepository
-} from "../../../repositories";
+import { Session, User } from "../../models";
+import { SessionRepository, DefaultUserRepository } from "../../repositories";
 
 import { randomBytes } from "crypto";
 
 import { getClientIp } from "request-ip";
 
-export class BearerTokenService implements TokenService {
+export class ACLTokenService implements TokenService {
     constructor(
         @inject(PrivateACLBindings.SESSION_TIMEOUT_CONSTANT)
         protected sessionTimeout: number,
@@ -53,7 +50,7 @@ export class BearerTokenService implements TokenService {
         return session;
     }
 
-    async generateToken(user: User & Request & any): Promise<Session | any> {
+    async generateToken(user: User & Request & any): Promise<string> {
         if (!user) {
             throw new HttpErrors.Unauthorized(
                 "Error generating token: user is null"
@@ -100,6 +97,6 @@ export class BearerTokenService implements TokenService {
         /** Set session expiration time (in millis) */
         await this.sessionRepository.expire(token, this.sessionTimeout);
 
-        return session;
+        return token;
     }
 }

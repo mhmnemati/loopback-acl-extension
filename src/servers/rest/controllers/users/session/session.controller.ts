@@ -44,10 +44,12 @@ export function GenerateUsersSessionController<
             })
             user: User
         ): Promise<Session> {
-            return await this.tokenService.generateToken({
+            const token = await this.tokenService.generateToken({
                 ...this.request,
                 ...user
-            });
+            } as any);
+
+            return this.sessionRepository.get(token);
         }
 
         @authenticate("bearer")

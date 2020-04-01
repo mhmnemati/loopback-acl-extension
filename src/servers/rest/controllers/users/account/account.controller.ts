@@ -239,7 +239,7 @@ export function GenerateUsersAccountController<
             await this.codeRepository.expire(code, this.sessionTimeout);
 
             /** Send activation email */
-            await this.messageHandler(userId, code, "Account");
+            await this.messageHandler(userId, code, "ActivateAccount");
         }
     }
 

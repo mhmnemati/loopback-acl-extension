@@ -1,8 +1,7 @@
 import { inject } from "@loopback/context";
 import { Request, RestBindings } from "@loopback/rest";
-import { AuthenticationBindings } from "@loopback/authentication";
+import { AuthenticationBindings, TokenService } from "@loopback/authentication";
 
-import { BearerTokenService } from "../../providers";
 import { MessageHandler, ActivateHandler } from "../../types";
 import { ACLBindings, PrivateACLBindings } from "../../keys";
 
@@ -38,7 +37,7 @@ export class Controller extends ACLController {
         public sessionTimeout: number,
 
         @inject(PrivateACLBindings.TOKEN_PROVIDER)
-        public tokenService: BearerTokenService,
+        public tokenService: TokenService,
         @inject(PrivateACLBindings.MESSAGE_PROVIDER)
         public messageHandler: MessageHandler,
         @inject(PrivateACLBindings.ACTIVATE_PROVIDER)

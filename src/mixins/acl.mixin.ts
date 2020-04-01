@@ -8,8 +8,8 @@ import { findACL, ACLBindings, PrivateACLBindings } from "../keys";
 import { ACLMixinConfig, ACLPermissions } from "../types";
 
 import {
-    BearerTokenService,
-    BearerAuthenticationStrategy,
+    ACLTokenService,
+    ACLAuthenticationStrategy,
     MessageProvider,
     ActivateProvider
 } from "../providers";
@@ -41,7 +41,7 @@ export function ACLMixin<
         configs: ACLMixinConfig<Permissions>
     ) => {
         ctx.bind(PrivateACLBindings.TOKEN_PROVIDER).toClass(
-            configs.tokenProvider || BearerTokenService
+            configs.tokenProvider || ACLTokenService
         );
         ctx.bind(PrivateACLBindings.MESSAGE_PROVIDER).toProvider(
             configs.messageProvider || MessageProvider
@@ -50,7 +50,7 @@ export function ACLMixin<
             configs.activateProvider || ActivateProvider
         );
 
-        registerAuthenticationStrategy(ctx, BearerAuthenticationStrategy);
+        registerAuthenticationStrategy(ctx, ACLAuthenticationStrategy);
     };
 
     const bootConstants = (
